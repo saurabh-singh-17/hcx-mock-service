@@ -2,6 +2,8 @@ package org.swasth.hcx.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.shaded.json.parser.JSONParser;
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.common.protocol.types.Field;
 import org.bouncycastle.util.io.pem.PemObject;
@@ -52,6 +54,9 @@ public class BaseController {
 
     private RSAPrivateKey rsaPrivateKey;
 
+    @Value("${hcx_application.url}")
+    private String hcxBasePath;
+
 
     protected Response errorResponse(Response response, ErrorCodes code, java.lang.Exception e){
         ResponseError error= new ResponseError(code, e.getMessage(), e.getCause());
@@ -73,13 +78,35 @@ public class BaseController {
         }
     }
 
+    protected void sendOnAction(String onApiCall, Map<String,String> encryptedPayload) throws Exception{
+        HttpResponse<String> response = Unirest.post("http://a9dd63de91ee94d59847a1225da8b111-273954130.ap-south-1.elb.amazonaws.com:8080/auth/realms/swasth-health-claim-exchange/protocol/openid-connect/token")
+                .header("content-type", "application/x-www-form-urlencoded")
+                .field("client_id", "registry-frontend")
+                .field("username", "swasth_mock_payer@swasthapp.org")
+                .field("password", "Opensaber@123")
+                .field("grant_type", "password")
+                .asString();
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> responseBody = mapper.readValue(response.getBody(), Map.class);
+
+        HttpResponse<String> onActionResponse = Unirest.post(hcxBasePath + onApiCall)
+                .header("Authorization", "Bearer " + responseBody.get("access_token").toString())
+                .header("Content-Type", "application/json")
+                .body(encryptedPayload)
+                .asString();
+
+        Map<String, String> res = mapper.readValue(onActionResponse.getBody(), Map.class);
+        System.out.println("response "+ res);
+
+
+    }
+
 
     protected Map<String, String> encryptPayload(String filePath, Map<String, Object> headers, Map<String, Object> payload) throws Exception{
         Map<String, String> encryptedObject;
         File file = new File(filePath);
         FileReader fileReader = new FileReader(file);
         RSAPublicKey rsaPublicKey = PublicKeyLoader.loadPublicKeyFromX509Certificate(fileReader);
-        System.out.println("rsaPublicKey " + rsaPublicKey);
         JweRequest jweRequest = new JweRequest(headers, payload);
         jweRequest.encryptRequest(rsaPublicKey);
         encryptedObject = jweRequest.getEncryptedObject();
@@ -107,24 +134,21 @@ public class BaseController {
     protected Map<String, Object> createOnActionHeaders(Map<String, Object> headers) throws Exception{
         Map<String, Object> returnHeaders =  new HashMap<>();
         DateTime currentTime = DateTime.now();
-        System.out.println("currenttime" +  currentTime + " " + UUID.randomUUID().toString());
-        returnHeaders = headers;
+        returnHeaders.putAll(headers);
+        System.out.println("headers before" + headers);
         returnHeaders.put("x-hcx-sender_code",headers.get("x-hcx-recipient_code"));
-        returnHeaders.put("x-hcx-recipient_code",headers.get("x-hcx-recipient_code"));
+        returnHeaders.put("x-hcx-recipient_code",headers.get("x-hcx-sender_code"));
         returnHeaders.put("x-hcx-api_call_id", UUID.randomUUID().toString());
         returnHeaders.put("x-hcx-timestamp",currentTime.toString());
         returnHeaders.put("x-hcx-status","response.complete");
+        System.out.println("headers after" + headers);
         return returnHeaders;
     }
 
-    protected void processAndValidate(String apiAction, String metadataTopic, Request request, Map<String, Object> requestBody) throws Exception {
+    protected void processAndValidate(String onApiAction, String metadataTopic, Request request, Map<String, Object> requestBody) throws Exception {
         String mid = UUID.randomUUID().toString();
         String serviceMode = env.getProperty(SERVICE_MODE);
-        String payloadTopic = env.getProperty(KAFKA_TOPIC_PAYLOAD);
-        String key = request.getSenderCode();
-        String payloadEvent = eventGenerator.generatePayloadEvent(mid, request);
-        String metadataEvent = eventGenerator.generateMetadataEvent(mid, apiAction, request);
-        System.out.println("Mode: " + serviceMode + " :: mid: " + mid + " :: Event: " + metadataEvent);
+        System.out.println("Mode: " + serviceMode + " :: mid: " + mid + " :: Event: " + onApiAction);
         if(StringUtils.equalsIgnoreCase(serviceMode, GATEWAY)) {
             ClassLoader classLoader = this.getClass().getClassLoader();
             baseURL = classLoader.getResource("").getFile();
@@ -136,8 +160,7 @@ public class BaseController {
             Map<String, Object> map = mapper.readValue(new File(baseURL+"static/coverage_eligibility_oncheck.json"), Map.class);
             Map<String, Object> onHeaders = createOnActionHeaders(request.getHcxHeaders());
             Map<String,String> encryptedOnPayload = encryptPayload(publicKeyPath,onHeaders,map);
-            System.out.println("on payload" +  encryptedOnPayload);
-
+            sendOnAction(onApiAction,encryptedOnPayload);
 
         }
     }
@@ -148,7 +171,6 @@ public class BaseController {
             Request request = new Request(requestBody);
 
             setResponseParams(request, response);
-            System.out.println("set response params called");
             //processAndSendEvent(apiAction, kafkaTopic, request);
             processAndValidate(onApiAction, kafkaTopic, request, requestBody);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
@@ -159,10 +181,8 @@ public class BaseController {
     }
 
     protected void setResponseParams(Request request, Response response){
-        System.out.println("response is start"+ request.getHcxHeaders());
         response.setCorrelationId(request.getCorrelationId());
         response.setApiCallId(request.getApiCallId());
-        System.out.println("response is srt");
     }
 
     protected ResponseEntity<Object> exceptionHandler(Response response, Exception e){
