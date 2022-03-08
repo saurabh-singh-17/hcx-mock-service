@@ -141,6 +141,18 @@ public class BaseController {
         returnHeaders.put("x-hcx-api_call_id", UUID.randomUUID().toString());
         returnHeaders.put("x-hcx-timestamp",currentTime.toString());
         returnHeaders.put("x-hcx-status","response.complete");
+        if (headers.containsKey("x-hcx-debug_flag_test")){
+            returnHeaders.put("x-hcx-debug_flag", headers.get("x-hcx-debug_flag_test"));
+        }
+        if (headers.containsKey("x-hcx-status_test")){
+            returnHeaders.put("x-hcx-status", headers.get("x-hcx-status_test"));
+        }
+        if (headers.containsKey("x-hcx-error_details_test")){
+            returnHeaders.put("x-hcx-error_details", headers.get("x-hcx-error_details_test"));
+        }
+        if (headers.containsKey("x-hcx-debug_details_test")){
+            returnHeaders.put("x-hcx-debug_details", headers.get("x-hcx-debug_details_test"));
+        }
         System.out.println("headers after" + headers);
         return returnHeaders;
     }
