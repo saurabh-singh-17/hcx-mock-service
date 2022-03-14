@@ -21,10 +21,10 @@ node('java11') {
             container('kaniko') {
               // Building and pushing the container
               sh """
-                cd ${env.WORKSPACE}/hcx-apis
+                cd ${env.WORKSPACE}/hcx_mock_service
                 pwd
-                /kaniko/executor --dockerfile Dockerfile --context `pwd` --destination ${env.DOCKER_HUB_URL}/hcx-api:${build_tag}
-                echo {\\"image_name\\" : \\"hcx-api\\", \\"image_tag\\" : \\"${build_tag}\\"} > ${env.WORKSPACE}/metadata.json
+                /kaniko/executor --dockerfile Dockerfile --context `pwd` --destination ${env.DOCKER_HUB_URL}/hcx_mock_service:${build_tag}
+                echo {\\"image_name\\" : \\"hcx_mock_service\\", \\"image_tag\\" : \\"${build_tag}\\"} > ${env.WORKSPACE}/metadata.json
               """
               archiveArtifacts "metadata.json"
             }
