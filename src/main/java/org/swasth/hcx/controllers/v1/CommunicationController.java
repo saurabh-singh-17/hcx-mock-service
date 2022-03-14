@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.swasth.common.utils.Constants;
+import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.controllers.BaseController;
 
 import java.util.Map;
@@ -25,6 +25,6 @@ public class CommunicationController extends BaseController {
 
     @RequestMapping(value = "/on_request", method = RequestMethod.POST)
     public ResponseEntity<Object> communicationOnRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return validateReqAndPushToKafka(requestBody, Constants.COMMUNICATION_ONREQUEST,null, kafkaTopic);
+        return validateReqAndPushToKafka(requestBody, Constants.COMMUNICATION_ONREQUEST,Constants.COMMUNICATION_ONREQUEST, kafkaTopic);
     }
 }

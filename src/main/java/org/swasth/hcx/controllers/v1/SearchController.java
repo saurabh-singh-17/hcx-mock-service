@@ -8,18 +8,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.swasth.common.dto.Response;
-import org.swasth.common.dto.SearchRequest;
-import org.swasth.common.exception.ClientException;
-import org.swasth.common.exception.ErrorCodes;
-import org.swasth.common.utils.Constants;
+import org.swasth.hcx.dto.Response;
+import org.swasth.hcx.dto.SearchRequest;
+import org.swasth.hcx.exception.ClientException;
+import org.swasth.hcx.exception.ErrorCodes;
+import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.controllers.BaseController;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.swasth.common.utils.Constants.HCX_ON_SEARCH;
-import static org.swasth.common.utils.Constants.HCX_SEARCH;
+import static org.swasth.hcx.utils.Constants.HCX_ON_SEARCH;
+import static org.swasth.hcx.utils.Constants.HCX_SEARCH;
 
 @RestController
 @RequestMapping(value = "/v1/hcx")

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.swasth.common.dto.Request;
-import org.swasth.common.utils.JSONUtils;
+import org.swasth.hcx.dto.Request;
+import org.swasth.hcx.utils.JSONUtils;
 
 import java.util.HashMap;
 import java.util.Map;

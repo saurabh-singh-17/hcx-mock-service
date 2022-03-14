@@ -15,9 +15,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.swasth.common.dto.HeaderAudit;
-import org.swasth.common.utils.Constants;
-import org.swasth.common.dto.SearchRequestDTO;
+import org.swasth.hcx.dto.HeaderAudit;
+import org.swasth.hcx.utils.Constants;
+import org.swasth.hcx.dto.SearchRequestDTO;
 import org.swasth.hcx.utils.SearchUtil;
 
 import java.util.ArrayList;

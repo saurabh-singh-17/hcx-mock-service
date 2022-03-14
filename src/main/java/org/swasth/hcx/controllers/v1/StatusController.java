@@ -7,18 +7,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.swasth.common.dto.*;
-import org.swasth.common.exception.ClientException;
-import org.swasth.common.exception.ErrorCodes;
-import org.swasth.common.exception.ServiceUnavailbleException;
-import org.swasth.common.utils.JSONUtils;
+import org.swasth.hcx.dto.*;
+import org.swasth.hcx.exception.ClientException;
+import org.swasth.hcx.exception.ErrorCodes;
+import org.swasth.hcx.exception.ServiceUnavailbleException;
+import org.swasth.hcx.utils.JSONUtils;
 import org.swasth.hcx.controllers.BaseController;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.swasth.common.utils.Constants.*;
+import static org.swasth.hcx.utils.Constants.*;
 
 @RestController()
 @RequestMapping(value = "/v1/hcx")

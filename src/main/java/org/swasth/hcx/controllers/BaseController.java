@@ -15,19 +15,17 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.objenesis.ObjenesisHelper;
-import org.swasth.common.dto.*;
-import org.swasth.common.exception.ClientException;
-import org.swasth.common.exception.ErrorCodes;
-import org.swasth.common.exception.ServerException;
-import org.swasth.common.exception.ServiceUnavailbleException;
-import org.swasth.common.utils.JSONUtils;
+import org.swasth.hcx.dto.*;
+import org.swasth.hcx.exception.ClientException;
+import org.swasth.hcx.exception.ErrorCodes;
+import org.swasth.hcx.exception.ServerException;
+import org.swasth.hcx.exception.ServiceUnavailbleException;
+import org.swasth.hcx.utils.JSONUtils;
 import org.swasth.hcx.helpers.EventGenerator;
 import org.swasth.hcx.service.HeaderAuditService;
 import org.swasth.jose.jwe.JweRequest;
 import org.swasth.jose.jwe.key.PrivateKeyLoader;
 import org.swasth.jose.jwe.key.PublicKeyLoader;
-import org.swasth.kafka.client.IEventService;
-import org.swasth.postgresql.IDatabaseService;
 import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Paths;
@@ -37,7 +35,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.*;
 
-import static org.swasth.common.utils.Constants.*;
+import static org.swasth.hcx.utils.Constants.*;
 
 public class BaseController {
 
@@ -171,8 +169,16 @@ public class BaseController {
             ObjectMapper mapper = new ObjectMapper();
             Map<String, Object> map = mapper.readValue(new File(baseURL+"static/coverage_eligibility_oncheck.json"), Map.class);
             Map<String, Object> onHeaders = createOnActionHeaders(request.getHcxHeaders());
+            //creating an on check payload
             Map<String,String> encryptedOnPayload = encryptPayload(publicKeyPath,onHeaders,map);
+            System.out.println("on check payload    " + encryptedOnPayload);
             sendOnAction(onApiAction,encryptedOnPayload);
+
+            //creating a check payload for temp purpose
+            Map<String, Object> map1 = mapper.readValue(new File(baseURL+"static/coverage_eligibility_check.json"), Map.class);
+            Map<String,String> encryptedPayload1 = encryptPayload(publicKeyPath,request.getHcxHeaders(),map1);
+            System.out.println("check payload    " + encryptedPayload1);
+
 
         }
     }

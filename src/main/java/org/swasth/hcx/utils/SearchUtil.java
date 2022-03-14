@@ -5,7 +5,7 @@ import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.util.CollectionUtils;
-import org.swasth.common.dto.SearchRequestDTO;
+import org.swasth.hcx.dto.SearchRequestDTO;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

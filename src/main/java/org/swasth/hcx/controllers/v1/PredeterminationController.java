@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.swasth.common.utils.Constants;
+import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.controllers.BaseController;
 
 import java.util.Map;
@@ -25,6 +25,6 @@ public class PredeterminationController extends BaseController {
 
     @RequestMapping(value = "/on_submit", method = RequestMethod.POST)
     public ResponseEntity<Object> onSubmitPredetermination(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return validateReqAndPushToKafka(requestBody, Constants.PREDETERMINATION_ONSUBMIT,null, kafkaTopic);
+        return validateReqAndPushToKafka(requestBody, Constants.PREDETERMINATION_ONSUBMIT,Constants.PREDETERMINATION_ONSUBMIT, kafkaTopic);
     }
 }

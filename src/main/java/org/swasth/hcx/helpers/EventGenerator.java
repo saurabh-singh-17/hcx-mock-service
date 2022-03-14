@@ -4,14 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-import org.swasth.common.dto.Request;
-import org.swasth.common.utils.JSONUtils;
+import org.swasth.hcx.dto.Request;
+import org.swasth.hcx.utils.JSONUtils;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.swasth.common.utils.Constants.*;
+import static org.swasth.hcx.utils.Constants.*;
 
 @Component
 public class EventGenerator {

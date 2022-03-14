@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.swasth.hcx.controllers.BaseController;
-import org.swasth.common.utils.Constants;
+import org.swasth.hcx.utils.Constants;
 
 import java.util.Map;
 
@@ -23,7 +23,7 @@ public class ClaimsController extends BaseController {
 
     @RequestMapping(value = "/on_submit", method = RequestMethod.POST)
     public ResponseEntity<Object> claimOnSubmit(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return validateReqAndPushToKafka(requestBody, Constants.CLAIM_ONSUBMIT,null, kafkaTopic);
+        return validateReqAndPushToKafka(requestBody, Constants.CLAIM_ONSUBMIT,Constants.CLAIM_ONSUBMIT, kafkaTopic);
     }
 
 }

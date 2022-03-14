@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.swasth.hcx.controllers.BaseController;
-import org.swasth.common.utils.Constants;
+import org.swasth.hcx.utils.Constants;
 
 import java.util.Map;
 
@@ -22,7 +22,7 @@ public class PaymentsController extends BaseController {
 
     @RequestMapping(value = "/on_request", method = RequestMethod.POST)
     public ResponseEntity<Object> paymentNoticeOnRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return validateReqAndPushToKafka(requestBody, Constants.PAYMENT_NOTICE_ONREQUEST,null, kafkaTopic);
+        return validateReqAndPushToKafka(requestBody, Constants.PAYMENT_NOTICE_ONREQUEST,Constants.PAYMENT_NOTICE_ONREQUEST, kafkaTopic);
     }
 
 }

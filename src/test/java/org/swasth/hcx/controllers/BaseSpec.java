@@ -13,13 +13,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import org.swasth.common.dto.Response;
-import org.swasth.common.utils.JSONUtils;
+import org.swasth.hcx.dto.Response;
+import org.swasth.hcx.utils.JSONUtils;
 import org.swasth.hcx.controllers.v1.*;
 import org.swasth.hcx.helpers.EventGenerator;
 import org.swasth.hcx.service.HeaderAuditService;
-import org.swasth.kafka.client.IEventService;
-import org.swasth.postgresql.IDatabaseService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,12 +40,6 @@ public class BaseSpec {
     protected Environment mockEnv;
 
     @MockBean
-    protected IEventService mockKafkaClient;
-
-    @MockBean
-    protected IDatabaseService postgreSQLClient;
-
-    @MockBean
     protected HeaderAuditService headerAuditService;
 
 
@@ -58,7 +50,7 @@ public class BaseSpec {
 
     public String getRequestBody() throws JsonProcessingException {
         Map<String,Object> obj = new HashMap<>();
-        obj.put("payload","eyJlbmMiOiJBMjU2R0NNIiwKImFsZyI6IlJTQS1PQUVQIiwKIngtaGN4LXNlbmRlcl9jb2RlIjoiMS05ODc1Ni1jZjJkLTQ1ZmUtYTVlMS01ZjFjODI5NzllMGQiLAoieC1oY3gtcmVjaXBpZW50X2NvZGUiOiIxLTI3OTliNmE0LWNmMmQtNDVmZS1hNWUxLTVmMWM4Mjk3OWUwZCIsCiJ4LWhjeC1hcGlfY2FsbF9pZCI6IjI2YjEwNjBjLTFlODMtNDYwMC05NjEyLWVhMzFlMGNhNTA5MSIsCiJ4LWhjeC1jb3JyZWxhdGlvbl9pZCI6IjVlOTM0ZjkwLTExMWQtNGYwYi1iMDE2LWMyMmQ4MjA2NzRlMSIsCiJ4LWhjeC10aW1lc3RhbXAiOiIyMDIyLTAxLTA2VDA5OjUwOjIzKzAwIiwKIngtaGN4LXN0YXR1cyI6InJlcXVlc3QuaW5pdGlhdGUiLAoieC1oY3gtd29ya2Zsb3dfaWQiOiIxZTgzLTQ2MGEtNGYwYi1iMDE2LWMyMmQ4MjA2NzRlMSIsCiJ4LWhjeC1zdGF0dXNfZmlsdGVycyI6eyJyZXF1ZXN0X2lkIjoiMjZiMTA2MGMtMWU4My00NjAwLTk2MTItZWEzMWUwY2E1MTAxIn0sCiJqd3NfaGVhZGVyIjp7InR5cCI6IkpXVCIsICJhbGciOiJSUzI1NiJ9LAoiandlX2hlYWRlciI6eyJhbGciOiJSU0EtT0FFUCIsImVuYyI6IkEyNTZHQ00ifQp9.6KB707dM9YTIgHtLvtgWQ8mKwboJW3of9locizkDTHzBC2IlrT1oOQ.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.AxY8DCtDaGlsbGljb3RoZQ.KDlTtXchhZTGufMYmOYGS4HffxPSUrfmqCHXaI9wOGY.Mz-VPPyU4RlcuYv1IwIvzw");
+        obj.put("payload","eyJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiUlNBLU9BRVAiLCJ4LWhjeC1zZW5kZXJfY29kZSI6IjEtNTIxZWFlYzctOGNiOS00YjZjLThiNGUtNGRiYTMwMGFmNmY0IiwieC1oY3gtcmVjaXBpZW50X2NvZGUiOiIxLTI5NDgyZGYzLWU4NzUtNDVlZi1hNGU5LTU5MmI2ZjU2NTc4MiIsIngtaGN4LXJlcXVlc3RfaWQiOiIwNTkwMjBjNy1lYzlhLTQzYzMtODhjYi02Mzk3OWRiM2U1OWQiLCJ4LWhjeC1jb3JyZWxhdGlvbl9pZCI6ImNhZTA4NGNkLWM4OTAtNDk4YS05MzZhLTE3NmMwOWZhNjQ2YSIsIngtaGN4LXRpbWVzdGFtcCI6IjIwMjEtMTAtMjdUMjA6MzU6NTIuNjM2KzA1MzAiLCJ4LWhjeC1hcGlfY2FsbF9pZCI6ImI2NTE0YWYwLWRjYTAtNDkwOS1hNzgwLTljNDhhYmIyZTJmZiIsIngtaGN4LXN0YXR1cyI6InJlcXVlc3QucXVldWVkIiwieC1oY3gtd29ya2Zsb3dfaWQiOiIyOWMwNmU2OC04M2E5LTQzNDAtYjAwMi1iYTNiOGFmNmZmOWYifQ==.6KB707dM9YTIgHtLvtgWQ8mKwboJW3of9locizkDTHzBC2IlrT1oOQ.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.AxY8DCtDaGlsbGljb3RoZQ.KDlTtXchhZTGufMYmOYGS4HffxPSUrfmqCHXaI9wOGY");
         return JSONUtils.serialize(obj);
     }
 
