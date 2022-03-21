@@ -15,6 +15,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.objenesis.ObjenesisHelper;
+import org.springframework.util.ResourceUtils;
 import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.dto.*;
 import org.swasth.hcx.exception.ClientException;
@@ -193,7 +194,8 @@ public class BaseController {
 
             System.out.println("create the oncheck payload");
             ObjectMapper mapper = new ObjectMapper();
-            Map<String, Object> map = mapper.readValue(new File(baseURL+"static/coverage_eligibility_oncheck.json"), Map.class);
+            File file = ResourceUtils.getFile("classpath:static/coverage_eligibility_oncheck.json");
+            Map<String, Object> map = mapper.readValue(file, Map.class);
             Map<String, Object> onHeaders = createOnActionHeaders(request.getHcxHeaders());
             //creating an on check payload
             if (onCheckPayloadType == "jweResponse") {
