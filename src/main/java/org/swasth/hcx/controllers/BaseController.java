@@ -15,6 +15,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.objenesis.ObjenesisHelper;
+import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.dto.*;
 import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.exception.ErrorCodes;
@@ -55,11 +56,16 @@ public class BaseController {
     @Value("${hcx_application.url}")
     private String hcxBasePath;
 
+    private String onCheckPayloadType;
+
 
     protected Response errorResponse(Response response, ErrorCodes code, java.lang.Exception e){
         ResponseError error= new ResponseError(code, e.getMessage(), e.getCause());
         response.setError(error);
         return response;
+    }
+    public static String getRandomChestItem(List<String> items) {
+        return items.get(new Random().nextInt(items.size()));
     }
 
     protected void processAndSendEvent(String apiAction, String metadataTopic, Request request) throws Exception {
@@ -76,7 +82,7 @@ public class BaseController {
         }
     }
 
-    protected void sendOnAction(String onApiCall, Map<String,String> encryptedPayload) throws Exception{
+    protected void sendOnAction(String onApiCall, Map<String,?> encryptedPayload) throws Exception{
         HttpResponse<String> response = Unirest.post("http://a9dd63de91ee94d59847a1225da8b111-273954130.ap-south-1.elb.amazonaws.com:8080/auth/realms/swasth-health-claim-exchange/protocol/openid-connect/token")
                 .header("content-type", "application/x-www-form-urlencoded")
                 .field("client_id", "registry-frontend")
@@ -95,8 +101,6 @@ public class BaseController {
 
         Map<String, String> res = mapper.readValue(onActionResponse.getBody(), Map.class);
         System.out.println("response "+ res);
-
-
     }
 
 
@@ -138,20 +142,42 @@ public class BaseController {
         returnHeaders.put("x-hcx-recipient_code",headers.get("x-hcx-sender_code"));
         returnHeaders.put("x-hcx-api_call_id", UUID.randomUUID().toString());
         returnHeaders.put("x-hcx-timestamp",currentTime.toString());
-        returnHeaders.put("x-hcx-status","response.complete");
-        if (headers.containsKey("x-hcx-debug_flag_test")){
-            returnHeaders.put("x-hcx-debug_flag", headers.get("x-hcx-debug_flag_test"));
+        returnHeaders.put("x-hcx-status", Constants.COMPLETE_STATUS);
+        if(headers.containsKey("x-hcx-test_random") == true){
+            returnHeaders.remove("x-hcx-test_random");
+            returnHeaders.put("x-hcx-status", getRandomChestItem(Constants.STATUS_RESPONSES));
+            if(returnHeaders.get("x-hcx-status") == Constants.COMPLETE_STATUS || returnHeaders.get("x-hcx-status") == PARTIAL_STATUS) {
+                onCheckPayloadType = "jweResponse";
+            }else if(returnHeaders.get("x-hcx-status") == Constants.ERROR_STATUS){
+                Map<String,String> error = new HashMap<>();
+                error.put("error",getRandomChestItem(Constants.RECIPIENT_ERROR_CODES));
+                error.put("message","Error encountered");
+                error.put("trace",null);
+                returnHeaders.put("x-hcx-error_details",error);
+                onCheckPayloadType = "protocolResponse";
+            }else if(returnHeaders.get("x-hcx-status") == Constants.REDIRECT_STATUS){
+                returnHeaders.put("x-hcx-redirect_to",UUID.randomUUID().toString());
+                onCheckPayloadType = "protocolResponse";
+            }
+        }else {
+            if (headers.containsKey("x-hcx-debug_flag_test")) {
+                returnHeaders.put("x-hcx-debug_flag", headers.get("x-hcx-debug_flag_test"));
+                returnHeaders.remove("x-hcx-debug_flag_test");
+            }
+            if (headers.containsKey("x-hcx-status_test")) {
+                returnHeaders.put("x-hcx-status", headers.get("x-hcx-status_test"));
+                returnHeaders.remove("x-hcx-status_test");
+            }
+            if (headers.containsKey("x-hcx-error_details_test")) {
+                returnHeaders.put("x-hcx-error_details", headers.get("x-hcx-error_details_test"));
+                returnHeaders.remove("x-hcx-error_details_test");
+            }
+            if (headers.containsKey("x-hcx-debug_details_test")) {
+                returnHeaders.put("x-hcx-debug_details", headers.get("x-hcx-debug_details_test"));
+                returnHeaders.remove("x-hcx-debug_details_test");
+            }
+            onCheckPayloadType = "protocolResponse";
         }
-        if (headers.containsKey("x-hcx-status_test")){
-            returnHeaders.put("x-hcx-status", headers.get("x-hcx-status_test"));
-        }
-        if (headers.containsKey("x-hcx-error_details_test")){
-            returnHeaders.put("x-hcx-error_details", headers.get("x-hcx-error_details_test"));
-        }
-        if (headers.containsKey("x-hcx-debug_details_test")){
-            returnHeaders.put("x-hcx-debug_details", headers.get("x-hcx-debug_details_test"));
-        }
-        System.out.println("headers after" + headers);
         return returnHeaders;
     }
 
@@ -170,16 +196,18 @@ public class BaseController {
             Map<String, Object> map = mapper.readValue(new File(baseURL+"static/coverage_eligibility_oncheck.json"), Map.class);
             Map<String, Object> onHeaders = createOnActionHeaders(request.getHcxHeaders());
             //creating an on check payload
-            Map<String,String> encryptedOnPayload = encryptPayload(publicKeyPath,onHeaders,map);
-            System.out.println("on check payload    " + encryptedOnPayload);
-            sendOnAction(onApiAction,encryptedOnPayload);
-
-            //creating a check payload for temp purpose
-            Map<String, Object> map1 = mapper.readValue(new File(baseURL+"static/coverage_eligibility_check.json"), Map.class);
-            Map<String,String> encryptedPayload1 = encryptPayload(publicKeyPath,request.getHcxHeaders(),map1);
-            System.out.println("check payload    " + encryptedPayload1);
-
-
+            if (onCheckPayloadType == "jweResponse") {
+                Map<String, String> encryptedOnPayload = encryptPayload(publicKeyPath, onHeaders, map);
+                sendOnAction(onApiAction,encryptedOnPayload);
+                System.out.println("on check payload    " + encryptedOnPayload);
+            }else{
+                sendOnAction(onApiAction,onHeaders);
+                System.out.println("on check payload    " + onHeaders);
+            }
+//            //creating a check payload for temp purpose
+//            Map<String, Object> map1 = mapper.readValue(new File(baseURL+"static/coverage_eligibility_check.json"), Map.class);
+//            Map<String,String> encryptedPayload1 = encryptPayload(publicKeyPath,request.getHcxHeaders(),map1);
+//            System.out.println("check payload    " + encryptedPayload1);
         }
     }
 

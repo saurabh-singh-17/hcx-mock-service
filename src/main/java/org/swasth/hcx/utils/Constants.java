@@ -102,8 +102,10 @@ public class Constants {
     public static final List<String> SEARCH_RES_KEYS = Arrays.asList("count","entity_counts");
     public static final String HCX_REGISTRY_CODE = "hcx-registry-code";
 
+    public static final String PARTIAL_STATUS = "response.partial";
     public static final String ERROR_STATUS = "response.error";
     public static final String REDIRECT_STATUS = "response.redirect";
     public static final String COMPLETE_STATUS = "response.complete";
-
+    public static final List<String> STATUS_RESPONSES = Arrays.asList("response.complete","response.partial","response.error","response.redirect");
+    public static final List<String> RECIPIENT_ERROR_CODES = Arrays.asList("ERR_INVALID_ENCRYPTION","ERR_INVALID_PAYLOAD","ERR_WRONG_DOMAIN_PAYLOAD","ERR_INVALID_DOMAIN_PAYLOAD","ERR_SENDER_NOT_SUPPORTED","ERR_SERVICE_UNAVAILABLE","ERR_DOMAIN_PROCESSING");
 }
