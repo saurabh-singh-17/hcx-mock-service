@@ -30,6 +30,7 @@ import org.swasth.jose.jwe.key.PrivateKeyLoader;
 import org.swasth.jose.jwe.key.PublicKeyLoader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
@@ -183,19 +184,16 @@ public class BaseController {
         return returnHeaders;
     }
 
-    private File getResourceFile(final String fileName)
+    private InputStream getFileAsIOStream(final String fileName)
     {
-        URL url = this.getClass()
+        InputStream ioStream = this.getClass()
                 .getClassLoader()
-                .getResource(fileName);
+                .getResourceAsStream(fileName);
 
-        if(url == null) {
-            throw new IllegalArgumentException(fileName + " is not found 1");
+        if (ioStream == null) {
+            throw new IllegalArgumentException(fileName + " is not found");
         }
-
-        File file = new File(url.getFile());
-
-        return file;
+        return ioStream;
     }
 
     protected void processAndValidate(String onApiAction, String metadataTopic, Request request, Map<String, Object> requestBody) throws Exception {
@@ -210,10 +208,11 @@ public class BaseController {
 
             System.out.println("create the oncheck payload");
             ObjectMapper mapper = new ObjectMapper();
-            File file = getResourceFile("static/coverage_eligibility_oncheck.json");
+            InputStream file = getFileAsIOStream("static/coverage_eligibility_oncheck.json");
             Map<String, Object> map = mapper.readValue(file, Map.class);
             Map<String, Object> onHeaders = createOnActionHeaders(request.getHcxHeaders());
             //creating an on check payload
+            System.out.println("onCheckPayloadType"+ onCheckPayloadType);
             if (onCheckPayloadType == "jweResponse") {
                 Map<String, String> encryptedOnPayload = encryptPayload(publicKeyPath, onHeaders, map);
                 sendOnAction(onApiAction,encryptedOnPayload);
