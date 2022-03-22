@@ -30,6 +30,7 @@ import org.swasth.jose.jwe.key.PrivateKeyLoader;
 import org.swasth.jose.jwe.key.PublicKeyLoader;
 import java.io.File;
 import java.io.FileReader;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
@@ -182,6 +183,21 @@ public class BaseController {
         return returnHeaders;
     }
 
+    private File getResourceFile(final String fileName)
+    {
+        URL url = this.getClass()
+                .getClassLoader()
+                .getResource(fileName);
+
+        if(url == null) {
+            throw new IllegalArgumentException(fileName + " is not found 1");
+        }
+
+        File file = new File(url.getFile());
+
+        return file;
+    }
+
     protected void processAndValidate(String onApiAction, String metadataTopic, Request request, Map<String, Object> requestBody) throws Exception {
         String mid = UUID.randomUUID().toString();
         String serviceMode = env.getProperty(SERVICE_MODE);
@@ -194,7 +210,7 @@ public class BaseController {
 
             System.out.println("create the oncheck payload");
             ObjectMapper mapper = new ObjectMapper();
-            File file = ResourceUtils.getFile("classpath:static/coverage_eligibility_oncheck.json");
+            File file = getResourceFile("static/coverage_eligibility_oncheck.json");
             Map<String, Object> map = mapper.readValue(file, Map.class);
             Map<String, Object> onHeaders = createOnActionHeaders(request.getHcxHeaders());
             //creating an on check payload
