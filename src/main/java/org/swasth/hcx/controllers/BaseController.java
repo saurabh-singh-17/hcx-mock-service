@@ -28,9 +28,8 @@ import org.swasth.hcx.service.HeaderAuditService;
 import org.swasth.jose.jwe.JweRequest;
 import org.swasth.jose.jwe.key.PrivateKeyLoader;
 import org.swasth.jose.jwe.key.PublicKeyLoader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.InputStream;
+
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
@@ -109,8 +108,9 @@ public class BaseController {
 
     protected Map<String, String> encryptPayload(String filePath, Map<String, Object> headers, Map<String, Object> payload) throws Exception{
         Map<String, String> encryptedObject;
-        File file = new File(filePath);
-        FileReader fileReader = new FileReader(file);
+        //File file = new File(filePath);
+        InputStream io = getFileAsIOStream(filePath);
+        Reader fileReader = new InputStreamReader(io);
         RSAPublicKey rsaPublicKey = PublicKeyLoader.loadPublicKeyFromX509Certificate(fileReader);
         JweRequest jweRequest = new JweRequest(headers, payload);
         jweRequest.encryptRequest(rsaPublicKey);
@@ -174,6 +174,7 @@ public class BaseController {
             if (headers.containsKey("x-hcx-error_details_test")) {
                 returnHeaders.put("x-hcx-error_details", headers.get("x-hcx-error_details_test"));
                 returnHeaders.remove("x-hcx-error_details_test");
+                returnHeaders.put("x-hcx-status", ERROR_STATUS);
             }
             if (headers.containsKey("x-hcx-debug_details_test")) {
                 returnHeaders.put("x-hcx-debug_details", headers.get("x-hcx-debug_details_test"));
@@ -203,8 +204,8 @@ public class BaseController {
         if(StringUtils.equalsIgnoreCase(serviceMode, GATEWAY)) {
             ClassLoader classLoader = this.getClass().getClassLoader();
             baseURL = classLoader.getResource("").getFile();
-            String publicKeyPath  = baseURL + "key/x509-self-signed-certificate.pem";
-            String privateKeyPath = baseURL + "key/x509-private-key.pem";
+            String publicKeyPath  =  "key/x509-self-signed-certificate.pem";
+            String privateKeyPath =  "key/x509-private-key.pem";
 
             System.out.println("create the oncheck payload");
             ObjectMapper mapper = new ObjectMapper();
