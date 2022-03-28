@@ -153,7 +153,7 @@ public class BaseController {
                 onCheckPayloadType = "jweResponse";
             }else if(returnHeaders.get("x-hcx-status") == Constants.ERROR_STATUS){
                 Map<String,String> error = new HashMap<>();
-                error.put("error",getRandomChestItem(Constants.RECIPIENT_ERROR_CODES));
+                error.put("code",getRandomChestItem(Constants.RECIPIENT_ERROR_CODES));
                 error.put("message","Error encountered");
                 error.put("trace",null);
                 returnHeaders.put("x-hcx-error_details",error);
