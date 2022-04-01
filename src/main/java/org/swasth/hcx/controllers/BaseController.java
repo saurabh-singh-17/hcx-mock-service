@@ -147,6 +147,7 @@ public class BaseController {
         returnHeaders.put("x-hcx-timestamp",currentTime.toString());
         returnHeaders.put("x-hcx-status", Constants.COMPLETE_STATUS);
         onCheckPayloadType = "jweResponse";
+
         if(headers.containsKey("x-hcx-test_random") == true){
             returnHeaders.remove("x-hcx-test_random");
             returnHeaders.put("x-hcx-status", getRandomChestItem(Constants.STATUS_RESPONSES));
@@ -167,21 +168,24 @@ public class BaseController {
             if (headers.containsKey("x-hcx-debug_flag_test")) {
                 returnHeaders.put("x-hcx-debug_flag", headers.get("x-hcx-debug_flag_test"));
                 returnHeaders.remove("x-hcx-debug_flag_test");
+                onCheckPayloadType = "protocolResponse";
             }
             if (headers.containsKey("x-hcx-status_test")) {
                 returnHeaders.put("x-hcx-status", headers.get("x-hcx-status_test"));
                 returnHeaders.remove("x-hcx-status_test");
+                onCheckPayloadType = "protocolResponse";
             }
             if (headers.containsKey("x-hcx-error_details_test")) {
                 returnHeaders.put("x-hcx-error_details", headers.get("x-hcx-error_details_test"));
                 returnHeaders.remove("x-hcx-error_details_test");
                 returnHeaders.put("x-hcx-status", ERROR_STATUS);
+                onCheckPayloadType = "protocolResponse";
             }
             if (headers.containsKey("x-hcx-debug_details_test")) {
                 returnHeaders.put("x-hcx-debug_details", headers.get("x-hcx-debug_details_test"));
                 returnHeaders.remove("x-hcx-debug_details_test");
+                onCheckPayloadType = "protocolResponse";
             }
-            onCheckPayloadType = "protocolResponse";
         }
         return returnHeaders;
     }
