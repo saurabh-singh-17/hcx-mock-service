@@ -146,6 +146,7 @@ public class BaseController {
         returnHeaders.put("x-hcx-api_call_id", UUID.randomUUID().toString());
         returnHeaders.put("x-hcx-timestamp",currentTime.toString());
         returnHeaders.put("x-hcx-status", Constants.COMPLETE_STATUS);
+        onCheckPayloadType = "jweResponse";
         if(headers.containsKey("x-hcx-test_random") == true){
             returnHeaders.remove("x-hcx-test_random");
             returnHeaders.put("x-hcx-status", getRandomChestItem(Constants.STATUS_RESPONSES));
