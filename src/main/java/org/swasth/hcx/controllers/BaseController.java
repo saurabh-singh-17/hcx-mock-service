@@ -214,7 +214,6 @@ public class BaseController {
             Map<String, Object> onHeaders = createOnActionHeaders(request.getHcxHeaders());
             //creating an on check payload
             System.out.println("onCheckPayloadType"+ onCheckPayloadType);
-            Thread.sleep(5000);
             if (onCheckPayloadType == "jweResponse") {
                 Map<String, String> encryptedOnPayload = encryptPayload(publicKeyPath, onHeaders, map);
                 sendOnAction(onApiAction,encryptedOnPayload);
