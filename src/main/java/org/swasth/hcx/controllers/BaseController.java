@@ -25,10 +25,11 @@ import org.swasth.hcx.exception.ServiceUnavailbleException;
 import org.swasth.hcx.utils.JSONUtils;
 import org.swasth.hcx.helpers.EventGenerator;
 import org.swasth.hcx.service.HeaderAuditService;
+import org.swasth.hcx.utils.OnActionCall;
 import org.swasth.jose.jwe.JweRequest;
 import org.swasth.jose.jwe.key.PrivateKeyLoader;
 import org.swasth.jose.jwe.key.PublicKeyLoader;
-
+import org.swasth.hcx.utils.OnActionCall.*;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -84,27 +85,6 @@ public class BaseController {
         }
     }
 
-    protected void sendOnAction(String onApiCall, Map<String,?> encryptedPayload) throws Exception{
-        HttpResponse<String> response = Unirest.post("http://a9dd63de91ee94d59847a1225da8b111-273954130.ap-south-1.elb.amazonaws.com:8080/auth/realms/swasth-health-claim-exchange/protocol/openid-connect/token")
-                .header("content-type", "application/x-www-form-urlencoded")
-                .field("client_id", "registry-frontend")
-                .field("username", "swasth_mock_payer@swasthapp.org")
-                .field("password", "Opensaber@123")
-                .field("grant_type", "password")
-                .asString();
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> responseBody = mapper.readValue(response.getBody(), Map.class);
-
-        HttpResponse<String> onActionResponse = Unirest.post(hcxBasePath + onApiCall)
-                .header("Authorization", "Bearer " + responseBody.get("access_token").toString())
-                .header("Content-Type", "application/json")
-                .body(encryptedPayload)
-                .asString();
-
-        Map<String, String> res = mapper.readValue(onActionResponse.getBody(), Map.class);
-        System.out.println("response "+ res);
-    }
-
 
     protected Map<String, String> encryptPayload(String filePath, Map<String, Object> headers, Map<String, Object> payload) throws Exception{
         Map<String, String> encryptedObject;
@@ -120,7 +100,8 @@ public class BaseController {
     }
 
     protected Map<String, Object> decryptPayload(String filePath, Map<String, String> payload) throws Exception{
-        FileReader fileReader = new FileReader(new File(filePath));
+        InputStream io = getFileAsIOStream(filePath);
+        Reader fileReader = new InputStreamReader(io);
         PemReader pemReader = new PemReader(fileReader);
         PemObject pemObject = pemReader.readPemObject();
         PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(pemObject.getContent());
@@ -128,6 +109,7 @@ public class BaseController {
         rsaPrivateKey = (RSAPrivateKey) factory.generatePrivate(privateKeySpec);
         JweRequest jweRequest = new JweRequest(payload);
         jweRequest.decryptRequest(rsaPrivateKey);
+        System.out.println("jew object created ");
         Map<String, Object> retrievedHeader = jweRequest.getHeaders();
         Map<String, Object> retrievedPayload = jweRequest.getPayload();
         Map<String, Object> returnObj = new HashMap<>();
@@ -147,7 +129,9 @@ public class BaseController {
         returnHeaders.put("x-hcx-timestamp",currentTime.toString());
         returnHeaders.put("x-hcx-status", Constants.COMPLETE_STATUS);
         onCheckPayloadType = "jweResponse";
-
+        if(headers.containsKey("x-hcx-delay") == true){
+            Thread.sleep((Long) headers.get("x-hcx-delay"));
+        }
         if(headers.containsKey("x-hcx-test_random") == true){
             returnHeaders.remove("x-hcx-test_random");
             returnHeaders.put("x-hcx-status", getRandomChestItem(Constants.STATUS_RESPONSES));
@@ -212,6 +196,17 @@ public class BaseController {
             String publicKeyPath  =  "key/x509-self-signed-certificate.pem";
             String privateKeyPath =  "key/x509-private-key.pem";
 
+            //checking for invalid encryption
+            try {
+                Map<String, String> pay = new HashMap<>();
+                pay.put("payload", (String) requestBody.get("payload"));
+                Map<String, Object> decodedPayload = decryptPayload(privateKeyPath, pay);
+                System.out.println("decryption successful");
+            }catch (Exception e){
+                System.out.println("decryption unsuccessful");
+                throw new ClientException(ErrorCodes.ERR_INVALID_ENCRYPTION,"Decryption unsuccessful");
+            }
+
             System.out.println("create the oncheck payload");
             ObjectMapper mapper = new ObjectMapper();
             InputStream file = getFileAsIOStream("static/coverage_eligibility_oncheck.json");
@@ -221,16 +216,12 @@ public class BaseController {
             System.out.println("onCheckPayloadType"+ onCheckPayloadType);
             if (onCheckPayloadType == "jweResponse") {
                 Map<String, String> encryptedOnPayload = encryptPayload(publicKeyPath, onHeaders, map);
-                sendOnAction(onApiAction,encryptedOnPayload);
+                OnActionCall.sendOnAction(hcxBasePath, onApiAction,encryptedOnPayload);
                 System.out.println("on check payload    " + encryptedOnPayload);
             }else{
-                sendOnAction(onApiAction,onHeaders);
+                OnActionCall.sendOnAction(hcxBasePath, onApiAction,onHeaders);
                 System.out.println("on check payload    " + onHeaders);
             }
-//            //creating a check payload for temp purpose
-//            Map<String, Object> map1 = mapper.readValue(new File(baseURL+"static/coverage_eligibility_check.json"), Map.class);
-//            Map<String,String> encryptedPayload1 = encryptPayload(publicKeyPath,request.getHcxHeaders(),map1);
-//            System.out.println("check payload    " + encryptedPayload1);
         }
     }
 
