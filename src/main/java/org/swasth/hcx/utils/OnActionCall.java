@@ -13,6 +13,7 @@ import java.util.Map;
 public class OnActionCall {
 
     public static void sendOnAction(String hcxBasePath, String onApiCall, Map<String, ?> encryptedPayload) throws Exception{
+        System.out.println("Timestamp before on_action call: "+ Calendar.getInstance().getTime());
         HttpResponse<String> response = Unirest.post("http://a9dd63de91ee94d59847a1225da8b111-273954130.ap-south-1.elb.amazonaws.com:8080/auth/realms/swasth-health-claim-exchange/protocol/openid-connect/token")
                 .header("content-type", "application/x-www-form-urlencoded")
                 .field("client_id", "registry-frontend")
