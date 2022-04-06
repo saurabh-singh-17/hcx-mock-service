@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.swasth.hcx.utils.Constants;
 
+import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.Calendar;
 import java.util.Date;
@@ -14,7 +15,7 @@ import java.util.Date;
 public class OnActionCall {
 
     public static void sendOnAction(String hcxBasePath, String onApiCall, Map<String, ?> encryptedPayload) throws Exception{
-        System.out.println("Timestamp before on_action call: "+ Calendar.getInstance().getTime());
+        System.out.println("Timestamp before on_action call: "+ new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()));
         HttpResponse<String> response = Unirest.post("http://a9dd63de91ee94d59847a1225da8b111-273954130.ap-south-1.elb.amazonaws.com:8080/auth/realms/swasth-health-claim-exchange/protocol/openid-connect/token")
                 .header("content-type", "application/x-www-form-urlencoded")
                 .field("client_id", "registry-frontend")
