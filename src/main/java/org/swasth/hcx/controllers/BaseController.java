@@ -130,7 +130,7 @@ public class BaseController {
         returnHeaders.put("x-hcx-status", Constants.COMPLETE_STATUS);
         onCheckPayloadType = "jweResponse";
         if(headers.containsKey("x-hcx-delay") == true){
-            Thread.sleep((Long) headers.get("x-hcx-delay"));
+            Thread.sleep(Long.parseLong(String.valueOf(headers.get("x-hcx-delay"))));
         }
         if(headers.containsKey("x-hcx-test_random") == true){
             returnHeaders.remove("x-hcx-test_random");
@@ -143,6 +143,7 @@ public class BaseController {
                 error.put("message","Error encountered");
                 error.put("trace",null);
                 returnHeaders.put("x-hcx-error_details",error);
+                returnHeaders.put("x-hcx-status", Constants.ERROR_STATUS);
                 onCheckPayloadType = "protocolResponse";
             }else if(returnHeaders.get("x-hcx-status") == Constants.REDIRECT_STATUS){
                 returnHeaders.put("x-hcx-redirect_to",UUID.randomUUID().toString());
@@ -162,7 +163,7 @@ public class BaseController {
             if (headers.containsKey("x-hcx-error_details_test")) {
                 returnHeaders.put("x-hcx-error_details", headers.get("x-hcx-error_details_test"));
                 returnHeaders.remove("x-hcx-error_details_test");
-                returnHeaders.put("x-hcx-status", ERROR_STATUS);
+                returnHeaders.put("x-hcx-status", Constants.ERROR_STATUS);
                 onCheckPayloadType = "protocolResponse";
             }
             if (headers.containsKey("x-hcx-debug_details_test")) {
