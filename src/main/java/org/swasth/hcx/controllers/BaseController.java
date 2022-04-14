@@ -196,12 +196,18 @@ public class BaseController {
             baseURL = classLoader.getResource("").getFile();
             String publicKeyPath  =  "key/x509-self-signed-certificate.pem";
             String privateKeyPath =  "key/x509-private-key.pem";
-
             //checking for invalid encryption
+            String name = "";
+            String gender = "";
             try {
                 Map<String, String> pay = new HashMap<>();
                 pay.put("payload", (String) requestBody.get("payload"));
                 Map<String, Object> decodedPayload = decryptPayload(privateKeyPath, pay);
+                ArrayList<Object> entries = (ArrayList<Object>) ((Map)decodedPayload.get("payload")).get("entry");
+                name = (String) ((Map)((ArrayList<Object>)((Map)((Map)entries.get(2)).get("resource")).get("name")).get(0)).put("text","abcd");
+                gender = (String) ((Map)((Map)entries.get(2)).get("resource")).get("gender");
+                name = "sree m";
+                gender = "male";
                 System.out.println("decryption successful");
             }catch (Exception e){
                 System.out.println("decryption unsuccessful");
@@ -210,9 +216,18 @@ public class BaseController {
 
             System.out.println("create the oncheck payload");
             ObjectMapper mapper = new ObjectMapper();
-            InputStream file = getFileAsIOStream("static/coverage_eligibility_oncheck.json");
+            InputStream file;
+            if(onApiAction ==  Constants.COVERAGE_ELIGIBILITY_ONCHECK) {
+                file = getFileAsIOStream("static/coverage_eligibility_oncheck.json");
+            }else{
+                file = getFileAsIOStream("static/claimresponse.json");
+            }
             Map<String, Object> map = mapper.readValue(file, Map.class);
+            ArrayList<Object> entries = (ArrayList<Object>) map.get("entry");
+            ((Map)((Map)((Map)entries.get(1)).get("resource")).get("patient")).put("display",name);
+            ((Map)((Map)entries.get(2)).get("resource")).put("gender",gender);
             Map<String, Object> onHeaders = createOnActionHeaders(request.getHcxHeaders());
+            System.out.println("on check map"+map);
             //creating an on check payload
             System.out.println("onCheckPayloadType"+ onCheckPayloadType);
             if (onCheckPayloadType == "jweResponse") {
@@ -223,6 +238,19 @@ public class BaseController {
                 OnActionCall.sendOnAction(hcxBasePath, onApiAction,onHeaders);
                 System.out.println("on check payload    " + onHeaders);
             }
+
+//            Map<String, Object> map1 = mapper.readValue(new File(baseURL+"static/coverage_eligibility_check.json"), Map.class);
+//            Map<String,Object> enc = request.getHcxHeaders();
+//            enc.put("x-hcx-api_call_id", UUID.randomUUID().toString());
+//            DateTime currentTime1 = DateTime.now();
+//            enc.put("x-hcx-timestamp",currentTime1.toString());
+//            enc.put("x-hcx-correlation_id",UUID.randomUUID().toString());
+//            enc.put("x-hcx-api_call_id",UUID.randomUUID().toString());
+//            enc.put("x-hcx-test_random","true");
+//            Map<String,String> encryptedPayload1 = encryptPayload(publicKeyPath,enc,map1);
+//            System.out.println("check payload    " + encryptedPayload1);
+//            Map<String, Object> decodedPayload = decryptPayload(privateKeyPath, encryptedPayload1);
+//            System.out.println("decioded payload" +  decodedPayload);
         }
     }
 
