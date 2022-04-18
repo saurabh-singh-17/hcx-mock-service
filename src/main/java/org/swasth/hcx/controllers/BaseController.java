@@ -215,10 +215,14 @@ public class BaseController {
             System.out.println("create the oncheck payload");
             ObjectMapper mapper = new ObjectMapper();
             InputStream file;
-            if(onApiAction ==  Constants.COVERAGE_ELIGIBILITY_ONCHECK) {
+            if(COVERAGE_ELIGIBILITY_ONCHECK.equalsIgnoreCase(onApiAction)) {
                 file = getFileAsIOStream("static/coverage_eligibility_oncheck.json");
-            }else{
+            }else if(CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)){
                 file = getFileAsIOStream("static/claimresponse.json");
+            }else if(PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)){
+                file = getFileAsIOStream("static/preauthresponse.json");
+            }else{//Default response set it to coverage
+                file = getFileAsIOStream("static/coverage_eligibility_oncheck.json");
             }
             Map<String, Object> map = mapper.readValue(file, Map.class);
             ArrayList<Object> entries = (ArrayList<Object>) map.get("entry");
