@@ -226,6 +226,7 @@ public class BaseController {
             }
             Map<String, Object> map = mapper.readValue(file, Map.class);
             ArrayList<Object> entries = (ArrayList<Object>) map.get("entry");
+            ((Map)((Map)((Map)entries.get(0)).get("resource")).get("subject")).put("display",name);
             ((Map)((Map)((Map)entries.get(1)).get("resource")).get("patient")).put("display",name);
             ((Map)((Map)entries.get(2)).get("resource")).put("gender",gender);
             Map<String, Object> onHeaders = createOnActionHeaders(request.getHcxHeaders());
