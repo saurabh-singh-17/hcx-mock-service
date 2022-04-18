@@ -206,8 +206,6 @@ public class BaseController {
                 ArrayList<Object> entries = (ArrayList<Object>) ((Map)decodedPayload.get("payload")).get("entry");
                 name = (String) ((Map)((ArrayList<Object>)((Map)((Map)entries.get(2)).get("resource")).get("name")).get(0)).put("text","abcd");
                 gender = (String) ((Map)((Map)entries.get(2)).get("resource")).get("gender");
-                name = "sree m";
-                gender = "male";
                 System.out.println("decryption successful");
             }catch (Exception e){
                 System.out.println("decryption unsuccessful");
