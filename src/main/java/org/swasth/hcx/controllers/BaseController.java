@@ -11,6 +11,7 @@ import org.bouncycastle.util.io.pem.PemReader;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +45,9 @@ import static org.swasth.hcx.utils.Constants.*;
 public class BaseController {
 
     @Autowired
+    private OnActionCall onActionCall;
+
+    @Autowired
     private EventGenerator eventGenerator;
 
     @Autowired
@@ -59,16 +63,11 @@ public class BaseController {
     @Value("${hcx_application.url}")
     private String hcxBasePath;
 
-    private String onCheckPayloadType;
-
 
     protected Response errorResponse(Response response, ErrorCodes code, java.lang.Exception e){
         ResponseError error= new ResponseError(code, e.getMessage(), e.getCause());
         response.setError(error);
         return response;
-    }
-    public static String getRandomChestItem(List<String> items) {
-        return items.get(new Random().nextInt(items.size()));
     }
 
     protected void processAndSendEvent(String apiAction, String metadataTopic, Request request) throws Exception {
@@ -80,27 +79,12 @@ public class BaseController {
         String metadataEvent = eventGenerator.generateMetadataEvent(mid, apiAction, request);
         System.out.println("Mode: " + serviceMode + " :: mid: " + mid + " :: Event: " + metadataEvent);
         if(StringUtils.equalsIgnoreCase(serviceMode, GATEWAY)) {
-            System.out.println("decoding the request");
-
+            System.out.println("Process and send event");
         }
     }
 
-
-    protected Map<String, String> encryptPayload(String filePath, Map<String, Object> headers, Map<String, Object> payload) throws Exception{
-        Map<String, String> encryptedObject;
-        //File file = new File(filePath);
-        InputStream io = getFileAsIOStream(filePath);
-        Reader fileReader = new InputStreamReader(io);
-        RSAPublicKey rsaPublicKey = PublicKeyLoader.loadPublicKeyFromX509Certificate(fileReader);
-        JweRequest jweRequest = new JweRequest(headers, payload);
-        jweRequest.encryptRequest(rsaPublicKey);
-        encryptedObject = jweRequest.getEncryptedObject();
-        return encryptedObject;
-
-    }
-
     protected Map<String, Object> decryptPayload(String filePath, Map<String, String> payload) throws Exception{
-        InputStream io = getFileAsIOStream(filePath);
+        InputStream io = onActionCall.getFileAsIOStream(filePath);
         Reader fileReader = new InputStreamReader(io);
         PemReader pemReader = new PemReader(fileReader);
         PemObject pemObject = pemReader.readPemObject();
@@ -116,75 +100,6 @@ public class BaseController {
         returnObj.put("headers",retrievedHeader);
         returnObj.put("payload",retrievedPayload);
         return returnObj;
-    }
-
-    protected Map<String, Object> createOnActionHeaders(Map<String, Object> headers) throws Exception{
-        Map<String, Object> returnHeaders =  new HashMap<>();
-        DateTime currentTime = DateTime.now();
-        returnHeaders.putAll(headers);
-        System.out.println("headers before" + headers);
-        returnHeaders.put("x-hcx-sender_code",headers.get("x-hcx-recipient_code"));
-        returnHeaders.put("x-hcx-recipient_code",headers.get("x-hcx-sender_code"));
-        returnHeaders.put("x-hcx-api_call_id", UUID.randomUUID().toString());
-        returnHeaders.put("x-hcx-timestamp",currentTime.toString());
-        returnHeaders.put("x-hcx-status", Constants.COMPLETE_STATUS);
-        onCheckPayloadType = "jweResponse";
-        if(headers.containsKey("x-hcx-delay") == true){
-            Thread.sleep(Long.parseLong(String.valueOf(headers.get("x-hcx-delay"))));
-        }
-        if(headers.containsKey("x-hcx-test_random") == true){
-            returnHeaders.remove("x-hcx-test_random");
-            returnHeaders.put("x-hcx-status", getRandomChestItem(Constants.STATUS_RESPONSES));
-            if(returnHeaders.get("x-hcx-status") == Constants.COMPLETE_STATUS || returnHeaders.get("x-hcx-status") == PARTIAL_STATUS) {
-                onCheckPayloadType = "jweResponse";
-            }else if(returnHeaders.get("x-hcx-status") == Constants.ERROR_STATUS){
-                Map<String,String> error = new HashMap<>();
-                error.put("code",getRandomChestItem(Constants.RECIPIENT_ERROR_CODES));
-                error.put("message","Error encountered");
-                error.put("trace",null);
-                returnHeaders.put("x-hcx-error_details",error);
-                returnHeaders.put("x-hcx-status", Constants.ERROR_STATUS);
-                onCheckPayloadType = "protocolResponse";
-            }else if(returnHeaders.get("x-hcx-status") == Constants.REDIRECT_STATUS){
-                returnHeaders.put("x-hcx-redirect_to",UUID.randomUUID().toString());
-                onCheckPayloadType = "protocolResponse";
-            }
-        }else {
-            if (headers.containsKey("x-hcx-debug_flag_test")) {
-                returnHeaders.put("x-hcx-debug_flag", headers.get("x-hcx-debug_flag_test"));
-                returnHeaders.remove("x-hcx-debug_flag_test");
-                onCheckPayloadType = "protocolResponse";
-            }
-            if (headers.containsKey("x-hcx-status_test")) {
-                returnHeaders.put("x-hcx-status", headers.get("x-hcx-status_test"));
-                returnHeaders.remove("x-hcx-status_test");
-                onCheckPayloadType = "protocolResponse";
-            }
-            if (headers.containsKey("x-hcx-error_details_test")) {
-                returnHeaders.put("x-hcx-error_details", headers.get("x-hcx-error_details_test"));
-                returnHeaders.remove("x-hcx-error_details_test");
-                returnHeaders.put("x-hcx-status", Constants.ERROR_STATUS);
-                onCheckPayloadType = "protocolResponse";
-            }
-            if (headers.containsKey("x-hcx-debug_details_test")) {
-                returnHeaders.put("x-hcx-debug_details", headers.get("x-hcx-debug_details_test"));
-                returnHeaders.remove("x-hcx-debug_details_test");
-                onCheckPayloadType = "protocolResponse";
-            }
-        }
-        return returnHeaders;
-    }
-
-    private InputStream getFileAsIOStream(final String fileName)
-    {
-        InputStream ioStream = this.getClass()
-                .getClassLoader()
-                .getResourceAsStream(fileName);
-
-        if (ioStream == null) {
-            throw new IllegalArgumentException(fileName + " is not found");
-        }
-        return ioStream;
     }
 
     protected void processAndValidate(String onApiAction, String metadataTopic, Request request, Map<String, Object> requestBody) throws Exception {
@@ -216,44 +131,21 @@ public class BaseController {
             ObjectMapper mapper = new ObjectMapper();
             InputStream file;
             if(COVERAGE_ELIGIBILITY_ONCHECK.equalsIgnoreCase(onApiAction)) {
-                file = getFileAsIOStream("static/coverage_eligibility_oncheck.json");
+                file = onActionCall.getFileAsIOStream("static/coverage_eligibility_oncheck.json");
             }else if(CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)){
-                file = getFileAsIOStream("static/claimresponse.json");
+                file = onActionCall.getFileAsIOStream("static/claimresponse.json");
             }else if(PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)){
-                file = getFileAsIOStream("static/preauthresponse.json");
+                file = onActionCall.getFileAsIOStream("static/preauthresponse.json");
             }else{//Default response set it to coverage
-                file = getFileAsIOStream("static/coverage_eligibility_oncheck.json");
+                file = onActionCall.getFileAsIOStream("static/coverage_eligibility_oncheck.json");
             }
             Map<String, Object> map = mapper.readValue(file, Map.class);
             ArrayList<Object> entries = (ArrayList<Object>) map.get("entry");
             ((Map)((Map)((Map)entries.get(0)).get("resource")).get("subject")).put("display",name);
             ((Map)((Map)((Map)entries.get(1)).get("resource")).get("patient")).put("display",name);
             ((Map)((Map)entries.get(2)).get("resource")).put("gender",gender);
-            Map<String, Object> onHeaders = createOnActionHeaders(request.getHcxHeaders());
-            System.out.println("on check map"+map);
-            //creating an on check payload
-            System.out.println("onCheckPayloadType"+ onCheckPayloadType);
-            if (onCheckPayloadType == "jweResponse") {
-                Map<String, String> encryptedOnPayload = encryptPayload(publicKeyPath, onHeaders, map);
-                OnActionCall.sendOnAction(hcxBasePath, onApiAction,encryptedOnPayload);
-                System.out.println("on check payload    " + encryptedOnPayload);
-            }else{
-                OnActionCall.sendOnAction(hcxBasePath, onApiAction,onHeaders);
-                System.out.println("on check payload    " + onHeaders);
-            }
+            onActionCall.createOnActionHeaders(request.getHcxHeaders(),map, onApiAction, publicKeyPath);
 
-//            Map<String, Object> map1 = mapper.readValue(new File(baseURL+"static/coverage_eligibility_check.json"), Map.class);
-//            Map<String,Object> enc = request.getHcxHeaders();
-//            enc.put("x-hcx-api_call_id", UUID.randomUUID().toString());
-//            DateTime currentTime1 = DateTime.now();
-//            enc.put("x-hcx-timestamp",currentTime1.toString());
-//            enc.put("x-hcx-correlation_id",UUID.randomUUID().toString());
-//            enc.put("x-hcx-api_call_id",UUID.randomUUID().toString());
-//            enc.put("x-hcx-test_random","true");
-//            Map<String,String> encryptedPayload1 = encryptPayload(publicKeyPath,enc,map1);
-//            System.out.println("check payload    " + encryptedPayload1);
-//            Map<String, Object> decodedPayload = decryptPayload(privateKeyPath, encryptedPayload1);
-//            System.out.println("decioded payload" +  decodedPayload);
         }
     }
 
@@ -261,10 +153,9 @@ public class BaseController {
         Response response = new Response();
         try {
             Request request = new Request(requestBody);
-
             setResponseParams(request, response);
-            //processAndSendEvent(apiAction, kafkaTopic, request);
             processAndValidate(onApiAction, kafkaTopic, request, requestBody);
+            System.out.println("http respond sent");
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             System.out.println("error   " + e);
