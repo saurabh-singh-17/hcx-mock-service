@@ -155,7 +155,6 @@ public class BaseController {
             ((Map)((Map)((Map)entries.get(0)).get("resource")).get("subject")).put("display",name);
             ((Map)((Map)((Map)entries.get(1)).get("resource")).get("patient")).put("display",name);
             ((Map)((Map)entries.get(2)).get("resource")).put("gender",gender);
-            Map<String, Object> map1 = mapper.readValue(new File(baseURL+"static/coverage_eligibility_check.json"), Map.class);
             onActionCall.createOnActionHeaders(request.getHcxHeaders(),map, onApiAction, publicKeyPath);
 
         }
