@@ -23,6 +23,7 @@ public class CoverageEligibilityTests extends BaseSpec {
       String requestBody = getRequestBody();
       MvcResult mvcResult = mockMvc.perform(post("/v1/coverageeligibility/check").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
       MockHttpServletResponse response = mvcResult.getResponse();
+      System.out.println("aaa  " + mvcResult.getResponse().getContentAsString());
       int status = response.getStatus();
       assertEquals(202, status);
     }
