@@ -47,7 +47,7 @@ public class OnActionCall {
         return ioStream;
     }
 
-    protected Map<String, String> encryptPayload(String filePath, Map<String, Object> headers, Map<String, Object> payload) throws Exception{
+    public Map<String, String> encryptPayload(String filePath, Map<String, Object> headers, Map<String, Object> payload) throws Exception{
         Map<String, String> encryptedObject;
         //File file = new File(filePath);
         InputStream io = getFileAsIOStream(filePath);

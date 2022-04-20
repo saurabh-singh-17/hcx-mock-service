@@ -21,7 +21,6 @@ public class CoverageEligibilityController extends BaseController {
 
     @RequestMapping(value = "/check", method = RequestMethod.POST)
     public ResponseEntity<Object> checkCoverageEligibility(@RequestBody Map<String, Object> requestBody) throws Exception {
-        System.out.println("requestbody" + requestBody);
         return validateReqAndPushToKafka(requestBody, Constants.COVERAGE_ELIGIBILITY_CHECK, Constants.COVERAGE_ELIGIBILITY_ONCHECK, kafkaTopic);
     }
 

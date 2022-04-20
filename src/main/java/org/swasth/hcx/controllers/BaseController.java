@@ -70,6 +70,18 @@ public class BaseController {
         return response;
     }
 
+    protected InputStream getFileAsIOStream(final String fileName)
+    {
+        InputStream ioStream = this.getClass()
+                .getClassLoader()
+                .getResourceAsStream(fileName);
+
+        if (ioStream == null) {
+            throw new IllegalArgumentException(fileName + " is not found");
+        }
+        return ioStream;
+    }
+
     protected void processAndSendEvent(String apiAction, String metadataTopic, Request request) throws Exception {
         String mid = UUID.randomUUID().toString();
         String serviceMode = env.getProperty(SERVICE_MODE);
@@ -84,7 +96,7 @@ public class BaseController {
     }
 
     protected Map<String, Object> decryptPayload(String filePath, Map<String, String> payload) throws Exception{
-        InputStream io = onActionCall.getFileAsIOStream(filePath);
+        InputStream io = getFileAsIOStream(filePath);
         Reader fileReader = new InputStreamReader(io);
         PemReader pemReader = new PemReader(fileReader);
         PemObject pemObject = pemReader.readPemObject();
@@ -93,7 +105,6 @@ public class BaseController {
         rsaPrivateKey = (RSAPrivateKey) factory.generatePrivate(privateKeySpec);
         JweRequest jweRequest = new JweRequest(payload);
         jweRequest.decryptRequest(rsaPrivateKey);
-        System.out.println("jew object created ");
         Map<String, Object> retrievedHeader = jweRequest.getHeaders();
         Map<String, Object> retrievedPayload = jweRequest.getPayload();
         Map<String, Object> returnObj = new HashMap<>();
@@ -116,14 +127,14 @@ public class BaseController {
             String gender = "";
             try {
                 Map<String, String> pay = new HashMap<>();
-                pay.put("payload", (String) requestBody.get("payload"));
+                pay.put("payload", String.valueOf(requestBody.get("payload")));
                 Map<String, Object> decodedPayload = decryptPayload(privateKeyPath, pay);
                 ArrayList<Object> entries = (ArrayList<Object>) ((Map)decodedPayload.get("payload")).get("entry");
-                name = (String) ((Map)((ArrayList<Object>)((Map)((Map)entries.get(2)).get("resource")).get("name")).get(0)).put("text","abcd");
+                name = (String) ((Map)((ArrayList<Object>)((Map)((Map)entries.get(2)).get("resource")).get("name")).get(0)).get("text");
                 gender = (String) ((Map)((Map)entries.get(2)).get("resource")).get("gender");
-                System.out.println("decryption successful");
+                System.out.println("decryption successful" + name + gender);
             }catch (Exception e){
-                System.out.println("decryption unsuccessful");
+                System.out.println("decryption unsuccessful" + e.getMessage().toString());
                 throw new ClientException(ErrorCodes.ERR_INVALID_ENCRYPTION,"Decryption unsuccessful");
             }
 
@@ -131,19 +142,20 @@ public class BaseController {
             ObjectMapper mapper = new ObjectMapper();
             InputStream file;
             if(COVERAGE_ELIGIBILITY_ONCHECK.equalsIgnoreCase(onApiAction)) {
-                file = onActionCall.getFileAsIOStream("static/coverage_eligibility_oncheck.json");
+                file = getFileAsIOStream("static/coverage_eligibility_oncheck.json");
             }else if(CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)){
-                file = onActionCall.getFileAsIOStream("static/claimresponse.json");
+                file = getFileAsIOStream("static/claimresponse.json");
             }else if(PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)){
-                file = onActionCall.getFileAsIOStream("static/preauthresponse.json");
+                file = getFileAsIOStream("static/preauthresponse.json");
             }else{//Default response set it to coverage
-                file = onActionCall.getFileAsIOStream("static/coverage_eligibility_oncheck.json");
+                file = getFileAsIOStream("static/coverage_eligibility_oncheck.json");
             }
             Map<String, Object> map = mapper.readValue(file, Map.class);
             ArrayList<Object> entries = (ArrayList<Object>) map.get("entry");
             ((Map)((Map)((Map)entries.get(0)).get("resource")).get("subject")).put("display",name);
             ((Map)((Map)((Map)entries.get(1)).get("resource")).get("patient")).put("display",name);
             ((Map)((Map)entries.get(2)).get("resource")).put("gender",gender);
+            Map<String, Object> map1 = mapper.readValue(new File(baseURL+"static/coverage_eligibility_check.json"), Map.class);
             onActionCall.createOnActionHeaders(request.getHcxHeaders(),map, onApiAction, publicKeyPath);
 
         }
