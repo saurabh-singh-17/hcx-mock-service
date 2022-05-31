@@ -95,7 +95,7 @@
       "code": "institutional"
     } ]
   },
-  "use": "preauthorization",
+  "use": "claim",
   "patient": {
     "reference": "Patient/1353519",
     "type": "Patient"

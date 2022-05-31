@@ -125,7 +125,7 @@ public class BaseController {
             //checking for invalid encryption
             String name = "";
             String gender = "";
-            Number money = 0;
+            Double money = Double.valueOf(0);
             try {
                 Map<String, String> pay = new HashMap<>();
                 pay.put("payload", String.valueOf(requestBody.get("payload")));
@@ -133,9 +133,10 @@ public class BaseController {
                 ArrayList<Object> entries = (ArrayList<Object>) ((Map)decodedPayload.get("payload")).get("entry");
                 name = (String) ((Map)((ArrayList<Object>)((Map)((Map)entries.get(2)).get("resource")).get("name")).get(0)).get("text");
                 gender = (String) ((Map)((Map)entries.get(2)).get("resource")).get("gender");
-                if(CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)){
+                if(CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction) || PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)){
                     System.out.println("money" + money);
-                    money = (Number) ((Map)((Map)((Map)entries.get(3)).get("resource")).get("total")).get("value");
+                    System.out.println("extracted money" + ((Map)((Map)((Map)entries.get(3)).get("resource")).get("total")).get("value"));
+                    money = Double.parseDouble(String.valueOf(((Map)((Map)((Map)entries.get(3)).get("resource")).get("total")).get("value")));
                     System.out.println("money" + money);
                 }
                 System.out.println("decryption successful" + name + gender);
@@ -161,15 +162,19 @@ public class BaseController {
             ((Map)((Map)((Map)entries.get(0)).get("resource")).get("subject")).put("display",name);
             ((Map)((Map)((Map)entries.get(1)).get("resource")).get("patient")).put("display",name);
             ((Map)((Map)entries.get(2)).get("resource")).put("gender",gender);
-            if(CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
+            if(CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction) || PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
                 //generating random number between 70 to 100
                 Random r = new Random();
                 int low = 10;
                 int high = 100;
                 int result = r.nextInt(high - low) + low;
-                Number payment = Math.round(result * (double) money / 100);
-                ((Map) ((Map) ((ArrayList<Object>) ((Map) ((Map) entries.get(1)).get("resource")).get("total")).get(0)).get("amount")).put("value", money);
-                ((Map) ((Map) ((Map) ((Map) entries.get(1)).get("resource")).get("payment")).get("amount")).put("value", payment);
+                double copay = Math.round(money * 0.1);
+                double remaining = money - copay;
+                double payment = Math.round(result * (double) remaining / 100);
+                double totalpay = payment + copay;
+                ((Map) ((Map) ((ArrayList<Object>) ((Map) ((Map) entries.get(1)).get("resource")).get("total")).get(0)).get("amount")).put("value", String.valueOf(money));
+                ((Map) ((Map) ((ArrayList<Object>) ((Map) ((Map) entries.get(1)).get("resource")).get("total")).get(1)).get("amount")).put("value", String.valueOf(payment));
+                ((Map) ((Map) ((Map) ((Map) entries.get(1)).get("resource")).get("payment")).get("amount")).put("value",  String.valueOf(totalpay));
             }
             onActionCall.createOnActionHeaders(request.getHcxHeaders(),map, onApiAction, publicKeyPath);
 

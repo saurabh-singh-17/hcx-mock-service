@@ -21,7 +21,7 @@ public class PreAuthTests extends BaseSpec {
 
     @Test
     public void check_preauth_submit_success_scenario() throws Exception {
-        String requestBody = getRequestBody();
+        String requestBody = getRequestBodyClaims();
         MvcResult mvcResult = mockMvc.perform(post("/v1/preauth/submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
@@ -39,7 +39,7 @@ public class PreAuthTests extends BaseSpec {
 
     @Test
     public void check_preauth_on_submit_success_scenario() throws Exception {
-        String requestBody = getRequestBody();
+        String requestBody = getRequestBodyClaims();
         MvcResult mvcResult = mockMvc.perform(post("/v1/preauth/on_submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
