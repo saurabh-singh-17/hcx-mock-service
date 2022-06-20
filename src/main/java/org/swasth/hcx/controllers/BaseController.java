@@ -165,7 +165,7 @@ public class BaseController {
             if(CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction) || PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
                 //generating random number between 70 to 100
                 Random r = new Random();
-                int low = 10;
+                int low = 70;
                 int high = 100;
                 int result = r.nextInt(high - low) + low;
                 double copay = Math.round(money * 0.1);
