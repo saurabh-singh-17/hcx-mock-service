@@ -55,3 +55,4 @@ redirect:
 #hcx base url
 hcx_application:
   url: ${base_url:http://staging-hcx.swasth.app/api}
+  api_version: ${version:v1}
