@@ -1,6 +1,7 @@
 package org.swasth.hcx.controllers.v1;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
@@ -19,10 +20,14 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 public class CommunicationControllerTests extends BaseSpec {
+
+    @Value("${hcx_application.api_version}")
+    private String api_version;
+
     @Test
     public void check_communication_request_success_scenario() throws Exception {
         String requestBody = getRequestBody();
-        MvcResult mvcResult = mockMvc.perform(post("/v1/communication/request").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/"+api_version+"/communication/request").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
         assertEquals(202, status);
@@ -31,7 +36,7 @@ public class CommunicationControllerTests extends BaseSpec {
     @Test
     public void check_communication_request_exception_scenario() throws Exception {
         String requestBody = getExceptionRequestBody();
-        MvcResult mvcResult = mockMvc.perform(post("/v1/communication/request").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/"+api_version+"/communication/request").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
         assertEquals(500, status);
@@ -40,7 +45,7 @@ public class CommunicationControllerTests extends BaseSpec {
     @Test
     public void check_communication_on_request_success_scenario() throws Exception {
         String requestBody = getRequestBody();
-        MvcResult mvcResult = mockMvc.perform(post("/v1/communication/on_request").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/"+api_version+"/communication/on_request").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
         assertEquals(202, status);
@@ -49,7 +54,7 @@ public class CommunicationControllerTests extends BaseSpec {
     @Test
     public void check_communication_on_request_exception_scenario() throws Exception {
         String requestBody = getExceptionRequestBody();
-        MvcResult mvcResult = mockMvc.perform(post("/v1/communication/on_request").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/"+api_version+"/communication/on_request").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
         assertEquals(500, status);

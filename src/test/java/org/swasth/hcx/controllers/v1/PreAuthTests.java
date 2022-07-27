@@ -1,6 +1,7 @@
 package org.swasth.hcx.controllers.v1;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
@@ -19,10 +20,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 public class PreAuthTests extends BaseSpec {
 
+    @Value("${hcx_application.api_version}")
+    private String api_version;
+
     @Test
     public void check_preauth_submit_success_scenario() throws Exception {
         String requestBody = getRequestBodyClaims();
-        MvcResult mvcResult = mockMvc.perform(post("/v1/preauth/submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/"+api_version+"/preauth/submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
         assertEquals(202, status);
@@ -31,7 +35,7 @@ public class PreAuthTests extends BaseSpec {
     @Test
     public void check_preauth_submit_exception_scenario() throws Exception {
         String requestBody = getExceptionRequestBody();
-        MvcResult mvcResult = mockMvc.perform(post("/v1/preauth/submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/"+api_version+"/preauth/submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
         assertEquals(500, status);
@@ -40,7 +44,7 @@ public class PreAuthTests extends BaseSpec {
     @Test
     public void check_preauth_on_submit_success_scenario() throws Exception {
         String requestBody = getRequestBodyClaims();
-        MvcResult mvcResult = mockMvc.perform(post("/v1/preauth/on_submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/"+api_version+"/preauth/on_submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
         assertEquals(202, status);
@@ -49,7 +53,7 @@ public class PreAuthTests extends BaseSpec {
     @Test
     public void check_preauth_on_submit_exception_scenario() throws Exception {
         String requestBody = getExceptionRequestBody();
-        MvcResult mvcResult = mockMvc.perform(post("/v1/preauth/on_submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/"+api_version+"/preauth/on_submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
         assertEquals(500, status);

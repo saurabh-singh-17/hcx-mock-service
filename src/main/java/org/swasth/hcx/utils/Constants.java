@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Constants {
 
-    public static final String VERSION_PREFIX = "/v1";
+    public static final String VERSION_PREFIX = "/v0.7";
 
     // Coverage Eligibility APIs
     public static final String COVERAGE_ELIGIBILITY_CHECK = VERSION_PREFIX + "/coverageeligibility/check";

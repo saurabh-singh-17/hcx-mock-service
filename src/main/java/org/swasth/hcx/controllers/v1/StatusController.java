@@ -21,7 +21,7 @@ import java.util.Map;
 import static org.swasth.hcx.utils.Constants.*;
 
 @RestController()
-@RequestMapping(value = "/v1/hcx")
+@RequestMapping(value = "/"+ "${hcx_application.api_version}" + "/hcx")
 public class StatusController extends BaseController {
 
     @Value("${kafka.topic.status}")

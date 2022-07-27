@@ -1,6 +1,7 @@
 package org.swasth.hcx.controllers.v1;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
@@ -18,10 +19,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 public class CoverageEligibilityTests extends BaseSpec {
 
+    @Value("${hcx_application.api_version}")
+    private String api_version;
+
     @Test
     public void check_coverage_eligibility_success_scenario() throws Exception {
       String requestBody = getRequestBody();
-      MvcResult mvcResult = mockMvc.perform(post("/v1/coverageeligibility/check").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+      MvcResult mvcResult = mockMvc.perform(post("/"+ api_version + "/coverageeligibility/check").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
       MockHttpServletResponse response = mvcResult.getResponse();
       System.out.println("aaa  " + mvcResult.getResponse().getContentAsString());
       int status = response.getStatus();
@@ -31,7 +35,7 @@ public class CoverageEligibilityTests extends BaseSpec {
     @Test
     public void check_coverage_eligibility_exception_scenario() throws Exception {
         String requestBody = getExceptionRequestBody();
-        MvcResult mvcResult = mockMvc.perform(post("/v1/coverageeligibility/check").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/"+ api_version + "/coverageeligibility/check").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
         assertEquals(500, status);
@@ -40,7 +44,7 @@ public class CoverageEligibilityTests extends BaseSpec {
     @Test
     public void on_check_coverage_eligibility_success_scenario() throws Exception {
         String requestBody = getRequestBody();
-        MvcResult mvcResult = mockMvc.perform(post("/v1/coverageeligibility/on_check").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/"+ api_version + "/coverageeligibility/on_check").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         System.out.println("response ce " + mvcResult.getResponse().getContentAsString());
         int status = response.getStatus();
@@ -50,7 +54,7 @@ public class CoverageEligibilityTests extends BaseSpec {
     @Test
     public void on_check_coverage_eligibility_exception_scenario() throws Exception {
         String requestBody = getExceptionRequestBody();
-        MvcResult mvcResult = mockMvc.perform(post("/v1/coverageeligibility/on_check").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/"+ api_version + "/coverageeligibility/on_check").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
         assertEquals(500, status);

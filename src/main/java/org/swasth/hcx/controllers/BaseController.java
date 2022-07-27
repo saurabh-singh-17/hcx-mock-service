@@ -124,8 +124,13 @@ public class BaseController {
             String publicKeyPath  =  "key/x509-self-signed-certificate.pem";
             String privateKeyPath =  "key/x509-private-key.pem";
             if(request.getHcxHeaders().containsKey("x-hcx-get_object")){
-                Map<String,Object> map = (Map<String, Object>) request.getHcxHeaders().get("x-hcx-get_object");
-                onActionCall.createOnActionHeaders(request.getHcxHeaders(),map, onApiAction, publicKeyPath);
+                Map<String, Object> map_return;
+                try{
+                    map_return = (Map<String, Object>) request.getHcxHeaders().get("x-hcx-get_object");
+                } catch (Exception e) {
+                    map_return = new ObjectMapper().readValue((String) request.getHcxHeaders().get("x-hcx-get_object"), HashMap.class);
+                }
+                onActionCall.createOnActionHeaders(request.getHcxHeaders(),map_return, onApiAction, publicKeyPath);
             }else {
                 //checking for invalid encryption
                 String name = "";

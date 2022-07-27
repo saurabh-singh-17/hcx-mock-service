@@ -9,7 +9,7 @@ import org.swasth.hcx.utils.Constants;
 import java.util.Map;
 
 @RestController()
-@RequestMapping(value = "/v1/preauth")
+@RequestMapping(value = "/"+ "${hcx_application.api_version}" + "/preauth")
 public class PreAuthController extends BaseController {
 
     @Value("${kafka.topic.preauth}")

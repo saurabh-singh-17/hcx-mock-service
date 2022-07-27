@@ -13,7 +13,7 @@ import org.swasth.hcx.utils.Constants;
 import java.util.Map;
 
 @RestController()
-@RequestMapping(value = "/v1/coverageeligibility")
+@RequestMapping(value = "/"+ "${hcx_application.api_version}" +"/coverageeligibility")
 public class CoverageEligibilityController extends BaseController {
 
     @Value("${kafka.topic.coverageeligibility}")

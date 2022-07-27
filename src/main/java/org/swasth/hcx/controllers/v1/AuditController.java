@@ -16,7 +16,7 @@ import org.swasth.hcx.service.HeaderAuditService;
 
 
 @RestController
-@RequestMapping("/v1/audit")
+@RequestMapping("/"+ "${hcx_application.api_version}"+"/audit")
 public class AuditController {
 
 	private final HeaderAuditService service;

@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
@@ -27,9 +28,14 @@ import org.swasth.hcx.controllers.BaseSpec;
 
 public class AuditControllerTests extends BaseSpec{
 
+
+    @Value("${hcx_application.api_version}")
+    private String api_version;
+
+
     @Test
     public void audit_search_success_scenario() throws Exception {
-        String uri = "/v1/audit/search";
+        String uri = "/"+ api_version + "/audit/search";
         SearchRequestDTO searchrequest = new SearchRequestDTO();
         HashMap<String,String> filters = new HashMap<String, String>();
         filters.put("status","submitted");

@@ -9,7 +9,7 @@ import org.swasth.hcx.utils.Constants;
 import java.util.Map;
 
 @RestController()
-@RequestMapping(value = "/v1/paymentnotice")
+@RequestMapping(value =  "/"+ "${hcx_application.api_version}" + "/paymentnotice")
 public class PaymentsController extends BaseController {
 
     @Value("${kafka.topic.payment}")

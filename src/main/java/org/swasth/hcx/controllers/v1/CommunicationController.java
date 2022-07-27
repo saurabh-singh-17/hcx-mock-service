@@ -12,7 +12,7 @@ import org.swasth.hcx.controllers.BaseController;
 import java.util.Map;
 
 @RestController()
-@RequestMapping(value = "/v1/communication")
+@RequestMapping(value =  "/"+ "${hcx_application.api_version}"+ "/communication")
 public class CommunicationController extends BaseController {
 
     @Value("${kafka.topic.communication}")

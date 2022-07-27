@@ -1,6 +1,7 @@
 package org.swasth.hcx.controllers.v1;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
@@ -18,11 +19,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 
 public class PredeterminationControllerTests extends BaseSpec {
-  
-  @Test
+
+    @Value("${hcx_application.api_version}")
+    private String api_version;
+
+
+    @Test
   public void check_predetermination_submit_success_scenario() throws Exception {
       String requestBody = getRequestBody();
-      MvcResult mvcResult = mockMvc.perform(post("/v1/predetermination/submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+      MvcResult mvcResult = mockMvc.perform(post("/"+api_version+"/predetermination/submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
       MockHttpServletResponse response = mvcResult.getResponse();
       int status = response.getStatus();
       assertEquals(202, status);
@@ -31,7 +36,7 @@ public class PredeterminationControllerTests extends BaseSpec {
   @Test
   public void check_predetermination_submit_exception_scenario() throws Exception {
       String requestBody = getExceptionRequestBody();
-      MvcResult mvcResult = mockMvc.perform(post("/v1/predetermination/submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+      MvcResult mvcResult = mockMvc.perform(post("/"+api_version+"/predetermination/submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
       MockHttpServletResponse response = mvcResult.getResponse();
       int status = response.getStatus();
       assertEquals(500, status);
@@ -40,7 +45,7 @@ public class PredeterminationControllerTests extends BaseSpec {
   @Test
   public void check_predetermination_on_submit_success_scenario() throws Exception {
       String requestBody = getRequestBody();
-      MvcResult mvcResult = mockMvc.perform(post("/v1/predetermination/on_submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+      MvcResult mvcResult = mockMvc.perform(post("/"+api_version+"/predetermination/on_submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
       MockHttpServletResponse response = mvcResult.getResponse();
       int status = response.getStatus();
       assertEquals(202, status);
@@ -49,7 +54,7 @@ public class PredeterminationControllerTests extends BaseSpec {
   @Test
   public void check_predetermination_on_submit_exception_scenario() throws Exception {
       String requestBody = getExceptionRequestBody();
-      MvcResult mvcResult = mockMvc.perform(post("/v1/predetermination/on_submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+      MvcResult mvcResult = mockMvc.perform(post("/"+api_version+"/predetermination/on_submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
       MockHttpServletResponse response = mvcResult.getResponse();
       int status = response.getStatus();
       assertEquals(500, status);

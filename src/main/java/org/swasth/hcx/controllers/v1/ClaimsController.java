@@ -10,7 +10,7 @@ import org.swasth.hcx.utils.Constants;
 import java.util.Map;
 
 @RestController()
-@RequestMapping(value = "/v1/claim")
+@RequestMapping(value =  "/"+ "${hcx_application.api_version}"+"/claim")
 public class ClaimsController extends BaseController {
 
     @Value("${kafka.topic.claim}")

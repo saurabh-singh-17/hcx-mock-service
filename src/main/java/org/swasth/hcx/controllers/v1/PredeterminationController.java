@@ -12,7 +12,7 @@ import org.swasth.hcx.controllers.BaseController;
 import java.util.Map;
 
 @RestController()
-@RequestMapping(value = "/v1/predetermination")
+@RequestMapping(value = "/"+ "${hcx_application.api_version}" + "/predetermination")
 public class PredeterminationController extends BaseController {
 
     @Value("${kafka.topic.predetermination}")
