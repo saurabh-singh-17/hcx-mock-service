@@ -63,9 +63,9 @@ public class OnActionCall {
     public void createOnActionHeaders(Map<String, Object> headers, Map<String, Object> map, String onApiAction, String publicKeyPath) throws Exception{
 
         //changing the onApiAction to match the version from application.yaml
-
+        System.out.println("Commencing work");
         onApiAction = "/" + env.getProperty("hcx_application.api_version")+ "/" + onApiAction.split("/")[2] + "/" + onApiAction.split("/")[3];
-        System.out.println("onApiAction" + onApiAction);
+        System.out.println("onApiAction" + onApiAction + " " + env.getProperty("hcx_application.token_url"));
                 Map<String, Object> returnHeaders =  new HashMap<>();
         DateTime currentTime = DateTime.now();
         returnHeaders.putAll(headers);
@@ -147,6 +147,7 @@ public class OnActionCall {
         System.out.println("version" + env.getProperty("hcx_application.api_version"));
         System.out.println("user"+  env.getProperty("hcx_application.user"));
         Map<String, String> responseBody = mapper.readValue(response.getBody(), Map.class);
+        System.out.println("access token "+ responseBody.get("access_token"));
         HttpResponse<String> onActionResponse = Unirest.post(env.getProperty("hcx_application.url") + onApiCall)
                 .header("Authorization", "Bearer " + responseBody.get("access_token").toString())
                 .header("Content-Type", "application/json")

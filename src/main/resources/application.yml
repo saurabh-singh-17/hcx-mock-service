@@ -56,6 +56,7 @@ redirect:
 hcx_application:
   url: ${base_url:http://staging-hcx.swasth.app/api}
   api_version: ${version:v1}
-  user: ${email:swasth_mock_payer@gmail.com}
+  user: ${email:swasth_mock_payer@swasthapp.org}
   password: ${pass:Opensaber@123}
   token_url: ${url:http://a9dd63de91ee94d59847a1225da8b111-273954130.ap-south-1.elb.amazonaws.com:8080/auth/realms/swasth-health-claim-exchange/protocol/openid-connect/token}
+
