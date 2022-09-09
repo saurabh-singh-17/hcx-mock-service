@@ -2,6 +2,7 @@ package org.swasth.hcx.controllers.v1;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
@@ -24,10 +25,13 @@ import static org.swasth.hcx.utils.Constants.HCX_SEARCH;
 
 public class SearchControllerTest extends BaseSpec {
 
+    @Value("${hcx_application.api_version}")
+    private String api_version;
+
     @Test
     public void searchBadRequest() throws Exception {
         String requestBody = getSearchBadRequest();
-        MvcResult mvcResult = mockMvc.perform(post(HCX_SEARCH).content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/"+ api_version + "/hcx/search").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
         assertEquals(400, status);
@@ -42,7 +46,7 @@ public class SearchControllerTest extends BaseSpec {
     @Test
     public void searchSuccess() throws Exception {
         String requestBody = getSearchRequest();
-        MvcResult mvcResult = mockMvc.perform(post(HCX_SEARCH).content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/"+ api_version + "/hcx/search").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
         assertEquals(202, status);
@@ -57,7 +61,7 @@ public class SearchControllerTest extends BaseSpec {
     @Test
     public void onSearchBadRequest() throws Exception {
         String requestBody = getOnSearchBadRequest();
-        MvcResult mvcResult = mockMvc.perform(post(HCX_ON_SEARCH).content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/"+ api_version + "/hcx/on_search").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
         assertEquals(400, status);
@@ -72,7 +76,7 @@ public class SearchControllerTest extends BaseSpec {
     @Test
     public void onSearchSuccess() throws Exception {
         String requestBody = getOnSearchRequest();
-        MvcResult mvcResult = mockMvc.perform(post(HCX_ON_SEARCH).content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/"+ api_version + "/hcx/on_search").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
         MockHttpServletResponse response = mvcResult.getResponse();
         int status = response.getStatus();
         assertEquals(202, status);
