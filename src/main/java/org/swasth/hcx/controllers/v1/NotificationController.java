@@ -19,7 +19,7 @@ public class NotificationController extends BaseController {
     @Autowired
     private NotificationService notificationService;
 
-    @PostMapping(Constants.NOTIFICATION_SUBSCRIBE)
+    @PostMapping(value = "/" + "${hcx_application.api_version}" + Constants.NOTIFICATION_SUBSCRIBE)
     public ResponseEntity<Object> notificationSubscribe(@RequestBody Map<String, Object> requestBody) throws Exception {
         Request request = new Request(requestBody);
         Response response = new Response();
