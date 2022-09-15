@@ -108,4 +108,14 @@ public class Constants {
     public static final String COMPLETE_STATUS = "response.complete";
     public static final List<String> STATUS_RESPONSES = Arrays.asList("response.complete","response.partial","response.error","response.redirect");
     public static final List<String> RECIPIENT_ERROR_CODES = Arrays.asList("ERR_INVALID_ENCRYPTION","ERR_INVALID_PAYLOAD","ERR_WRONG_DOMAIN_PAYLOAD","ERR_INVALID_DOMAIN_PAYLOAD","ERR_SENDER_NOT_SUPPORTED","ERR_SERVICE_UNAVAILABLE","ERR_DOMAIN_PROCESSING");
+
+    // Notification APIs
+    public static final String NOTIFICATION_SUBSCRIBE = "/notification/subscribe";
+    public static final String NOTIFICATION_UNSUBSCRIBE = "/notification/unsubscribe";
+    public static final String NOTIFICATION_ON_SUBSCRIBE = "/notification/on_subscribe";
+    public static final String NOTIFICATION_SUBSCRIPTION_LIST = "/notification/subscription/list";
+    public static final String NOTIFICATION_LIST = "/notification/topic/list";
+    public static final String NOTIFICATION_NOTIFY = "/notification/notify";
+    public static final String NOTIFICATION_SUBSCRIPTION_UPDATE = "/notification/subscription/update";
+    public static final String SUBSCRIPTION_ID = "subscription_id";
 }

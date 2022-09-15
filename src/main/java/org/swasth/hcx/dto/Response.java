@@ -16,6 +16,8 @@ public class Response {
     private String correlationId;
     @JsonProperty("api_call_id")
     private String apiCallId;
+    @JsonProperty("subscription_id")
+    private String subscriptionId;
     private ResponseError error;
     private Map<String, Object> result;
 
@@ -70,6 +72,12 @@ public class Response {
     public void setResult(Map<String, Object> result) {
         this.result = result;
     }
+
+    public void setSubscriptionId(String subscriptionId) {
+        this.subscriptionId = subscriptionId;
+    }
+
+    public String getSubscriptionId() {return  subscriptionId;}
 
     public Object get(String key) {
         return result.get(key);

@@ -5,7 +5,6 @@ import org.swasth.hcx.exception.ErrorCodes;
 import org.swasth.hcx.utils.JSONUtils;
 
 import java.util.Map;
-
 import static org.swasth.hcx.utils.Constants.*;
 
 public class Request {
@@ -82,5 +81,6 @@ public class Request {
         return getHeaderMap(DEBUG_DETAILS);
     }
 
+    public String getSubscriptionId() { return (String) payload.get(SUBSCRIPTION_ID); }
 }
 
