@@ -5,11 +5,9 @@ import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.swasth.hcx.utils.Constants;
 import org.swasth.jose.jwe.JweRequest;
 import org.swasth.jose.jwe.key.PublicKeyLoader;
 
@@ -156,5 +154,33 @@ public class OnActionCall {
 
         Map<String, String> res = mapper.readValue(onActionResponse.getBody(), Map.class);
         System.out.println("response "+ res);
+    }
+
+    public String searchRegistry(String email) throws Exception {
+        System.out.println("Timestamp before registry call: "+ new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()));
+        HttpResponse<String> response = Unirest.post(env.getProperty("hcx_application.token_url"))
+                .header("content-type", "application/x-www-form-urlencoded")
+                .field("client_id", "registry-frontend")
+                .field("username", env.getProperty("hcx_application.user"))
+                .field("password", env.getProperty("hcx_application.password"))
+                .field("grant_type", "password")
+                .asString();
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> responseBody = mapper.readValue(response.getBody(), Map.class);
+        System.out.println("access token "+ responseBody.get("access_token"));
+
+        //creating filter for search query on email
+        HashMap<String, HashMap<String, Object>> filter = new HashMap<>();
+        filter.put("filters",new HashMap<String, Object>(Map.of("primary_email", new HashMap<>(Map.of("eq", email)))));
+        System.out.println("filters " + filter);
+        HttpResponse<String> onActionResponse = Unirest.post(env.getProperty("hcx_application.registry_url"))
+                .header("Authorization", "Bearer " + responseBody.get("access_token").toString())
+                .header("Content-Type", "application/json")
+                .body(filter)
+                .asString();
+        ArrayList resArray = mapper.readValue(onActionResponse.getBody(), ArrayList.class);
+        Map<String, Object> res = (Map<String, Object>) resArray.get(0);
+        System.out.println("res for filter " + res.get("osid"));
+        return email;
     }
 }

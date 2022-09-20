@@ -32,4 +32,16 @@ public class NotificationController extends BaseController {
             return exceptionHandler(response, e);
         }
     }
+
+
+    @PostMapping("/" + "${hcx_application.api_version}" + Constants.NOTIFICATION_NOTIFY)
+    public ResponseEntity<Object> notificationRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
+        Request request = new Request(requestBody);
+        Response response = new Response();
+        try {
+            return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            return exceptionHandler(response, e);
+        }
+    }
 }

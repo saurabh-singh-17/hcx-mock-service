@@ -58,4 +58,5 @@ hcx_application:
   user: ${email:swasthmockpayordev@gmail.com}
   password: ${pass:Opensaber@123}
   token_url: ${url:http://aef8101c432d04a659e6317b3e5031cf-1674586068.ap-south-1.elb.amazonaws.com:8080/auth/realms/swasth-health-claim-exchange/protocol/openid-connect/token}
+  registry_url: ${registry:http://a0b2bab079318431d8ca99f1efb1c25c-874274596.ap-south-1.elb.amazonaws.com:8081/api/v1/Organisation/search}
 
