@@ -51,12 +51,11 @@ redirect:
     mandatory: ${redirect_mandatory_headers:x-hcx-sender_code, x-hcx-recipient_code, x-hcx-api_call_id, x-hcx-timestamp, x-hcx-correlation_id}
     optional: ${redirect_optional_headers:x-hcx-workflow_id, x-hcx-status, x-hcx-redirect_to}
 
-
+#hcx base url
 hcx_application:
-  url: ${base_url:http://a851b026063934683964f22c6732f177-1969328968.ap-south-1.elb.amazonaws.com:8095}
+  url: ${base_url:http://staging-hcx.swasth.app/api}
   api_version: ${version:v0.7}
-  user: ${email:swasthmockpayordev@gmail.com}
+  user: ${email:swasth_mock_payer@swasthapp.org}
   password: ${pass:Opensaber@123}
-  token_url: ${url:http://aef8101c432d04a659e6317b3e5031cf-1674586068.ap-south-1.elb.amazonaws.com:8080/auth/realms/swasth-health-claim-exchange/protocol/openid-connect/token}
-  registry_url: ${registry:http://a0b2bab079318431d8ca99f1efb1c25c-874274596.ap-south-1.elb.amazonaws.com:8081/api/v1/Organisation/search}
-
+  token_url: ${url:http://a9dd63de91ee94d59847a1225da8b111-273954130.ap-south-1.elb.amazonaws.com:8080/auth/realms/swasth-health-claim-exchange/protocol/openid-connect/token}
+  registry_url: ${registry:http://staging-hcx.swasth.app/api/v0.7/participant/search}

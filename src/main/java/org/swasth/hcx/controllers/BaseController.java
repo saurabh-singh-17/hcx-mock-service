@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.objenesis.ObjenesisHelper;
 import org.springframework.util.ResourceUtils;
+import org.swasth.hcx.service.NotificationService;
 import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.dto.*;
 import org.swasth.hcx.exception.ClientException;
@@ -56,6 +57,9 @@ public class BaseController {
 
     @Autowired
     protected HeaderAuditService auditService;
+
+    @Autowired
+    protected NotificationService notificationService;
 
     private String baseURL;
 
@@ -130,6 +134,7 @@ public class BaseController {
                 } catch (Exception e) {
                     map_return = new ObjectMapper().readValue((String) request.getHcxHeaders().get("x-hcx-get_object"), HashMap.class);
                 }
+                notificationService.notify(request,onApiAction.split("/")[2],"Request processed");
                 onActionCall.createOnActionHeaders(request.getHcxHeaders(),map_return, onApiAction, publicKeyPath);
             }else {
                 //checking for invalid encryption
@@ -140,6 +145,7 @@ public class BaseController {
                     Map<String, String> pay = new HashMap<>();
                     pay.put("payload", String.valueOf(requestBody.get("payload")));
                     Map<String, Object> decodedPayload = decryptPayload(privateKeyPath, pay);
+                    System.out.println("initial decryption done");
                     ArrayList<Object> entries = (ArrayList<Object>) ((Map) decodedPayload.get("payload")).get("entry");
                     name = (String) ((Map) ((ArrayList<Object>) ((Map) ((Map) entries.get(2)).get("resource")).get("name")).get(0)).get("text");
                     gender = (String) ((Map) ((Map) entries.get(2)).get("resource")).get("gender");
@@ -168,6 +174,7 @@ public class BaseController {
                     file = getFileAsIOStream("static/coverage_eligibility_oncheck.json");
                 }
                 Map<String, Object> map = mapper.readValue(file, Map.class);
+
                 ArrayList<Object> entries = (ArrayList<Object>) map.get("entry");
                 ((Map) ((Map) ((Map) entries.get(0)).get("resource")).get("subject")).put("display", name);
                 ((Map) ((Map) ((Map) entries.get(1)).get("resource")).get("patient")).put("display", name);
@@ -186,6 +193,7 @@ public class BaseController {
                     ((Map) ((Map) ((ArrayList<Object>) ((Map) ((Map) entries.get(1)).get("resource")).get("total")).get(1)).get("amount")).put("value", String.valueOf(payment));
                     ((Map) ((Map) ((Map) ((Map) entries.get(1)).get("resource")).get("payment")).get("amount")).put("value", String.valueOf(totalpay));
                 }
+                notificationService.notify(request,onApiAction.split("/")[2],"Request processed");
                 onActionCall.createOnActionHeaders(request.getHcxHeaders(),map, onApiAction, publicKeyPath);
             }
         }
@@ -195,6 +203,7 @@ public class BaseController {
         Response response = new Response();
         try {
             Request request = new Request(requestBody);
+            notificationService.notify(request,onApiAction.split("/")[2],"Request recieved");
             setResponseParams(request, response);
             processAndValidate(onApiAction, kafkaTopic, request, requestBody);
             System.out.println("http respond sent");

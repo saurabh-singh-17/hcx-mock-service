@@ -1,8 +1,12 @@
 package org.swasth.hcx.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -14,7 +18,10 @@ import org.swasth.jose.jwe.key.PublicKeyLoader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.security.KeyFactory;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -56,6 +63,22 @@ public class OnActionCall {
         encryptedObject = jweRequest.getEncryptedObject();
         return encryptedObject;
 
+    }
+
+    public Map<String, String> jwsEncryptPayload(String filePath, Map<String, Object> payload) throws Exception{
+        RSAPrivateKey rsaPrivateKey;
+        Map<String, String> encryptedObject = new HashMap<>();
+        InputStream io = getFileAsIOStream(filePath);
+        Reader fileReader = new InputStreamReader(io);
+        PemReader pemReader = new PemReader(fileReader);
+        PemObject pemObject = pemReader.readPemObject();
+        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(pemObject.getContent());
+        KeyFactory factory = KeyFactory.getInstance("RSA");
+        rsaPrivateKey = (RSAPrivateKey) factory.generatePrivate(privateKeySpec);
+        String jwsEncrypted = Jwts.builder().setClaims(payload).signWith(SignatureAlgorithm.RS256, rsaPrivateKey).compact();
+        encryptedObject.put("payload",jwsEncrypted);
+        System.out.println("JWS Payload " + encryptedObject);
+        return encryptedObject;
     }
     @Async("asyncExecutor")
     public void createOnActionHeaders(Map<String, Object> headers, Map<String, Object> map, String onApiAction, String publicKeyPath) throws Exception{
@@ -178,9 +201,10 @@ public class OnActionCall {
                 .header("Content-Type", "application/json")
                 .body(filter)
                 .asString();
-        ArrayList resArray = mapper.readValue(onActionResponse.getBody(), ArrayList.class);
-        Map<String, Object> res = (Map<String, Object>) resArray.get(0);
-        System.out.println("res for filter " + res.get("osid"));
-        return email;
+        Map<String, ArrayList> resArray = mapper.readValue(onActionResponse.getBody(), Map.class);
+        ArrayList participant =resArray.get("participants");
+        Map<String, Object> res = (Map<String, Object>) participant.get(0);
+        System.out.println("res for filter " + res.get("participant_code"));
+        return (String) res.get("osid");
     }
 }

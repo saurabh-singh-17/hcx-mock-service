@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.swasth.hcx.dto.Response;
+import org.swasth.hcx.service.NotificationService;
 import org.swasth.hcx.utils.JSONUtils;
 import org.swasth.hcx.controllers.v1.*;
 import org.swasth.hcx.helpers.EventGenerator;
@@ -46,6 +47,9 @@ public class BaseSpec {
 
     @MockBean
     protected HeaderAuditService headerAuditService;
+
+    @MockBean
+    protected NotificationService notificationService;
 
 
     @BeforeEach
