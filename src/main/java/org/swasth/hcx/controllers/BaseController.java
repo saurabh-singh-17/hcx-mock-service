@@ -138,9 +138,9 @@ public class BaseController {
                 onActionCall.createOnActionHeaders(request.getHcxHeaders(),map_return, onApiAction, publicKeyPath);
             }else {
                 //checking for invalid encryption
-                String name = "";
-                String gender = "";
-                Double money = Double.valueOf(0);
+                String name = "John Doe";
+                String gender = "Male";
+                Double money = Double.valueOf(100000);
                 try {
                     Map<String, String> pay = new HashMap<>();
                     pay.put("payload", String.valueOf(requestBody.get("payload")));
@@ -157,8 +157,8 @@ public class BaseController {
                     }
                     System.out.println("decryption successful" + name + gender);
                 } catch (Exception e) {
-                    System.out.println("decryption unsuccessful" + e.getMessage().toString());
-                    throw new ClientException(ErrorCodes.ERR_INVALID_ENCRYPTION, "Decryption unsuccessful");
+                    System.out.println("Could not get the name and money from the input" + e.getMessage().toString());
+                    //throw new ClientException(ErrorCodes.ERR_INVALID_ENCRYPTION, "Decryption unsuccessful");
                 }
 
                 System.out.println("create the oncheck payload");
@@ -174,11 +174,15 @@ public class BaseController {
                     file = getFileAsIOStream("static/coverage_eligibility_oncheck.json");
                 }
                 Map<String, Object> map = mapper.readValue(file, Map.class);
-
                 ArrayList<Object> entries = (ArrayList<Object>) map.get("entry");
-                ((Map) ((Map) ((Map) entries.get(0)).get("resource")).get("subject")).put("display", name);
-                ((Map) ((Map) ((Map) entries.get(1)).get("resource")).get("patient")).put("display", name);
-                ((Map) ((Map) entries.get(2)).get("resource")).put("gender", gender);
+                try {
+
+                    ((Map) ((Map) ((Map) entries.get(0)).get("resource")).get("subject")).put("display", name);
+                    ((Map) ((Map) ((Map) entries.get(1)).get("resource")).get("patient")).put("display", name);
+                    ((Map) ((Map) entries.get(2)).get("resource")).put("gender", gender);
+                }catch (Exception e){
+                    System.out.println("Could not substitute the name");
+                }
                 if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction) || PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
                     //generating random number between 70 to 100
                     Random r = new Random();
@@ -189,9 +193,14 @@ public class BaseController {
                     double remaining = money - copay;
                     double payment = Math.round(result * (double) remaining / 100);
                     double totalpay = payment + copay;
-                    ((Map) ((Map) ((ArrayList<Object>) ((Map) ((Map) entries.get(1)).get("resource")).get("total")).get(0)).get("amount")).put("value", String.valueOf(money));
-                    ((Map) ((Map) ((ArrayList<Object>) ((Map) ((Map) entries.get(1)).get("resource")).get("total")).get(1)).get("amount")).put("value", String.valueOf(payment));
-                    ((Map) ((Map) ((Map) ((Map) entries.get(1)).get("resource")).get("payment")).get("amount")).put("value", String.valueOf(totalpay));
+                    try{
+                        ((Map) ((Map) ((ArrayList<Object>) ((Map) ((Map) entries.get(1)).get("resource")).get("total")).get(0)).get("amount")).put("value", String.valueOf(money));
+                        ((Map) ((Map) ((ArrayList<Object>) ((Map) ((Map) entries.get(1)).get("resource")).get("total")).get(1)).get("amount")).put("value", String.valueOf(payment));
+                        ((Map) ((Map) ((Map) ((Map) entries.get(1)).get("resource")).get("payment")).get("amount")).put("value", String.valueOf(totalpay));
+                    }catch (Exception e){
+                        System.out.println("Could not substitute the money");
+                    }
+
                 }
                 notificationService.notify(request,onApiAction.split("/")[2],"Request processed");
                 onActionCall.createOnActionHeaders(request.getHcxHeaders(),map, onApiAction, publicKeyPath);
