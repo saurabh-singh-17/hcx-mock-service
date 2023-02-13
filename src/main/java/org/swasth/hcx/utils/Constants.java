@@ -118,4 +118,8 @@ public class Constants {
     public static final String NOTIFICATION_NOTIFY = "/notification/notify";
     public static final String NOTIFICATION_SUBSCRIPTION_UPDATE = "/notification/subscription/update";
     public static final String SUBSCRIPTION_ID = "subscription_id";
+    public static final String APPLICANT_CODE = "applicant_code";
+    public static final String VERIFIER_CODE = "verifier_code";
+    public static final String RESULT = "result";
+    public static final String ACCEPTED = "accepted";
 }
