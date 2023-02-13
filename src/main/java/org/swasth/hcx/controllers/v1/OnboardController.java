@@ -21,7 +21,7 @@ public class OnboardController extends BaseController {
             Map<String,Object> resp = new HashMap<>();
             resp.put("timestamp", System.currentTimeMillis());
             resp.put(APPLICANT_CODE, requestBody.getOrDefault(APPLICANT_CODE, ""));
-            resp.put(VERIFIER_CODE, requestBody.getOrDefault(APPLICANT_CODE, ""));
+            resp.put(VERIFIER_CODE, requestBody.getOrDefault(VERIFIER_CODE, ""));
             resp.put(RESULT, ACCEPTED);
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
