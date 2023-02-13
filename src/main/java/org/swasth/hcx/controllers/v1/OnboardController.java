@@ -12,6 +12,7 @@ import java.util.Map;
 
 import static org.swasth.hcx.utils.Constants.*;
 
+@RestController()
 @RequestMapping(value = "/"+ "${hcx_application.api_version}")
 public class OnboardController extends BaseController {
 
