@@ -122,4 +122,10 @@ public class Constants {
     public static final String VERIFIER_CODE = "verifier_code";
     public static final String RESULT = "result";
     public static final String ACCEPTED = "accepted";
+    public static final String VERIFICATION_TOKEN = "verification_token";
+    public static final String MOBILE = "mobile";
+    public static final String SUB = "sub";
+    public static final String ISS = "iss";
+    public static final String APPLICANT_NAME = "applicant_name";
+    public static final String ADDITIONAL_VERIFICATION = "additionalVerification";
 }
