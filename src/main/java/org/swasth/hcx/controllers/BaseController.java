@@ -109,19 +109,22 @@ public class BaseController {
         KeyFactory factory = KeyFactory.getInstance("RSA");
         rsaPrivateKey = (RSAPrivateKey) factory.generatePrivate(privateKeySpec);
         JweRequest jweRequest = new JweRequest(payload);
+        System.out.println("\n Decryption : JWE request made \n");
         jweRequest.decryptRequest(rsaPrivateKey);
+        System.out.println("\n Decryption : JWE decryption done \n");
         Map<String, Object> retrievedHeader = jweRequest.getHeaders();
         Map<String, Object> retrievedPayload = jweRequest.getPayload();
         Map<String, Object> returnObj = new HashMap<>();
         returnObj.put("headers",retrievedHeader);
         returnObj.put("payload",retrievedPayload);
+        System.out.println("decrypted payload " + returnObj);
         return returnObj;
     }
 
     protected void processAndValidate(String onApiAction, String metadataTopic, Request request, Map<String, Object> requestBody) throws Exception {
         String mid = UUID.randomUUID().toString();
         String serviceMode = env.getProperty(SERVICE_MODE);
-        System.out.println("Mode: " + serviceMode + " :: mid: " + mid + " :: Event: " + onApiAction);
+        System.out.println("\n" + "Mode: " + serviceMode + " :: mid: " + mid + " :: Event: " + onApiAction);
         if(StringUtils.equalsIgnoreCase(serviceMode, GATEWAY)) {
             ClassLoader classLoader = this.getClass().getClassLoader();
             baseURL = classLoader.getResource("").getFile();
@@ -143,6 +146,7 @@ public class BaseController {
                 Double money = Double.valueOf(100000);
                 try {
                     Map<String, String> pay = new HashMap<>();
+                    System.out.println("payload received " + requestBody);
                     pay.put("payload", String.valueOf(requestBody.get("payload")));
                     Map<String, Object> decodedPayload = decryptPayload(privateKeyPath, pay);
                     System.out.println("initial decryption done");
@@ -151,8 +155,12 @@ public class BaseController {
                     gender = (String) ((Map) ((Map) entries.get(2)).get("resource")).get("gender");
                     if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction) || PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
                         System.out.println("money" + money);
-                        System.out.println("extracted money" + ((Map) ((Map) ((Map) entries.get(3)).get("resource")).get("total")).get("value"));
-                        money = Double.parseDouble(String.valueOf(((Map) ((Map) ((Map) entries.get(3)).get("resource")).get("total")).get("value")));
+                        //System.out.println("extracted money" + ((Map) ((Map) ((Map) entries.get(3)).get("resource")).get("total")).get("value"));
+                        try{
+                            money = Double.parseDouble(String.valueOf(((Map) ((Map) ((Map) entries.get(3)).get("resource")).get("total")).get("value")));
+                        }catch (NullPointerException e){
+                           System.out.println("could not feteh money from payload");
+                        }
                         System.out.println("money" + money);
                     }
                     System.out.println("decryption successful" + name + gender);

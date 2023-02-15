@@ -54,7 +54,6 @@ public class OnActionCall {
 
     public Map<String, String> encryptPayload(String filePath, Map<String, Object> headers, Map<String, Object> payload) throws Exception{
         Map<String, String> encryptedObject;
-        //File file = new File(filePath);
         InputStream io = getFileAsIOStream(filePath);
         Reader fileReader = new InputStreamReader(io);
         RSAPublicKey rsaPublicKey = PublicKeyLoader.loadPublicKeyFromX509Certificate(fileReader);
@@ -76,8 +75,6 @@ public class OnActionCall {
         KeyFactory factory = KeyFactory.getInstance("RSA");
         rsaPrivateKey = (RSAPrivateKey) factory.generatePrivate(privateKeySpec);
         String jwsEncrypted = Jwts.builder().setClaims(payload).signWith(SignatureAlgorithm.RS256, rsaPrivateKey).compact();
-        encryptedObject.put("payload",jwsEncrypted);
-        System.out.println("JWS Payload " + encryptedObject);
         return encryptedObject;
     }
     @Async("asyncExecutor")
@@ -147,7 +144,6 @@ public class OnActionCall {
             Map<String, String> encryptedOnPayload = encryptPayload(publicKeyPath, returnHeaders, map);
             sendOnAction(onApiAction,encryptedOnPayload);
             System.out.println("on check payload    " + encryptedOnPayload);
-            System.out.println("return ciphertext unencrypted " + map);
         }else{
             sendOnAction(onApiAction,returnHeaders);
             System.out.println("on check payload    " + returnHeaders);
@@ -167,8 +163,7 @@ public class OnActionCall {
         System.out.println("url "+env.getProperty("hcx_application.url"));
         System.out.println("version" + env.getProperty("hcx_application.api_version"));
         System.out.println("user"+  env.getProperty("hcx_application.user"));
-        Map<String, String> responseBody = mapper.readValue(response.getBody(), Map.class);
-        System.out.println("access token "+ responseBody.get("access_token"));
+        Map<String, String> responseBody = mapper.readValue(response.getBody(), Map.class);;
         HttpResponse<String> onActionResponse = Unirest.post(env.getProperty("hcx_application.url") + onApiCall)
                 .header("Authorization", "Bearer " + responseBody.get("access_token").toString())
                 .header("Content-Type", "application/json")
@@ -190,12 +185,10 @@ public class OnActionCall {
                 .asString();
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> responseBody = mapper.readValue(response.getBody(), Map.class);
-        System.out.println("access token "+ responseBody.get("access_token"));
 
         //creating filter for search query on email
         HashMap<String, HashMap<String, Object>> filter = new HashMap<>();
         filter.put("filters",new HashMap<String, Object>(Map.of("primary_email", new HashMap<>(Map.of("eq", email)))));
-        System.out.println("filters " + filter);
         HttpResponse<String> onActionResponse = Unirest.post(env.getProperty("hcx_application.registry_url"))
                 .header("Authorization", "Bearer " + responseBody.get("access_token").toString())
                 .header("Content-Type", "application/json")
