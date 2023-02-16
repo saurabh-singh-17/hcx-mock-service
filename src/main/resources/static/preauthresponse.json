@@ -38,41 +38,41 @@
           "text": "Claim Response"
         },
         "subject": {
-          "reference": "Patient/1",
+          "reference": "Patient/RVH1003",
           "display": "Hina Patel"
         },
         "author": [
           {
-            "reference": "Practitioner/1",
+            "reference": "Organization/GICOFINDIA",
             "display": "Dr. Sudhir Naik (PMJAY Gujrat)"
           }
         ],
-        "title": "Preauth Request",
+        "title": "Claim Response",
         "attester": [
           {
             "mode": "official",
             "time": "2021-12-22T14:10:14Z",
             "party": {
-              "reference": "Organization/2",
-              "display": "PMJAY, MoHFW, Govt Of India"
+              "reference": "Organization/Tmh01",
+              "display": "Tata Memorial Hospital"
             }
           }
         ],
         "section": [
           {
-            "title": "Preauth Response",
+            "title": "Claim Response",
             "code": {
               "coding": [
                 {
-                  "system": "https://www.hl7.org/fhir/valueset-resource-types",
-                  "code": "PreauthResponse",
-                  "display": "Preauth Response"
+                  "system": "https://fhir.loinc.org/CodeSystem/$lookup?system=http://loinc.org&code=10154-3",
+                  "code": "ClaimResponse",
+                  "display": "Claim Response"
                 }
               ]
             },
             "entry": [
               {
-                "reference": "PreauthResponse/res-id-1"
+                "reference": "ClaimResponse/dc82673b-8c71-48c2-8a17-16dcb3b035f6"
               }
             ]
           }
@@ -80,9 +80,9 @@
       }
     },
     {
-      "fullUrl": "PreauthResponse/res-id-1",
+      "fullUrl": "ClaimResponse/dc82673b-8c71-48c2-8a17-16dcb3b035f6",
       "resource": {
-        "resourceType": "PreauthResponse",
+        "resourceType": "ClaimResponse",
         "id": "1355110",
         "meta": {
           "versionId": "1",
@@ -91,13 +91,15 @@
         },
         "status": "active",
         "type": {
-          "coding": [ {
-            "code": "institutional"
-          } ]
+          "coding": [
+            {
+              "code": "institutional"
+            }
+          ]
         },
         "use": "preauthorization",
         "patient": {
-          "reference": "Patient/1353519",
+          "reference": "Patient/RVH1003",
           "type": "Patient"
         },
         "created": "2020-07-03T18:50:39-04:00",
@@ -106,7 +108,7 @@
           "type": "Organization"
         },
         "request": {
-          "reference": "PreauthResponse/1355109"
+          "reference": "Claim/1355109"
         },
         "outcome": "complete",
         "item": [
@@ -221,68 +223,70 @@
             "value": "201408-2-1569478"
           }
         }
-      }
-    },
+      }},
     {
-      "fullUrl": "Patient/1",
+      "fullUrl": "Patient/RVH1003",
       "resource": {
         "resourceType": "Patient",
-        "id": "1",
-        "name": [
-          {
-            "use": "official",
-            "family": "Patel",
-            "given": [
-              "Hina"
-            ]
-          }
-        ],
+        "id": "RVH1003",
+        "meta": {
+          "profile": [
+            "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Patient"
+          ]
+        },
         "identifier": [
           {
             "type": {
               "coding": [
                 {
-                  "system": "http://ndhm.gov.in/ValueSet/identifier-type",
-                  "code": "PHRADDR"
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "SN",
+                  "display": "Subscriber Number"
                 }
               ]
             },
-            "system": "http://ndhm.gov.in/healthId",
-            "value": "654321"
-          },
-          {
-            "type": {
-              "coding": [
-                {
-                  "system": "http://ndhm.gov.in/ValueSet/identifier-type",
-                  "code": "PMJAYID"
-                }
-              ]
-            },
-            "system": "http://ndhm.gov.in/pmjay",
-            "value": "QWRT12345"
+            "system": "http://gicofIndia.com/beneficiaries",
+            "value": "BEN-101"
           }
         ],
-        "gender": "female",
-        "birthDate": "1974-12-25"
+        "name": [
+          {
+            "text": "Hina Patel"
+          }
+        ],
+        "gender": "female"
       }
     },
     {
-      "fullUrl": "Organization/MaxSaket01",
+      "fullUrl": "Organization/Tmh01",
       "resource": {
         "resourceType": "Organization",
         "id": "MaxSaket01",
+        "meta": {
+          "profile": [
+            "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization"
+          ]
+        },
         "name": "Max Super Speciality Hospital, Saket",
         "identifier": [
           {
-            "system": "https://ndhm.gov.in/hfr",
-            "value": "HFR-10000005"
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "AC",
+                  "display": "Narayana"
+                }
+              ]
+            },
+            "system": "http://gicofIndia.com/beneficiaries",
+            "value": "BEN-101"
           }
         ]
       }
     },
     {
-      "fullUrl": "Organization/2",
+      "fullUrl": "Organization/GICOFINDIA",
       "resource": {
         "resourceType": "Organization",
         "id": "2",
@@ -291,30 +295,6 @@
           {
             "system": "https://hcx.org/orgs",
             "value": "PMJAY"
-          }
-        ]
-      }
-    },
-    {
-      "fullUrl": "Practitioner/1",
-      "resource": {
-        "resourceType": "Practitioner",
-        "id": "1",
-        "identifier": [
-          {
-            "system": "https://ndhm.gov.in/npr",
-            "value": "NPR-6897"
-          }
-        ],
-        "name": [
-          {
-            "text": "Sudhir Naik (PMJAY Gujrat)",
-            "prefix": [
-              "Dr"
-            ],
-            "suffix": [
-              "MD"
-            ]
           }
         ]
       }

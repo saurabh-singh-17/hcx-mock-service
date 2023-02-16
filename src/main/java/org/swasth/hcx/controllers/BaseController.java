@@ -157,9 +157,9 @@ public class BaseController {
                         System.out.println("money" + money);
                         //System.out.println("extracted money" + ((Map) ((Map) ((Map) entries.get(3)).get("resource")).get("total")).get("value"));
                         try{
-                            money = Double.parseDouble(String.valueOf(((Map) ((Map) ((Map) entries.get(3)).get("resource")).get("total")).get("value")));
+                            money = Double.parseDouble(String.valueOf(((Map) ((Map) ((Map) entries.get(3)).get("resource")).get("total")).get("value")));    
                         }catch (NullPointerException e){
-                           System.out.println("could not feteh money from payload");
+                           System.out.println("could not feteh money from payload"); 
                         }
                         System.out.println("money" + money);
                     }
@@ -201,10 +201,12 @@ public class BaseController {
                     double remaining = money - copay;
                     double payment = Math.round(result * (double) remaining / 100);
                     double totalpay = payment + copay;
+                    System.out.println("String.valueOf(money) " + String.valueOf(money) + " " + String.valueOf(payment) + " " + String.valueOf(totalpay));
                     try{
                         ((Map) ((Map) ((ArrayList<Object>) ((Map) ((Map) entries.get(1)).get("resource")).get("total")).get(0)).get("amount")).put("value", String.valueOf(money));
                         ((Map) ((Map) ((ArrayList<Object>) ((Map) ((Map) entries.get(1)).get("resource")).get("total")).get(1)).get("amount")).put("value", String.valueOf(payment));
                         ((Map) ((Map) ((Map) ((Map) entries.get(1)).get("resource")).get("payment")).get("amount")).put("value", String.valueOf(totalpay));
+                        System.out.println("Money substituted");
                     }catch (Exception e){
                         System.out.println("Could not substitute the money");
                     }
