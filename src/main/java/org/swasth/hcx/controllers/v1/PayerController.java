@@ -37,8 +37,37 @@ public class PayerController extends BaseController {
         }
     }
 
-    @PostMapping(value = "/payer/request/approve")
-    public ResponseEntity<Object> approve(@RequestBody Map<String, Object> requestBody) {
+    @PostMapping(value = "/payer/coverageeligibility/approve")
+    public ResponseEntity<Object> coverageEligibilityApprove(@RequestBody Map<String, Object> requestBody) {
+        return approve();
+    }
+
+    @PostMapping(value = "/payer/coverageeligibility/reject")
+    public ResponseEntity<Object> coverageEligibilityReject(@RequestBody Map<String, Object> requestBody) {
+        return reject();
+    }
+
+    @PostMapping(value = "/payer/preauth/approve")
+    public ResponseEntity<Object> preauthApprove(@RequestBody Map<String, Object> requestBody) {
+        return approve();
+    }
+
+    @PostMapping(value = "/payer/preauth/reject")
+    public ResponseEntity<Object> preauthReject(@RequestBody Map<String, Object> requestBody) {
+        return reject();
+    }
+
+    @PostMapping(value = "/payer/claim/approve")
+    public ResponseEntity<Object> claimApprove(@RequestBody Map<String, Object> requestBody) {
+        return approve();
+    }
+
+    @PostMapping(value = "/payer/claim/reject")
+    public ResponseEntity<Object> claimReject(@RequestBody Map<String, Object> requestBody) {
+        return reject();
+    }
+
+    public ResponseEntity<Object> approve(){
         try {
             Map<String,Object> resp = new HashMap<>();
             resp.put("timestamp", System.currentTimeMillis());
@@ -50,8 +79,7 @@ public class PayerController extends BaseController {
         }
     }
 
-    @PostMapping(value = "/payer/request/reject")
-    public ResponseEntity<Object> reject(@RequestBody Map<String, Object> requestBody) {
+    public ResponseEntity<Object> reject(){
         try {
             Map<String,Object> resp = new HashMap<>();
             resp.put("timestamp", System.currentTimeMillis());
@@ -61,4 +89,5 @@ public class PayerController extends BaseController {
             return exceptionHandler(new Response(), e);
         }
     }
+
 }
