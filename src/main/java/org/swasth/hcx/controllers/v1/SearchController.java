@@ -35,7 +35,7 @@ public class SearchController extends BaseController {
     public ResponseEntity<Object> search (@RequestBody Map<String, Object> requestBody) throws Exception {
         Response response = new Response();
         try {
-            SearchRequest request = new SearchRequest(requestBody);
+            SearchRequest request = new SearchRequest(requestBody, "/hcx/search");
             setResponseParams(request, response);
             // Validations
             validateRegistryCode(request);
@@ -55,7 +55,7 @@ public class SearchController extends BaseController {
     public ResponseEntity<Object> onSearch (@RequestBody Map<String, Object> requestBody) {
         Response response = new Response();
         try {
-            SearchRequest request = new SearchRequest(requestBody);
+            SearchRequest request = new SearchRequest(requestBody, "/hcx/on_search");
             setResponseParams(request, response);
             // Validations
             validateRegistryCode(request);

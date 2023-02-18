@@ -31,7 +31,7 @@ public class StatusController extends BaseController {
     public ResponseEntity<Object> status(@RequestBody Map<String, Object> requestBody) throws Exception {
         Response response = new Response();
         try {
-            Request request = new Request(requestBody);
+            Request request = new Request(requestBody, "/hcx/status");
             setResponseParams(request, response);
             Map<String, Object> hcxHeaders = request.getHcxHeaders();
             // TODO: filter properties validation
@@ -72,7 +72,7 @@ public class StatusController extends BaseController {
     public ResponseEntity<Object> onStatus(@RequestBody Map<String, Object> requestBody) {
         Response response = new Response();
         try {
-            Request request = new Request(requestBody);
+            Request request = new Request(requestBody, "/hcx/on_status");
             setResponseParams(request, response);
             Map<String, Object> hcxHeaders = request.getHcxHeaders();
             if(!hcxHeaders.containsKey(STATUS_RESPONSE) || ((Map<String, Object>) hcxHeaders.get(STATUS_RESPONSE)).isEmpty()) {

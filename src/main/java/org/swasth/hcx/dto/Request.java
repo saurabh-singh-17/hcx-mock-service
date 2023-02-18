@@ -12,8 +12,11 @@ public class Request {
     private final Map<String, Object> payload;
     protected Map<String, Object> hcxHeaders = null;
 
-    public Request(Map<String, Object> body) throws Exception {
+    private String action;
+
+    public Request(Map<String, Object> body, String action) throws Exception {
         this.payload = body;
+        this.action = action;
         try {
             if (body.containsKey(PAYLOAD)) {
                 hcxHeaders = JSONUtils.decodeBase64String(((String) body.get(PAYLOAD)).split("\\.")[0], Map.class);
@@ -82,5 +85,7 @@ public class Request {
     }
 
     public String getSubscriptionId() { return (String) payload.get(SUBSCRIPTION_ID); }
+
+    public String getAction() { return this.action; }
 }
 

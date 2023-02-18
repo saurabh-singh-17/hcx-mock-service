@@ -128,4 +128,10 @@ public class Constants {
     public static final String ISS = "iss";
     public static final String APPLICANT_NAME = "applicant_name";
     public static final String ADDITIONAL_VERIFICATION = "additionalVerification";
+    public static final String PENDING = "Pending";
+    public static final String APPROVED = "Approved";
+    public static final String REJECTED = "Rejected";
+    public static final String SUCCESSFUL = "successful";
+    public static final String FAILED = "failed";
+    public static final List<String> PAYOR_APPROVAL_TYPES = Arrays.asList("medical", "financial");
 }
