@@ -1,725 +1,758 @@
 [
   {
     "resourceType": "Bundle",
-    "id": "528d8736-4615-4a62-a226-5ccf5db47d94",
+    "id": "7034cbea-3362-418d-84d2-f8258b6493b3",
     "meta": {
-      "lastUpdated": "2023-02-12T11:33:58.084+05:30",
-      "profile": [
-        "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-PreauthRequestBundle.html"
-      ]
+      "lastUpdated": "2023-02-17T12:32:40.542+05:30",
+      "profile": [ "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-PreauthRequestBundle.html" ]
     },
     "identifier": {
       "system": "https://www.tmh.in/bundle",
-      "value": "87eb85b0-3394-4351-9d30-366a601ee55d"
+      "value": "423a70e6-1828-4d2a-8e8d-8fae785908d9"
     },
     "type": "collection",
-    "timestamp": "2023-02-12T11:33:58.084+05:30",
-    "entry": [
-      {
-        "fullUrl": "Preauth/2c244270-b299-4e7c-9cd9-0ba71e150779",
-        "resource": {
-          "resourceType": "Preauth",
-          "id": "2c244270-b299-4e7c-9cd9-0ba71e150779",
-          "meta": {
-            "lastUpdated": "2023-02-12T11:33:57.985+05:30",
-            "profile": [
-              "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Preauth.html"
-            ]
-          },
-          "identifier": [
-            {
-              "system": "http://identifiersystem.com",
-              "value": "IdentifierValue"
-            }
-          ],
-          "status": "active",
+    "timestamp": "2023-02-17T12:32:40.542+05:30",
+    "entry": [ {
+      "fullUrl": "Preauth/a5fff1e1-73f0-4c8d-9c10-f123d9c7a344",
+      "resource": {
+        "resourceType": "Preauth",
+        "id": "a5fff1e1-73f0-4c8d-9c10-f123d9c7a344",
+        "meta": {
+          "lastUpdated": "2023-02-17T12:32:40.296+05:30",
+          "profile": [ "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Preauth.html" ]
+        },
+        "identifier": [ {
+          "system": "http://identifiersystem.com",
+          "value": "IdentifierValue"
+        } ],
+        "status": "active",
+        "type": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/preauth-type",
+            "code": "institutional"
+          } ]
+        },
+        "use": "preauth",
+        "patient": {
+          "reference": "Patient/RVH1003"
+        },
+        "created": "2023-02-17T12:32:40+05:30",
+        "insurer": {
+          "reference": "Organization/GICOFINDIA"
+        },
+        "provider": {
+          "reference": "Organization/WeMeanWell01"
+        },
+        "priority": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/processpriority",
+            "code": "normal"
+          } ]
+        },
+        "payee": {
           "type": {
-            "coding": [
-              {
-                "system": "http://terminology.hl7.org/CodeSystem/preauth-type",
-                "code": "institutional"
-              }
-            ]
+            "coding": [ {
+              "system": "http://terminology.hl7.org/CodeSystem/payeetype",
+              "code": "provider"
+            } ]
           },
-          "use": "preauth",
-          "patient": {
-            "reference": "Patient/RVH1003"
-          },
-          "created": "2023-02-12T11:33:57+05:30",
-          "insurer": {
-            "reference": "Organization/GICOFINDIA"
-          },
+          "party": {
+            "reference": "Organization/WeMeanWell01"
+          }
+        },
+        "careTeam": [ {
+          "sequence": 4,
           "provider": {
-            "reference": "Organization/Tmh01"
+            "reference": "Organization/WeMeanWell01"
+          }
+        } ],
+        "diagnosis": [ {
+          "sequence": 1,
+          "diagnosisCodeableConcept": {
+            "coding": [ {
+              "system": "http://irdai.com",
+              "code": "E906184",
+              "display": "SINGLE INCISION LAPAROSCOPIC APPENDECTOMY"
+            } ],
+            "text": "SINGLE INCISION LAPAROSCOPIC APPENDECTOMY"
           },
-          "priority": {
-            "coding": [
-              {
-                "system": "http://terminology.hl7.org/CodeSystem/processpriority",
-                "code": "normal"
-              }
-            ]
+          "type": [ {
+            "coding": [ {
+              "system": "http://terminology.hl7.org/CodeSystem/ex-diagnosistype",
+              "code": "admitting",
+              "display": "Admitting Diagnosis"
+            } ]
+          } ]
+        } ],
+        "insurance": [ {
+          "sequence": 1,
+          "focal": true,
+          "coverage": {
+            "reference": "Coverage/COVERAGE1"
+          }
+        } ],
+        "item": [ {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E101021",
+              "display": "Twin Sharing Ac"
+            } ]
           },
-          "payee": {
-            "type": {
-              "coding": [
-                {
-                  "system": "http://terminology.hl7.org/CodeSystem/payeetype",
-                  "code": "provider"
-                }
-              ]
-            },
-            "party": {
-              "reference": "Organization/Tmh01"
-            }
+          "unitPrice": {
+            "value": 100000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E924260",
+              "display": "CLINICAL TOXICOLOGY SCREEN, BLOOD"
+            } ]
           },
-          "careTeam": [
-            {
-              "sequence": 4,
-              "provider": {
-                "reference": "Organization/Tmh01"
-              }
-            }
-          ],
-          "insurance": [
-            {
-              "sequence": 1,
-              "focal": true,
-              "coverage": {
-                "reference": "Coverage/COVERAGE1"
-              }
-            }
-          ],
-          "item": [
-            {
-              "sequence": 1,
-              "productOrService": {
-                "coding": [
-                  {
-                    "system": "https://pmjay.gov.in/hbp-package-code",
-                    "code": "ID003",
-                    "display": "Treatment of COVID-19 Infection"
-                  }
-                ]
-              },
-              "unitPrice": {
-                "value": 100000,
-                "currency": "INR"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "fullUrl": "Organization/Tmh02",
-        "resource": {
-          "resourceType": "Organization",
-          "id": "Tmh02",
-          "meta": {
-            "profile": [
-              "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization"
-            ]
+          "unitPrice": {
+            "value": 2000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E924261",
+              "display": "CLINICAL TOXICOLOGY SCREEN,URINE"
+            } ]
           },
-          "identifier": [
-            {
-              "type": {
-                "coding": [
-                  {
-                    "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-                    "code": "AC",
-                    "display": "Krishna"
-                  }
-                ]
-              },
-              "system": "http://abdm.gov.in/facilities",
-              "value": "HFR-ID-FOR-TMH"
-            }
-          ],
-          "name": "Aditya Hospital"
-        }
-      },
-      {
-        "fullUrl": "Organization/GICOFINDIA",
-        "resource": {
-          "resourceType": "Organization",
-          "id": "GICOFINDIA",
-          "meta": {
-            "profile": [
-              "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization"
-            ]
+          "unitPrice": {
+            "value": 1000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E507029",
+              "display": "ECG"
+            } ]
           },
-          "identifier": [
-            {
-              "type": {
-                "coding": [
-                  {
-                    "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-                    "code": "AC",
-                    "display": "GOVOFINDIA"
-                  }
-                ]
-              },
-              "system": "http://irdai.gov.in/insurers",
-              "value": "GICOFINDIA"
-            }
-          ],
-          "name": "GICOFINDIA"
-        }
-      },
-      {
-        "fullUrl": "Patient/RVH1003",
-        "resource": {
-          "resourceType": "Patient",
-          "id": "RVH1003",
-          "meta": {
-            "profile": [
-              "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Patient"
-            ]
+          "unitPrice": {
+            "value": 5000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E6080377",
+              "display": "UltraSound Abdomen"
+            } ]
           },
-          "identifier": [
-            {
-              "type": {
-                "coding": [
-                  {
-                    "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-                    "code": "SN",
-                    "display": "Subscriber Number"
-                  }
-                ]
-              },
-              "system": "http://gicofIndia.com/beneficiaries",
-              "value": "BEN-101"
-            }
-          ],
-          "name": [
-            {
-              "text": "Raj Kumar"
-            }
-          ],
-          "gender": "male"
-        }
-      },
-      {
-        "fullUrl": "Coverage/COVERAGE1",
-        "resource": {
-          "resourceType": "Coverage",
-          "id": "COVERAGE1",
-          "meta": {
-            "profile": [
-              "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Coverage.html"
-            ]
+          "unitPrice": {
+            "value": 5000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "502001",
+              "display": "Surgeons Charges"
+            } ]
           },
-          "identifier": [
-            {
-              "system": "https://www.gicofIndia.in/policies",
-              "value": "policy-RVH1003"
-            }
-          ],
-          "status": "active",
-          "subscriber": {
-            "reference": "Patient/RVH1003"
+          "unitPrice": {
+            "value": 1000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "5020021",
+              "display": "Anesthesiologist charges"
+            } ]
           },
-          "subscriberId": "SN-RVH1003",
-          "beneficiary": {
-            "reference": "Patient/RVH1003"
+          "unitPrice": {
+            "value": 1000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E6080373",
+              "display": "Physician charges"
+            } ]
           },
-          "relationship": {
-            "coding": [
-              {
-                "system": "http://terminology.hl7.org/CodeSystem/subscriber-relationship",
-                "code": "self"
-              }
-            ]
+          "unitPrice": {
+            "value": 1000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "201008",
+              "display": "Recovery Room"
+            } ]
           },
-          "payor": [
-            {
-              "reference": "Organization/GICOFINDIA"
-            }
-          ]
+          "unitPrice": {
+            "value": 10000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "406003",
+              "display": "intra -venous (iv) set"
+            } ]
+          },
+          "unitPrice": {
+            "value": 5000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E507353",
+              "display": "Oral Medication"
+            } ]
+          },
+          "unitPrice": {
+            "value": 5000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E925171",
+              "display": "Hospital charges"
+            } ]
+          },
+          "unitPrice": {
+            "value": 5000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "501001",
+              "display": "Consultation Charges"
+            } ]
+          },
+          "unitPrice": {
+            "value": 5000,
+            "currency": "INR"
+          }
+        } ],
+        "total": {
+          "value": 146000.0,
+          "currency": "INR"
         }
       }
-    ]
+    }, {
+      "fullUrl": "Organization/WeMeanWell01",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "WeMeanWell01",
+        "meta": {
+          "profile": [ "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization" ]
+        },
+        "identifier": [ {
+          "type": {
+            "coding": [ {
+              "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+              "code": "AC",
+              "display": "Narayana"
+            } ]
+          },
+          "system": "http://abdm.gov.in/facilities",
+          "value": "HFR-ID-FOR-TMH"
+        } ],
+        "name": "WeMeanWell Hospital",
+        "address": [ {
+          "text": " Bannerghatta Road, Bengaluru ",
+          "city": "Bengaluru",
+          "country": "India"
+        } ]
+      }
+    }, {
+      "fullUrl": "Organization/GICOFINDIA",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "GICOFINDIA",
+        "meta": {
+          "profile": [ "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization" ]
+        },
+        "identifier": [ {
+          "type": {
+            "coding": [ {
+              "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+              "code": "AC",
+              "display": "GOVOFINDIA"
+            } ]
+          },
+          "system": "http://irdai.gov.in/insurers",
+          "value": "GICOFINDIA"
+        } ],
+        "name": "GICOFINDIA"
+      }
+    }, {
+      "fullUrl": "Patient/RVH1003",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "RVH1003",
+        "meta": {
+          "profile": [ "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Patient" ]
+        },
+        "identifier": [ {
+          "type": {
+            "coding": [ {
+              "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+              "code": "SN",
+              "display": "Subscriber Number"
+            } ]
+          },
+          "system": "http://gicofIndia.com/beneficiaries",
+          "value": "BEN-101"
+        } ],
+        "name": [ {
+          "text": "Prasidh Dixit"
+        } ],
+        "gender": "male",
+        "birthDate": "1960-09-26",
+        "address": [ {
+          "text": "#39 Kalena Agrahara, Kamanahalli, Bengaluru - 560056",
+          "city": "Bengaluru",
+          "state": "Karnataka",
+          "postalCode": "560056",
+          "country": "India"
+        } ]
+      }
+    }, {
+      "fullUrl": "Coverage/COVERAGE1",
+      "resource": {
+        "resourceType": "Coverage",
+        "id": "COVERAGE1",
+        "meta": {
+          "profile": [ "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Coverage.html" ]
+        },
+        "identifier": [ {
+          "system": "https://www.gicofIndia.in/policies",
+          "value": "policy-RVH1003"
+        } ],
+        "status": "active",
+        "subscriber": {
+          "reference": "Patient/RVH1003"
+        },
+        "subscriberId": "2XX8971",
+        "beneficiary": {
+          "reference": "Patient/RVH1003"
+        },
+        "relationship": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/subscriber-relationship",
+            "code": "self"
+          } ]
+        },
+        "payor": [ {
+          "reference": "Organization/GICOFINDIA"
+        } ]
+      }
+    } ]
   },
   {
     "resourceType": "Bundle",
-    "id": "528d8736-4615-4a62-a226-5ccf5db47d94",
+    "id": "7034cbea-3362-418d-84d2-f8258b6493b4",
     "meta": {
-      "lastUpdated": "2023-02-12T11:33:58.084+05:30",
-      "profile": [
-        "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-PreauthRequestBundle.html"
-      ]
+      "lastUpdated": "2023-02-17T12:32:40.542+05:30",
+      "profile": [ "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-PreauthRequestBundle.html" ]
     },
     "identifier": {
       "system": "https://www.tmh.in/bundle",
-      "value": "87eb85b0-3394-4351-9d30-366a601ee56d"
+      "value": "423a70e6-1828-4d2a-8e8d-8fae785908d9"
     },
     "type": "collection",
-    "timestamp": "2023-02-12T11:33:58.084+05:30",
-    "entry": [
-      {
-        "fullUrl": "Preauth/2c244270-b299-4e7c-9cd9-0ba71e150779",
-        "resource": {
-          "resourceType": "Preauth",
-          "id": "2c244270-b299-4e7c-9cd9-0ba71e150779",
-          "meta": {
-            "lastUpdated": "2023-02-12T11:33:57.985+05:30",
-            "profile": [
-              "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Preauth.html"
-            ]
-          },
-          "identifier": [
-            {
-              "system": "http://identifiersystem.com",
-              "value": "IdentifierValue"
-            }
-          ],
-          "status": "active",
+    "timestamp": "2023-02-17T12:32:40.542+05:30",
+    "entry": [ {
+      "fullUrl": "Preauth/a5fff1e1-73f0-4c8d-9c10-f123d9c7a344",
+      "resource": {
+        "resourceType": "Preauth",
+        "id": "a5fff1e1-73f0-4c8d-9c10-f123d9c7a344",
+        "meta": {
+          "lastUpdated": "2023-02-17T12:32:40.296+05:30",
+          "profile": [ "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Preauth.html" ]
+        },
+        "identifier": [ {
+          "system": "http://identifiersystem.com",
+          "value": "IdentifierValue"
+        } ],
+        "status": "active",
+        "type": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/preauth-type",
+            "code": "institutional"
+          } ]
+        },
+        "use": "preauth",
+        "patient": {
+          "reference": "Patient/RVH1003"
+        },
+        "created": "2023-02-17T12:32:40+05:30",
+        "insurer": {
+          "reference": "Organization/GICOFINDIA"
+        },
+        "provider": {
+          "reference": "Organization/WeMeanWell01"
+        },
+        "priority": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/processpriority",
+            "code": "normal"
+          } ]
+        },
+        "payee": {
           "type": {
-            "coding": [
-              {
-                "system": "http://terminology.hl7.org/CodeSystem/preauth-type",
-                "code": "institutional"
-              }
-            ]
+            "coding": [ {
+              "system": "http://terminology.hl7.org/CodeSystem/payeetype",
+              "code": "provider"
+            } ]
           },
-          "use": "preauth",
-          "patient": {
-            "reference": "Patient/RVH1003"
-          },
-          "created": "2023-02-12T11:33:57+05:30",
-          "insurer": {
-            "reference": "Organization/GICOFINDIA"
-          },
+          "party": {
+            "reference": "Organization/WeMeanWell01"
+          }
+        },
+        "careTeam": [ {
+          "sequence": 4,
           "provider": {
-            "reference": "Organization/Tmh01"
+            "reference": "Organization/WeMeanWell01"
+          }
+        } ],
+        "diagnosis": [ {
+          "sequence": 1,
+          "diagnosisCodeableConcept": {
+            "coding": [ {
+              "system": "http://irdai.com",
+              "code": "E906184",
+              "display": "SINGLE INCISION LAPAROSCOPIC APPENDECTOMY"
+            } ],
+            "text": "SINGLE INCISION LAPAROSCOPIC APPENDECTOMY"
           },
-          "priority": {
-            "coding": [
-              {
-                "system": "http://terminology.hl7.org/CodeSystem/processpriority",
-                "code": "normal"
-              }
-            ]
+          "type": [ {
+            "coding": [ {
+              "system": "http://terminology.hl7.org/CodeSystem/ex-diagnosistype",
+              "code": "admitting",
+              "display": "Admitting Diagnosis"
+            } ]
+          } ]
+        } ],
+        "insurance": [ {
+          "sequence": 1,
+          "focal": true,
+          "coverage": {
+            "reference": "Coverage/COVERAGE1"
+          }
+        } ],
+        "item": [ {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E101021",
+              "display": "Twin Sharing Ac"
+            } ]
           },
-          "payee": {
-            "type": {
-              "coding": [
-                {
-                  "system": "http://terminology.hl7.org/CodeSystem/payeetype",
-                  "code": "provider"
-                }
-              ]
-            },
-            "party": {
-              "reference": "Organization/Tmh01"
-            }
+          "unitPrice": {
+            "value": 100000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E924260",
+              "display": "CLINICAL TOXICOLOGY SCREEN, BLOOD"
+            } ]
           },
-          "careTeam": [
-            {
-              "sequence": 4,
-              "provider": {
-                "reference": "Organization/Tmh01"
-              }
-            }
-          ],
-          "insurance": [
-            {
-              "sequence": 1,
-              "focal": true,
-              "coverage": {
-                "reference": "Coverage/COVERAGE1"
-              }
-            }
-          ],
-          "item": [
-            {
-              "sequence": 1,
-              "productOrService": {
-                "coding": [
-                  {
-                    "system": "https://pmjay.gov.in/hbp-package-code",
-                    "code": "ID003",
-                    "display": "Treatment of COVID-19 Infection"
-                  }
-                ]
-              },
-              "unitPrice": {
-                "value": 100000,
-                "currency": "INR"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "fullUrl": "Organization/Tmh01",
-        "resource": {
-          "resourceType": "Organization",
-          "id": "Tmh01",
-          "meta": {
-            "profile": [
-              "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization"
-            ]
+          "unitPrice": {
+            "value": 2000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E924261",
+              "display": "CLINICAL TOXICOLOGY SCREEN,URINE"
+            } ]
           },
-          "identifier": [
-            {
-              "type": {
-                "coding": [
-                  {
-                    "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-                    "code": "AC",
-                    "display": "Narayana"
-                  }
-                ]
-              },
-              "system": "http://abdm.gov.in/facilities",
-              "value": "HFR-ID-FOR-TMH"
-            }
-          ],
-          "name": "Tata Memorial Hospital"
-        }
-      },
-      {
-        "fullUrl": "Organization/GICOFINDIA",
-        "resource": {
-          "resourceType": "Organization",
-          "id": "GICOFINDIA",
-          "meta": {
-            "profile": [
-              "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization"
-            ]
+          "unitPrice": {
+            "value": 1000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E507029",
+              "display": "ECG"
+            } ]
           },
-          "identifier": [
-            {
-              "type": {
-                "coding": [
-                  {
-                    "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-                    "code": "AC",
-                    "display": "GOVOFINDIA"
-                  }
-                ]
-              },
-              "system": "http://irdai.gov.in/insurers",
-              "value": "GICOFINDIA"
-            }
-          ],
-          "name": "GICOFINDIA"
-        }
-      },
-      {
-        "fullUrl": "Patient/RVH1003",
-        "resource": {
-          "resourceType": "Patient",
-          "id": "RVH1003",
-          "meta": {
-            "profile": [
-              "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Patient"
-            ]
+          "unitPrice": {
+            "value": 5000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E6080377",
+              "display": "UltraSound Abdomen"
+            } ]
           },
-          "identifier": [
-            {
-              "type": {
-                "coding": [
-                  {
-                    "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-                    "code": "SN",
-                    "display": "Subscriber Number"
-                  }
-                ]
-              },
-              "system": "http://gicofIndia.com/beneficiaries",
-              "value": "BEN-101"
-            }
-          ],
-          "name": [
-            {
-              "text": "Hina Patel"
-            }
-          ],
-          "gender": "female"
-        }
-      },
-      {
-        "fullUrl": "Coverage/COVERAGE1",
-        "resource": {
-          "resourceType": "Coverage",
-          "id": "COVERAGE1",
-          "meta": {
-            "profile": [
-              "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Coverage.html"
-            ]
+          "unitPrice": {
+            "value": 5000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "502001",
+              "display": "Surgeons Charges"
+            } ]
           },
-          "identifier": [
-            {
-              "system": "https://www.gicofIndia.in/policies",
-              "value": "policy-RVH1003"
-            }
-          ],
-          "status": "active",
-          "subscriber": {
-            "reference": "Patient/RVH1003"
+          "unitPrice": {
+            "value": 1000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "5020021",
+              "display": "Anesthesiologist charges"
+            } ]
           },
-          "subscriberId": "SN-RVH1003",
-          "beneficiary": {
-            "reference": "Patient/RVH1003"
+          "unitPrice": {
+            "value": 1000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E6080373",
+              "display": "Physician charges"
+            } ]
           },
-          "relationship": {
-            "coding": [
-              {
-                "system": "http://terminology.hl7.org/CodeSystem/subscriber-relationship",
-                "code": "self"
-              }
-            ]
+          "unitPrice": {
+            "value": 1000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "201008",
+              "display": "Recovery Room"
+            } ]
           },
-          "payor": [
-            {
-              "reference": "Organization/GICOFINDIA"
-            }
-          ]
+          "unitPrice": {
+            "value": 10000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "406003",
+              "display": "intra -venous (iv) set"
+            } ]
+          },
+          "unitPrice": {
+            "value": 5000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E507353",
+              "display": "Oral Medication"
+            } ]
+          },
+          "unitPrice": {
+            "value": 5000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "E925171",
+              "display": "Hospital charges"
+            } ]
+          },
+          "unitPrice": {
+            "value": 5000,
+            "currency": "INR"
+          }
+        }, {
+          "sequence": 1,
+          "productOrService": {
+            "coding": [ {
+              "system": "https://irdai.gov.in/package-code",
+              "code": "501001",
+              "display": "Consultation Charges"
+            } ]
+          },
+          "unitPrice": {
+            "value": 5000,
+            "currency": "INR"
+          }
+        } ],
+        "total": {
+          "value": 146000.0,
+          "currency": "INR"
         }
       }
-    ]
-  },
-  {
-    "resourceType": "Bundle",
-    "id": "528d8736-4615-4a62-a226-5ccf5db47d94",
-    "meta": {
-      "lastUpdated": "2023-02-12T11:33:58.084+05:30",
-      "profile": [
-        "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-PreauthRequestBundle.html"
-      ]
-    },
-    "identifier": {
-      "system": "https://www.tmh.in/bundle",
-      "value": "87eb85b0-3394-4351-9d30-366a601ee57d"
-    },
-    "type": "collection",
-    "timestamp": "2023-02-12T11:33:58.084+05:30",
-    "entry": [
-      {
-        "fullUrl": "Preauth/2c244270-b299-4e7c-9cd9-0ba71e150779",
-        "resource": {
-          "resourceType": "Preauth",
-          "id": "2c244270-b299-4e7c-9cd9-0ba71e150779",
-          "meta": {
-            "lastUpdated": "2023-02-12T11:33:57.985+05:30",
-            "profile": [
-              "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Preauth.html"
-            ]
-          },
-          "identifier": [
-            {
-              "system": "http://identifiersystem.com",
-              "value": "IdentifierValue"
-            }
-          ],
-          "status": "active",
+    }, {
+      "fullUrl": "Organization/WeMeanWell01",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "WeMeanWell01",
+        "meta": {
+          "profile": [ "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization" ]
+        },
+        "identifier": [ {
           "type": {
-            "coding": [
-              {
-                "system": "http://terminology.hl7.org/CodeSystem/preauth-type",
-                "code": "institutional"
-              }
-            ]
+            "coding": [ {
+              "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+              "code": "AC",
+              "display": "Narayana"
+            } ]
           },
-          "use": "preauth",
-          "patient": {
-            "reference": "Patient/RVH1003"
-          },
-          "created": "2023-02-12T11:33:57+05:30",
-          "insurer": {
-            "reference": "Organization/GICOFINDIA"
-          },
-          "provider": {
-            "reference": "Organization/Tmh03"
-          },
-          "priority": {
-            "coding": [
-              {
-                "system": "http://terminology.hl7.org/CodeSystem/processpriority",
-                "code": "normal"
-              }
-            ]
-          },
-          "payee": {
-            "type": {
-              "coding": [
-                {
-                  "system": "http://terminology.hl7.org/CodeSystem/payeetype",
-                  "code": "provider"
-                }
-              ]
-            },
-            "party": {
-              "reference": "Organization/Tmh03"
-            }
-          },
-          "careTeam": [
-            {
-              "sequence": 4,
-              "provider": {
-                "reference": "Organization/Tmh03"
-              }
-            }
-          ],
-          "insurance": [
-            {
-              "sequence": 1,
-              "focal": true,
-              "coverage": {
-                "reference": "Coverage/COVERAGE1"
-              }
-            }
-          ],
-          "item": [
-            {
-              "sequence": 1,
-              "productOrService": {
-                "coding": [
-                  {
-                    "system": "https://pmjay.gov.in/hbp-package-code",
-                    "code": "ID003",
-                    "display": "Treatment of COVID-19 Infection"
-                  }
-                ]
-              },
-              "unitPrice": {
-                "value": 100000,
-                "currency": "INR"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "fullUrl": "Organization/Tmh03",
-        "resource": {
-          "resourceType": "Organization",
-          "id": "Tmh03",
-          "meta": {
-            "profile": [
-              "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization"
-            ]
-          },
-          "identifier": [
-            {
-              "type": {
-                "coding": [
-                  {
-                    "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-                    "code": "AC",
-                    "display": "Narayana"
-                  }
-                ]
-              },
-              "system": "http://abdm.gov.in/facilities",
-              "value": "HFR-ID-FOR-TMH"
-            }
-          ],
-          "name": "Apollo Hospital"
-        }
-      },
-      {
-        "fullUrl": "Organization/GICOFINDIA",
-        "resource": {
-          "resourceType": "Organization",
-          "id": "GICOFINDIA",
-          "meta": {
-            "profile": [
-              "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization"
-            ]
-          },
-          "identifier": [
-            {
-              "type": {
-                "coding": [
-                  {
-                    "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-                    "code": "AC",
-                    "display": "GOVOFINDIA"
-                  }
-                ]
-              },
-              "system": "http://irdai.gov.in/insurers",
-              "value": "GICOFINDIA"
-            }
-          ],
-          "name": "GICOFINDIA"
-        }
-      },
-      {
-        "fullUrl": "Patient/RVH1003",
-        "resource": {
-          "resourceType": "Patient",
-          "id": "RVH1003",
-          "meta": {
-            "profile": [
-              "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Patient"
-            ]
-          },
-          "identifier": [
-            {
-              "type": {
-                "coding": [
-                  {
-                    "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-                    "code": "SN",
-                    "display": "Subscriber Number"
-                  }
-                ]
-              },
-              "system": "http://gicofIndia.com/beneficiaries",
-              "value": "BEN-101"
-            }
-          ],
-          "name": [
-            {
-              "text": "Priya"
-            }
-          ],
-          "gender": "female"
-        }
-      },
-      {
-        "fullUrl": "Coverage/COVERAGE1",
-        "resource": {
-          "resourceType": "Coverage",
-          "id": "COVERAGE1",
-          "meta": {
-            "profile": [
-              "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Coverage.html"
-            ]
-          },
-          "identifier": [
-            {
-              "system": "https://www.gicofIndia.in/policies",
-              "value": "policy-RVH1003"
-            }
-          ],
-          "status": "active",
-          "subscriber": {
-            "reference": "Patient/RVH1003"
-          },
-          "subscriberId": "SN-RVH1003",
-          "beneficiary": {
-            "reference": "Patient/RVH1003"
-          },
-          "relationship": {
-            "coding": [
-              {
-                "system": "http://terminology.hl7.org/CodeSystem/subscriber-relationship",
-                "code": "self"
-              }
-            ]
-          },
-          "payor": [
-            {
-              "reference": "Organization/GICOFINDIA"
-            }
-          ]
-        }
+          "system": "http://abdm.gov.in/facilities",
+          "value": "HFR-ID-FOR-TMH"
+        } ],
+        "name": "WeMeanWell Hospital",
+        "address": [ {
+          "text": " Bannerghatta Road, Bengaluru ",
+          "city": "Bengaluru",
+          "country": "India"
+        } ]
       }
-    ]
+    }, {
+      "fullUrl": "Organization/GICOFINDIA",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "GICOFINDIA",
+        "meta": {
+          "profile": [ "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization" ]
+        },
+        "identifier": [ {
+          "type": {
+            "coding": [ {
+              "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+              "code": "AC",
+              "display": "GOVOFINDIA"
+            } ]
+          },
+          "system": "http://irdai.gov.in/insurers",
+          "value": "GICOFINDIA"
+        } ],
+        "name": "GICOFINDIA"
+      }
+    }, {
+      "fullUrl": "Patient/RVH1003",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "RVH1003",
+        "meta": {
+          "profile": [ "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Patient" ]
+        },
+        "identifier": [ {
+          "type": {
+            "coding": [ {
+              "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+              "code": "SN",
+              "display": "Subscriber Number"
+            } ]
+          },
+          "system": "http://gicofIndia.com/beneficiaries",
+          "value": "BEN-101"
+        } ],
+        "name": [ {
+          "text": "Prasidh Dixit"
+        } ],
+        "gender": "male",
+        "birthDate": "1960-09-26",
+        "address": [ {
+          "text": "#39 Kalena Agrahara, Kamanahalli, Bengaluru - 560056",
+          "city": "Bengaluru",
+          "state": "Karnataka",
+          "postalCode": "560056",
+          "country": "India"
+        } ]
+      }
+    }, {
+      "fullUrl": "Coverage/COVERAGE1",
+      "resource": {
+        "resourceType": "Coverage",
+        "id": "COVERAGE1",
+        "meta": {
+          "profile": [ "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Coverage.html" ]
+        },
+        "identifier": [ {
+          "system": "https://www.gicofIndia.in/policies",
+          "value": "policy-RVH1003"
+        } ],
+        "status": "active",
+        "subscriber": {
+          "reference": "Patient/RVH1003"
+        },
+        "subscriberId": "2XX8971",
+        "beneficiary": {
+          "reference": "Patient/RVH1003"
+        },
+        "relationship": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/subscriber-relationship",
+            "code": "self"
+          } ]
+        },
+        "payor": [ {
+          "reference": "Organization/GICOFINDIA"
+        } ]
+      }
+    } ]
   }
 ]
