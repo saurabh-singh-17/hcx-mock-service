@@ -24,7 +24,7 @@ public class NotificationController extends BaseController {
 
     @PostMapping(value = "/" + "${hcx_application.api_version}" + Constants.NOTIFICATION_SUBSCRIBE)
     public ResponseEntity<Object> notificationSubscribe(@RequestBody Map<String, Object> requestBody) throws Exception {
-        Request request = new Request(requestBody);
+        Request request = new Request(requestBody, Constants.NOTIFICATION_SUBSCRIBE);
         Response response = new Response();
         try {
             notificationService.processSubscription(request, response);
@@ -39,7 +39,7 @@ public class NotificationController extends BaseController {
 
     @PostMapping("/" + "${hcx_application.api_version}" + Constants.NOTIFICATION_NOTIFY)
     public ResponseEntity<Object> notificationRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
-        Request request = new Request(requestBody);
+        Request request = new Request(requestBody, Constants.NOTIFICATION_NOTIFY);
         Response response = new Response();
         try {
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
