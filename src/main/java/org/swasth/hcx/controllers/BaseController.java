@@ -129,20 +129,20 @@ public class BaseController {
                     //sending the onaction call
                     onActionCall.sendOnAction(p.encodeResourceToString(bundle),Operations.COVERAGE_ELIGIBILITY_ON_CHECK,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
                 } else if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
-                    incoming.process(JSONUtils.serialize(pay), Operations.CLAIM_ON_SUBMIT,output);
+                    incoming.process(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT,output);
                     System.out.println("outmap after decryption " +  output);
                     System.out.println("decryption successful");
                     //processing the decrypted incoming bundle
-                    bundle = p.parseResource(Bundle.class, JSONUtils.serialize(output.get("fhirPayload")));
+                    bundle = p.parseResource(Bundle.class, (String) (output.get("fhirPayload")));
                     ClaimResponse claimRes = OnActionFhirExamples.claimResponseExample();
                     replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#","")).setResource(claimRes));
-                    onActionCall.sendOnAction(p.encodeResourceToString(bundle),Operations.CLAIM_SUBMIT,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
+                    onActionCall.sendOnAction(p.encodeResourceToString(bundle),Operations.CLAIM_ON_SUBMIT,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
                 } else if (PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
-                    incoming.process(JSONUtils.serialize(pay), Operations.PRE_AUTH_ON_SUBMIT,output);
+                    incoming.process(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT,output);
                     System.out.println("outmap after decryption " +  output);
                     System.out.println("decryption successful");
                     //processing the decrypted incoming bundle
-                    bundle = p.parseResource(Bundle.class, JSONUtils.serialize(output.get("fhirPayload")));
+                    bundle = p.parseResource(Bundle.class, (String) (output.get("fhirPayload")));
                     ClaimResponse preAuthRes = OnActionFhirExamples.claimResponseExample();
                     preAuthRes.setUse(ClaimResponse.Use.PREAUTHORIZATION);
                     replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(preAuthRes.getResourceType() + "/" + preAuthRes.getId().toString().replace("#","")).setResource(preAuthRes));
