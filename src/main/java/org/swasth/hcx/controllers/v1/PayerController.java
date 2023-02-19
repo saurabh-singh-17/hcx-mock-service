@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.swasth.common.exception.ClientException;
 import org.swasth.hcx.controllers.BaseController;
 import org.swasth.hcx.dto.Response;
+import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.service.PostgresService;
 import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.utils.JSONUtils;
@@ -96,7 +97,7 @@ public class PayerController extends BaseController {
         try {
             System.out.println("Review: " + status + " :: entity: " + entity + " :: request body: " + requestBody);
             String id = (String) requestBody.getOrDefault("request_id", "");
-            validateProp("identifier", id);
+            validateProp("request_id", id);
             Map<String,Object> output = new HashMap<>();
             if (StringUtils.equals(entity, "coverageeligibility")) {
                 String updateQuery = String.format("UPDATE %s SET status='%s',updated_on=%d WHERE request_id='%s' RETURNING %s,%s",
