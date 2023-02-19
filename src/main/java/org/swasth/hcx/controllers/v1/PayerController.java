@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.swasth.common.exception.ClientException;
 import org.swasth.hcx.controllers.BaseController;
 import org.swasth.hcx.dto.Response;
-import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.service.PostgresService;
 import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.utils.JSONUtils;
