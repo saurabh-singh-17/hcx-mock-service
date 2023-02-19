@@ -1,6 +1,10 @@
 package org.swasth.hcx.controllers.v1;
 
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.IParser;
+import io.hcxprotocol.utils.Operations;
 import org.apache.commons.lang3.StringUtils;
+import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -15,6 +19,7 @@ import org.swasth.hcx.service.PostgresService;
 import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.utils.JSONUtils;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,10 +97,35 @@ public class PayerController extends BaseController {
             System.out.println("Review: " + status + " :: entity: " + entity + " :: request body: " + requestBody);
             String id = (String) requestBody.getOrDefault("request_id", "");
             validateProp("identifier", id);
+            Map<String,Object> output = new HashMap<>();
             if (StringUtils.equals(entity, "coverageeligibility")) {
-                String updateQuery = String.format("UPDATE %s SET status='%s',updated_on=%d WHERE request_id='%s'",
-                        table, status, System.currentTimeMillis(), id);
-                postgres.execute(updateQuery);
+                String updateQuery = String.format("UPDATE %s SET status='%s',updated_on=%d WHERE request_id='%s' RETURNING %s,%s",
+                        table, status, System.currentTimeMillis(), id, "raw_payload", "response_fhir");
+                ResultSet resultset = postgres.executeQuery(updateQuery);
+                String respfhir = "";
+                String actionJwe = "";
+                while(resultset.next()){
+                    respfhir = resultset.getString("response_fhir");
+                    actionJwe = resultset.getString("raw_payload");
+                }
+                if(status.equals(APPROVED)){
+                    onActionCall.sendOnAction(respfhir, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
+                } else {
+                    IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+                    Bundle newBundle = p.parseResource(Bundle.class, respfhir);
+                    for(int i=0; i < newBundle.getEntry().size(); i++){
+                        Bundle.BundleEntryComponent par = newBundle.getEntry().get(i);
+                        DomainResource dm = (DomainResource) par.getResource();
+                        System.out.println("type of dm" + dm);
+                        if(dm.getClass() == CoverageEligibilityResponse.class){
+                            System.out.println("index " + i);
+                            ((CoverageEligibilityResponse) dm).getError().add(new CoverageEligibilityResponse.ErrorsComponent(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication-error").setCode("a001").setDisplay("Coverage Eligibility Request has been rejected"))));
+                        }
+                    }
+                    String bundleString = p.encodeResourceToString(newBundle);
+                    System.out.println("Failure Response bundle: " + bundleString);
+                    onActionCall.sendOnAction(bundleString, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
+                }
             } else {
                 String type = (String) requestBody.getOrDefault("type", "");
                 validateProp("type", type);
@@ -106,22 +136,66 @@ public class PayerController extends BaseController {
                 info.put("remarks", requestBody.getOrDefault("remarks", ""));
                 if(StringUtils.equals(APPROVED, status))
                     info.put("approved_amount", requestBody.getOrDefault("approved_amount", 0));
-                String query = String.format("UPDATE %s SET additional_info = jsonb_set(additional_info::jsonb, '{%s}', '%s'),updated_on = %d WHERE request_id = '%s' RETURNING %s,%s",
-                        table, type, JSONUtils.serialize(info), System.currentTimeMillis(), id, "additional_info", "status");
+                String query = String.format("UPDATE %s SET additional_info = jsonb_set(additional_info::jsonb, '{%s}', '%s'),updated_on = %d WHERE request_id = '%s' RETURNING %s,%s,%s,%s,%s",
+                        table, type, JSONUtils.serialize(info), System.currentTimeMillis(), id, "additional_info", "status", "raw_payload", "response_fhir", "action");
                 ResultSet resultSet = postgres.executeQuery(query);
                 Map<String, Object> addInfo = new HashMap<>();
                 String existingStatus = PENDING;
+                String respfhir = "";
+                String actionJwe = "";
+                String action = "";
                 while (resultSet.next()) {
                     addInfo.putAll(JSONUtils.deserialize(resultSet.getString("additional_info"), Map.class));
                     existingStatus = resultSet.getString("status");
+                    respfhir = resultSet.getString("response_fhir");
+                    actionJwe = resultSet.getString("raw_payload");
+                    action = resultSet.getString("action");
                 }
 
                 if (!addInfo.isEmpty()) {
-                    String newStatus = getStatus(addInfo);
-                    if (!StringUtils.equalsIgnoreCase(newStatus, existingStatus)) {
+                    String overallStatus = getStatus(addInfo);
+                    if (!StringUtils.equalsIgnoreCase(overallStatus, existingStatus)) {
                         String updateQuery = String.format("UPDATE %s SET status = '%s',updated_on = %d WHERE request_id = '%s'"
-                                , table, newStatus, System.currentTimeMillis(), id);
+                                , table, overallStatus, System.currentTimeMillis(), id);
                         postgres.execute(updateQuery);
+                    }
+
+                    if (overallStatus.equals(APPROVED)) {
+                        IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+                        Bundle newBundle = p.parseResource(Bundle.class, respfhir);
+                        for(int i=0; i < newBundle.getEntry().size(); i++){
+                            Bundle.BundleEntryComponent par = newBundle.getEntry().get(i);
+                            DomainResource dm = (DomainResource) par.getResource();
+                            System.out.println("type of dm" + dm);
+                            if(dm.getClass() == ClaimResponse.class){
+                                System.out.println("index " + i);
+                                if(entity.equals("preauth")){
+                                    ((ClaimResponse) dm).setUse(ClaimResponse.Use.PREAUTHORIZATION);
+                                }
+                                ((ClaimResponse) dm).getTotal().set(0,new ClaimResponse.TotalComponent().setCategory(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication").setCode("benefit"))).setAmount(new Money().setValue((BigDecimal) requestBody.getOrDefault("approved_amount", 0)).setCurrency("INR")));
+                            }
+                        }
+                        String bundleString = p.encodeResourceToString(newBundle);
+                        System.out.println("Success Response bundle: " + bundleString);
+                        onActionCall.sendOnAction(bundleString, Enum.valueOf(Operations.class, action), actionJwe, "response.complete", output);
+                    } else if (overallStatus.equals(REJECTED)){
+                        IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+                        Bundle newBundle = p.parseResource(Bundle.class, respfhir);
+                        for(int i=0; i < newBundle.getEntry().size(); i++){
+                            Bundle.BundleEntryComponent par = newBundle.getEntry().get(i);
+                            DomainResource dm = (DomainResource) par.getResource();
+                            System.out.println("type of dm" + dm);
+                            if(dm.getClass() == ClaimResponse.class){
+                                System.out.println("index " + i);
+                                if(entity.equals("preauth")){
+                                    ((ClaimResponse) dm).setUse(ClaimResponse.Use.PREAUTHORIZATION);
+                                }
+                                ((ClaimResponse) dm).getError().add(new ClaimResponse.ErrorComponent(new CodeableConcept(new Coding().setSystem("http://hcxprotocol.io/codes/claim-error-codes").setCode("AUTH-001").setDisplay(StringUtils.capitalize(type) + " adjudication failed"))));
+                            }
+                        }
+                        String bundleString = p.encodeResourceToString(newBundle);
+                        System.out.println("Failure Response bundle: " + bundleString);
+                        onActionCall.sendOnAction(bundleString, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
                     }
                 }
             }

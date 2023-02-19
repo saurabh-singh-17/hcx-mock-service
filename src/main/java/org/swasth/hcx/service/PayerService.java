@@ -27,14 +27,14 @@ public class PayerService {
     private PostgresService postgres;
 
 
-    public void process(Request request,Map<String,Object> reqFhirObj, Map<String,Object> respFhirObj) throws ClientException, JsonProcessingException {
+    public void process(Request request, String reqFhirObj, String respFhirObj) throws ClientException, JsonProcessingException {
         Map<String,Object> info = new HashMap<>();
         if(!request.getAction().contains("coverageeligibility")) {
             info.put("medical", Collections.singletonMap("status", PENDING));
             info.put("financial", Collections.singletonMap("status", PENDING));
         }
         String query = String.format("INSERT INTO %s (request_id,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on) VALUES ('%s','%s','%s','%s','%s','%s','%s',%d,%d);",
-                table, reqFhirObj.get("id"), request.getAction(), request.getPayload(), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis());
+                table, request.getApiCallId(), request.getAction(), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis());
         postgres.execute(query);
     }
 }
