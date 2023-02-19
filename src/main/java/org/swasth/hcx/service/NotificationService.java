@@ -30,7 +30,7 @@ public class NotificationService {
         HashMap<String, String> reqbody = new HashMap<>();
         reqbody.put("subscription_id",subscription_id);
         reqbody.put("subscription_status","Active");
-        onActionCall.sendOnAction("/" + env.getProperty("hcx_application.api_version")  + Constants.NOTIFICATION_ON_SUBSCRIBE,reqbody);
+        //onActionCall.sendOnAction("/" + env.getProperty("hcx_application.api_version")  + Constants.NOTIFICATION_ON_SUBSCRIBE,reqbody);
     }
 
     /**
@@ -58,6 +58,6 @@ public class NotificationService {
         //JWS encryption
         String privateKeyPath =  "key/x509-private-key.pem";
         Map<String,String> result = onActionCall.jwsEncryptPayload(privateKeyPath,resBody);
-        onActionCall.sendOnAction("/" + env.getProperty("hcx_application.api_version") + Constants.NOTIFICATION_NOTIFY,result);
+        //onActionCall.sendOnAction("/" + env.getProperty("hcx_application.api_version") + Constants.NOTIFICATION_NOTIFY,result);
     }
 }
