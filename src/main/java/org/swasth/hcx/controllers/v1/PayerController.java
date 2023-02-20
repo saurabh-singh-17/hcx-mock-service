@@ -74,12 +74,12 @@ public class PayerController extends BaseController {
 
     @PostMapping(value = "/payer/preauth/approve")
     public ResponseEntity<Object> preauthApprove(@RequestBody Map<String, Object> requestBody) {
-        return review(requestBody,"preath", APPROVED);
+        return review(requestBody,"preauth", APPROVED);
     }
 
     @PostMapping(value = "/payer/preauth/reject")
     public ResponseEntity<Object> preauthReject(@RequestBody Map<String, Object> requestBody) {
-        return review(requestBody,"preath", REJECTED);
+        return review(requestBody,"preauth", REJECTED);
     }
 
     @PostMapping(value = "/payer/claim/approve")
