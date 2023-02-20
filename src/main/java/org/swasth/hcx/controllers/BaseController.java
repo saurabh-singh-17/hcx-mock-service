@@ -143,7 +143,6 @@ public class BaseController {
                     //sending the onaction call
                     sendResponse(p.encodeResourceToString(bundle),(String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
                 } else if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
-//                    incoming.decryptPayload(String.valueOf(requestBody.get("payload")), output);
                     System.out.println("before sending output" + output);
                     incoming.process(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT,output);
                     System.out.println("outmap after decryption " +  output);
