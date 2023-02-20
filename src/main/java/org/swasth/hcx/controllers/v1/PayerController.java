@@ -21,10 +21,7 @@ import org.swasth.hcx.utils.JSONUtils;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.swasth.hcx.utils.Constants.*;
 
@@ -217,14 +214,17 @@ public class PayerController extends BaseController {
 
     private String getStatus(Map<String,Object> addInfo){
         String status = PENDING;
+        Set<String> statuses = new HashSet<>();
         for (Map.Entry<String, Object> entry : addInfo.entrySet()) {
             String objStatus = ((Map<String, Object>) entry.getValue()).getOrDefault("status","").toString();
-            if(StringUtils.equalsIgnoreCase(REJECTED, objStatus)) {
-                status = REJECTED;
-                break;
-            } else if (StringUtils.equalsIgnoreCase(APPROVED, objStatus)) {
-                status = APPROVED;
-            }
+            statuses.add(objStatus);
+        }
+        if(statuses.contains(REJECTED)) {
+            status = REJECTED;
+        } else if (statuses.contains(PENDING)) {
+            status = PENDING;
+        } else if (statuses.contains(APPROVED)) {
+            status = APPROVED;
         }
         return status;
     }
