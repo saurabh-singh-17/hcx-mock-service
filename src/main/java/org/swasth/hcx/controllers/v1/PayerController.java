@@ -50,7 +50,7 @@ public class PayerController extends BaseController {
                 map.put("request_id", resultSet.getString("request_id"));
                 map.put("status", resultSet.getString("status"));
                 map.put("additional_info", JSONUtils.deserialize(resultSet.getString("additional_info"), Map.class));
-                map.put("payload", resultSet.getString("request_fhir"));
+                map.put("payload", JSONUtils.deserialize(resultSet.getString("request_fhir"), Map.class));
                 result.add(map);
             }
             Map<String, Object> resp = new HashMap<>();
