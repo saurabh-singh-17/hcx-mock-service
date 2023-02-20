@@ -172,7 +172,7 @@ public class PayerController extends BaseController {
                                 if(entity.equals("preauth")){
                                     ((ClaimResponse) dm).setUse(ClaimResponse.Use.PREAUTHORIZATION);
                                 }
-                                ((ClaimResponse) dm).getTotal().set(0,new ClaimResponse.TotalComponent().setCategory(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication").setCode("benefit"))).setAmount(new Money().setValue((BigDecimal) requestBody.getOrDefault("approved_amount", 0)).setCurrency("INR")));
+                                ((ClaimResponse) dm).getTotal().set(0,new ClaimResponse.TotalComponent().setCategory(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication").setCode("benefit"))).setAmount(new Money().setValue((int) requestBody.getOrDefault("approved_amount", 0)).setCurrency("INR")));
                             }
                         }
                         String bundleString = p.encodeResourceToString(newBundle);
