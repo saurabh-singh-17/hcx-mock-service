@@ -177,7 +177,7 @@ public class PayerController extends BaseController {
                         }
                         String bundleString = p.encodeResourceToString(newBundle);
                         System.out.println("Success Response bundle: " + bundleString);
-                        onActionCall.sendOnAction(bundleString, Enum.valueOf(Operations.class, action), actionJwe, "response.complete", output);
+                        onActionCall.sendOnAction(bundleString, action.contains("preauth") ? Operations.PRE_AUTH_ON_SUBMIT : Operations.CLAIM_ON_SUBMIT, actionJwe, "response.complete", output);
                     } else if (overallStatus.equals(REJECTED)){
                         IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
                         Bundle newBundle = p.parseResource(Bundle.class, respfhir);
@@ -195,7 +195,7 @@ public class PayerController extends BaseController {
                         }
                         String bundleString = p.encodeResourceToString(newBundle);
                         System.out.println("Failure Response bundle: " + bundleString);
-                        onActionCall.sendOnAction(bundleString, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
+                        onActionCall.sendOnAction(bundleString, action.contains("preauth") ? Operations.PRE_AUTH_ON_SUBMIT : Operations.CLAIM_ON_SUBMIT, actionJwe, "response.complete", output);
                     }
                 }
             }
