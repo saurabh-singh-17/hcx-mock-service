@@ -43,12 +43,10 @@ public class PayerController extends BaseController {
     public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody) {
         try {
             String type = (String) requestBody.getOrDefault("type", "");
-            System.out.println((int) requestBody.getOrDefault("days", dayLimit)*24*60*60);
-            long days = System.currentTimeMillis()-(int) requestBody.getOrDefault("days", dayLimit)*24*60*60;
+            long days = System.currentTimeMillis()-(int) requestBody.getOrDefault("days", dayLimit)*24*60*60*1000;
             validateStr("type", type);
             List<Object> result = new ArrayList<>();
-            String query = "SELECT * FROM " + table + " WHERE action like '%" + type + "%' ORDER BY created_on DESC LIMIT " + listLimit;
-//            String query = "SELECT * FROM " + table + " WHERE action like '%" + type + "%' AND created_on > " + days + " ORDER BY created_on DESC LIMIT " + listLimit;
+            String query = "SELECT * FROM " + table + " WHERE action like '%" + type + "%' AND created_on > " + days + " ORDER BY created_on DESC LIMIT " + listLimit;
             System.out.println(query);
             ResultSet resultSet = postgres.executeQuery(query);
             while (resultSet.next()) {
