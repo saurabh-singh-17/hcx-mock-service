@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -20,25 +18,34 @@ public class HcxIntegratorService {
     @Autowired
     Environment env;
 
+    private HCXIntegrator integrator;
+
+
     public HCXIntegrator initialiseHcxIntegrator() throws Exception {
         /**
          * Initializing hcx_sdk to use helper functions and FHIR validator
          * Documentation is available at https://github.com/Swasth-Digital-Health-Foundation/hcx-platform/releases/tag/hcx-integrator-sdk-1.0.0
          */
 
-        System.out.println("we are intiliazing the integrator SDK" + env.getProperty("hcx_application.user"));
-        String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/sprint-29/demo-app/server/resources/keys/x509-private-key.pem";
-        String certificate = IOUtils.toString(new URL(keyUrl), StandardCharsets.UTF_8.toString());
+        if (integrator == null) {
+            System.out.println("We are intiliazing the integrator SDK: " + env.getProperty("hcx_application.user"));
+            String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/sprint-29/demo-app/server/resources/keys/x509-private-key.pem";
+            String certificate = IOUtils.toString(new URL(keyUrl), StandardCharsets.UTF_8.toString());
 
-        Map<String, Object> configMap = new HashMap<>();
-        configMap.put("protocolBasePath", "https://staging-hcx.swasth.app/api/v0.7");
-        configMap.put("participantCode", "1-521eaec7-8cb9-4b6c-8b4e-4dba300af6f4");
-        configMap.put("authBasePath", "https://staging-hcx.swasth.app/auth/realms/swasth-health-claim-exchange/protocol/openid-connect/token");
-        configMap.put("username", env.getProperty("hcx_application.user"));
-        configMap.put("password", env.getProperty("hcx_application.password"));
-        configMap.put("encryptionPrivateKey", certificate);
-        configMap.put("igUrl", "https://ig.hcxprotocol.io/v0.7.1");
-        HCXIntegrator.init(configMap);
-        return HCXIntegrator.getInstance();
+            Map<String, Object> configMap = new HashMap<>();
+            configMap.put("protocolBasePath", "https://staging-hcx.swasth.app/api/v0.7");
+            configMap.put("participantCode", "1-521eaec7-8cb9-4b6c-8b4e-4dba300af6f4");
+            configMap.put("authBasePath", "https://staging-hcx.swasth.app/auth/realms/swasth-health-claim-exchange/protocol/openid-connect/token");
+            configMap.put("username", env.getProperty("hcx_application.user"));
+            configMap.put("password", env.getProperty("hcx_application.password"));
+            configMap.put("encryptionPrivateKey", certificate);
+            configMap.put("igUrl", "https://ig.hcxprotocol.io/v0.7.1");
+            HCXIntegrator.init(configMap);
+            integrator = HCXIntegrator.getInstance();
+        } else {
+            System.out.println("The Integrator SDK initialized already: " + env.getProperty("hcx_application.user"));
+        }
+
+        return integrator;
     }
 }
