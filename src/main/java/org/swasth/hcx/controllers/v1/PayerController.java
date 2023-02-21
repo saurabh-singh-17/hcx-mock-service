@@ -19,7 +19,6 @@ import org.swasth.hcx.service.PostgresService;
 import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.utils.JSONUtils;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.*;
 
@@ -34,14 +33,23 @@ public class PayerController extends BaseController {
     @Autowired
     private PostgresService postgres;
 
+    @Value("${request_list.default_limit}")
+    private int listLimit;
+
+    @Value("${request_list.default_latest_data_by_day}")
+    private int dayLimit;
+
     @PostMapping(value = "/payer/request/list")
     public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody) {
         try {
             String type = (String) requestBody.getOrDefault("type", "");
-            validateProp("type", type);
-            int limit = (int) requestBody.getOrDefault("limit", 10);
+            System.out.println((int) requestBody.getOrDefault("days", dayLimit)*24*60*60);
+            long days = System.currentTimeMillis()-(int) requestBody.getOrDefault("days", dayLimit)*24*60*60;
+            validateStr("type", type);
             List<Object> result = new ArrayList<>();
-            String query = "SELECT * FROM " + table + " WHERE action like '%" + type + "%' ORDER BY created_on DESC LIMIT " + limit;
+            String query = "SELECT * FROM " + table + " WHERE action like '%" + type + "%' ORDER BY created_on DESC LIMIT " + listLimit;
+//            String query = "SELECT * FROM " + table + " WHERE action like '%" + type + "%' AND created_on > " + days + " ORDER BY created_on DESC LIMIT " + listLimit;
+            System.out.println(query);
             ResultSet resultSet = postgres.executeQuery(query);
             while (resultSet.next()) {
                 Map<String, Object> map = new HashMap<>();
@@ -94,7 +102,7 @@ public class PayerController extends BaseController {
         try {
             System.out.println("Review: " + status + " :: entity: " + entity + " :: request body: " + requestBody);
             String id = (String) requestBody.getOrDefault("request_id", "");
-            validateProp("request_id", id);
+            validateStr("request_id", id);
             Map<String,Object> output = new HashMap<>();
             if (StringUtils.equals(entity, "coverageeligibility")) {
                 String updateQuery = String.format("UPDATE %s SET status='%s',updated_on=%d WHERE request_id='%s' RETURNING %s,%s",
@@ -126,7 +134,7 @@ public class PayerController extends BaseController {
                 }
             } else {
                 String type = (String) requestBody.getOrDefault("type", "");
-                validateProp("type", type);
+                validateStr("type", type);
                 if (!Constants.PAYOR_APPROVAL_TYPES.contains(type))
                     throw new ClientException("Invalid type, allowed types are: " + Constants.PAYOR_APPROVAL_TYPES);
                 Map<String, Object> info = new HashMap<>();
@@ -206,11 +214,6 @@ public class PayerController extends BaseController {
         } catch (Exception e) {
             return exceptionHandler(new Response(), e);
         }
-    }
-
-    private void validateProp(String field, String value) throws ClientException {
-        if(StringUtils.isEmpty(value))
-            throw new ClientException("Missing required field " + field);
     }
 
     private String getStatus(Map<String,Object> addInfo){

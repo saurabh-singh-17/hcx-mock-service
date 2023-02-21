@@ -2,14 +2,12 @@ package org.swasth.hcx.controllers;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hcxprotocol.impl.HCXIncomingRequest;
-import io.hcxprotocol.impl.HCXOutgoingRequest;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
 import lombok.SneakyThrows;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,15 +15,15 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.swasth.hcx.dto.Request;
-import org.swasth.hcx.fhirexamples.OnActionFhirExamples;
-import org.swasth.hcx.service.HcxIntegratorService;
-import org.swasth.hcx.service.NotificationService;
-import org.swasth.hcx.dto.*;
+import org.swasth.hcx.dto.Response;
+import org.swasth.hcx.dto.ResponseError;
 import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.exception.ErrorCodes;
 import org.swasth.hcx.exception.ServerException;
 import org.swasth.hcx.exception.ServiceUnavailbleException;
+import org.swasth.hcx.fhirexamples.OnActionFhirExamples;
 import org.swasth.hcx.helpers.EventGenerator;
+import org.swasth.hcx.service.HcxIntegratorService;
 import org.swasth.hcx.service.HeaderAuditService;
 import org.swasth.hcx.service.NotificationService;
 import org.swasth.hcx.service.PayerService;
@@ -33,8 +31,6 @@ import org.swasth.hcx.utils.JSONUtils;
 import org.swasth.hcx.utils.OnActionCall;
 
 import javax.annotation.PostConstruct;
-import java.io.*;
-import java.security.interfaces.RSAPrivateKey;
 import java.util.*;
 
 import static org.swasth.hcx.utils.Constants.*;
@@ -209,9 +205,14 @@ public class BaseController {
         }
     }
 
-    protected void validateProp(String field, String value) throws org.swasth.common.exception.ClientException {
+    protected void validateStr(String field, String value) throws ClientException {
         if(StringUtils.isEmpty(value))
-            throw new org.swasth.common.exception.ClientException("Missing required field " + field);
+            throw new ClientException("Missing required field " + field);
+    }
+
+    protected void validateMap(String field, Map<String,Object> value) throws ClientException {
+        if(MapUtils.isEmpty(value))
+            throw new ClientException("Missing required field " + field);
     }
 
 }

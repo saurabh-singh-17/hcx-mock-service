@@ -1,9 +1,6 @@
 package org.swasth.hcx.controllers.support;
 
-import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.jwe.JweRequest;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.springframework.http.HttpStatus;
@@ -12,11 +9,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.swasth.hcx.controllers.BaseController;
-import org.swasth.hcx.utils.JSONUtils;
+import org.swasth.hcx.dto.Response;
 
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.security.KeyFactory;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -32,27 +28,34 @@ public class EnDeController extends BaseController {
 
     @PostMapping(value = "/payer/request/encrypt")
     public ResponseEntity<Object> encrypt(@RequestBody Map<String, Object> request) throws Exception {
-        String payload = (String) request.getOrDefault("payload", "");
-        String publicKeyPath = (String) request.getOrDefault("publicKeyPath",  "");
-        validateProp("payload", payload);
-        validateProp("publicKeyPath", publicKeyPath);
-        Map<String, Object> payloadMap = JSONUtils.deserialize(payload, Map.class) ;
-        JweRequest jweRequest = new JweRequest(new HashMap<>(), payloadMap);
-        jweRequest.encryptRequest(getPublicKey(publicKeyPath));
-        return new ResponseEntity<>(Collections.singletonMap("encryptedPayload", jweRequest.getEncryptedObject()), HttpStatus.OK);
+        try {
+            Map<String,Object> payload = (Map<String, Object>) request.getOrDefault("payload", new HashMap<>());
+            String publicKeyPath = (String) request.getOrDefault("publicKeyPath", "");
+            validateMap("payload", payload);
+            validateStr("publicKeyPath", publicKeyPath);
+            JweRequest jweRequest = new JweRequest(new HashMap<>(), payload);
+            jweRequest.encryptRequest(getPublicKey(publicKeyPath));
+            return new ResponseEntity<>(Collections.singletonMap("encryptedPayload", jweRequest.getEncryptedObject()), HttpStatus.OK);
+        } catch (Exception e) {
+            return exceptionHandler(new Response(), e);
+        }
     }
 
     @PostMapping(value = "/payer/request/decrypt")
     public ResponseEntity<Object> decrypt(@RequestBody Map<String, Object> request) throws Exception {
-        String payload = (String) request.getOrDefault("payload", "");
-        String privateKeyPath = (String) request.getOrDefault("privateKeyPath",  "");
-        validateProp("payload", payload);
-        validateProp("privateKeyPath", privateKeyPath);
-        JweRequest jweRequest = new JweRequest(new HashMap<>() {{
-            put("payload", payload);
-        }});
-        jweRequest.decryptRequest(getPrivateKey(privateKeyPath));
-        return new ResponseEntity<>(Collections.singletonMap("decryptedPayload", jweRequest.getEncryptedObject()), HttpStatus.OK);
+        try {
+            String payload = (String) request.getOrDefault("payload", "");
+            String privateKeyPath = (String) request.getOrDefault("privateKeyPath", "");
+            validateStr("payload", payload);
+            validateStr("privateKeyPath", privateKeyPath);
+            JweRequest jweRequest = new JweRequest(new HashMap<>() {{
+                put("payload", payload);
+            }});
+            jweRequest.decryptRequest(getPrivateKey(privateKeyPath));
+            return new ResponseEntity<>(Collections.singletonMap("decryptedPayload", jweRequest.getEncryptedObject()), HttpStatus.OK);
+        } catch (Exception e) {
+            return exceptionHandler(new Response(), e);
+        }
     }
 
     private RSAPublicKey getPublicKey(String keyPath) throws Exception {
