@@ -39,8 +39,9 @@ public class PayerController extends BaseController {
         try {
             String type = (String) requestBody.getOrDefault("type", "");
             validateProp("type", type);
+            int limit = (int) requestBody.getOrDefault("limit", 10);
             List<Object> result = new ArrayList<>();
-            String query = "SELECT * FROM " + table + " WHERE action like '%" + type + "%'";
+            String query = "SELECT * FROM " + table + " WHERE action like '%" + type + "%' ORDER BY created_on DESC LIMIT " + limit;
             ResultSet resultSet = postgres.executeQuery(query);
             while (resultSet.next()) {
                 Map<String, Object> map = new HashMap<>();
