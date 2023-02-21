@@ -47,7 +47,6 @@ public class PayerController extends BaseController {
             validateStr("type", type);
             List<Object> result = new ArrayList<>();
             String query = "SELECT * FROM " + table + " WHERE action like '%" + type + "%' AND created_on > " + days + " ORDER BY created_on DESC LIMIT " + listLimit;
-            System.out.println(query);
             ResultSet resultSet = postgres.executeQuery(query);
             while (resultSet.next()) {
                 Map<String, Object> map = new HashMap<>();
