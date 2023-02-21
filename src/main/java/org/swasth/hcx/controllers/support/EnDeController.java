@@ -23,30 +23,36 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 public class EnDeController extends BaseController {
 
-
     @PostMapping(value = "/payer/request/encrypt")
     public ResponseEntity<Object> encrypt(@RequestBody Map<String, Object> request) throws Exception {
         String payload = (String) request.getOrDefault("payload", "");
-        String publicKeyPath = (String) request.getOrDefault("keyPath",  "");
+        String publicKeyPath = (String) request.getOrDefault("publicKeyPath",  "");
+        validateProp("payload", payload);
+        validateProp("publicKeyPath", publicKeyPath);
         Map<String, Object> payloadMap = JSONUtils.deserialize(payload, Map.class) ;
-        JweRequest jweRequest = new JweRequest(new HashMap<String, Object>(), payloadMap);
+        JweRequest jweRequest = new JweRequest(new HashMap<>(), payloadMap);
         jweRequest.encryptRequest(getPublicKey(publicKeyPath));
-        return new ResponseEntity<>(jweRequest.getEncryptedObject(), HttpStatus.OK);
+        return new ResponseEntity<>(Collections.singletonMap("encryptedPayload", jweRequest.getEncryptedObject()), HttpStatus.OK);
     }
 
     @PostMapping(value = "/payer/request/decrypt")
     public ResponseEntity<Object> decrypt(@RequestBody Map<String, Object> request) throws Exception {
         String payload = (String) request.getOrDefault("payload", "");
-        String privateKeyPath = (String) request.getOrDefault("keyPath",  "");
-        JweRequest jweRequest = new JweRequest(new HashMap<String, String>() {{ put("payload", payload); }});
+        String privateKeyPath = (String) request.getOrDefault("privateKeyPath",  "");
+        validateProp("payload", payload);
+        validateProp("privateKeyPath", privateKeyPath);
+        JweRequest jweRequest = new JweRequest(new HashMap<>() {{
+            put("payload", payload);
+        }});
         jweRequest.decryptRequest(getPrivateKey(privateKeyPath));
-        return new ResponseEntity<>(jweRequest.getPayload(), HttpStatus.OK);
+        return new ResponseEntity<>(Collections.singletonMap("decryptedPayload", jweRequest.getEncryptedObject()), HttpStatus.OK);
     }
 
     private RSAPublicKey getPublicKey(String keyPath) throws Exception {

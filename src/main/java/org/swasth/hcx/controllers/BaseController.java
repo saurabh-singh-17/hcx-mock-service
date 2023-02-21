@@ -209,4 +209,9 @@ public class BaseController {
         }
     }
 
+    protected void validateProp(String field, String value) throws org.swasth.common.exception.ClientException {
+        if(StringUtils.isEmpty(value))
+            throw new org.swasth.common.exception.ClientException("Missing required field " + field);
+    }
+
 }
