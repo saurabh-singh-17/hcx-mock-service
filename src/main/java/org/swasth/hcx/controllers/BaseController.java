@@ -128,7 +128,10 @@ public class BaseController {
                 System.out.println("create the oncheck payload");
                 Bundle bundle = new Bundle();
                 if (COVERAGE_ELIGIBILITY_ONCHECK.equalsIgnoreCase(onApiAction)) {
-                    incoming.process(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK,output);
+                    boolean result = incoming.process(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK,output);
+                    if(!result){
+                        System.out.println("Error while processing incoming request: " +  output);
+                    }
                     System.out.println("outmap after decryption " +  output.get("fhirPayload"));
                     System.out.println("decryption successful");
                     //processing the decrypted incoming bundle
@@ -139,8 +142,10 @@ public class BaseController {
                     //sending the onaction call
                     sendResponse(p.encodeResourceToString(bundle),(String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
                 } else if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
-                    System.out.println("before sending output" + output);
-                    incoming.process(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT,output);
+                    boolean result = incoming.process(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT,output);
+                    if(!result){
+                        System.out.println("Error while processing incoming request: " +  output);
+                    }
                     System.out.println("outmap after decryption " +  output);
                     System.out.println("decryption successful");
                     //processing the decrypted incoming bundle
@@ -149,7 +154,10 @@ public class BaseController {
                     replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#","")).setResource(claimRes));
                     sendResponse(p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
                 } else if (PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
-                    incoming.process(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT,output);
+                    boolean result = incoming.process(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT,output);
+                    if(!result){
+                        System.out.println("Error while processing incoming request: " +  output);
+                    }
                     System.out.println("outmap after decryption " +  output);
                     System.out.println("decryption successful");
                     //processing the decrypted incoming bundle

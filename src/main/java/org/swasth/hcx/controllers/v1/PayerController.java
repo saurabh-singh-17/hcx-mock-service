@@ -138,8 +138,11 @@ public class PayerController extends BaseController {
                 Map<String, Object> info = new HashMap<>();
                 info.put("status", status);
                 info.put("remarks", requestBody.getOrDefault("remarks", ""));
-                if(StringUtils.equals(APPROVED, status))
+                if(StringUtils.equals(APPROVED, status)) {
+                    if(!requestBody.containsKey("approved_amount") || !(requestBody.get("approved_amount") instanceof Integer))
+                        throw new ClientException("Approved amount is mandatory field and should be a number");
                     info.put("approved_amount", requestBody.getOrDefault("approved_amount", 0));
+                }
                 String query = String.format("UPDATE %s SET additional_info = jsonb_set(additional_info::jsonb, '{%s}', '%s'),updated_on = %d WHERE request_id = '%s' RETURNING %s,%s,%s,%s,%s",
                         table, type, JSONUtils.serialize(info), System.currentTimeMillis(), id, "additional_info", "status", "raw_payload", "response_fhir", "action");
                 ResultSet resultSet = postgres.executeQuery(query);
