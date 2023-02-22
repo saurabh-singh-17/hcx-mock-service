@@ -48,7 +48,7 @@ public class PayerController extends BaseController {
             int offset = (int) requestBody.getOrDefault("offset", 0);
             validateStr("type", type);
             List<Object> result = new ArrayList<>();
-            String query = "SELECT * FROM " + table + " WHERE action like '%" + type + "%' AND created_on > " + days + " ORDER BY created_on DESC OFFSET " + offset + " LIMIT " + limit;
+            String query = "SELECT * FROM " + table + " WHERE action like '%" + type + "%' AND created_on > " + days + " ORDER BY created_on DESC LIMIT " + limit + " OFFSET " + offset;
             ResultSet resultSet = postgres.executeQuery(query);
             while (resultSet.next()) {
                 Map<String, Object> map = new HashMap<>();
