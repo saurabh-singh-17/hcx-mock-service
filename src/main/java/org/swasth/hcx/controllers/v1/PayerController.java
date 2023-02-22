@@ -46,28 +46,40 @@ public class PayerController extends BaseController {
             long days = System.currentTimeMillis()-(int) requestBody.getOrDefault("days", dayLimit)*24*60*60*1000;
             int limit = (int) requestBody.getOrDefault("limit", listLimit);
             int offset = (int) requestBody.getOrDefault("offset", 0);
+            String senderCode = (String) requestBody.getOrDefault("sender_code", "");
+            String recipientCode = (String) requestBody.getOrDefault("recipient_code", "");
             validateStr("type", type);
             List<Object> result = new ArrayList<>();
-            String query = "SELECT * FROM " + table + " WHERE action = '" + type + "' AND created_on > " + days + " ORDER BY created_on DESC LIMIT " + limit + " OFFSET " + offset;
+            StringBuilder countQuery = new StringBuilder("SELECT count(*) FROM " + table + " WHERE action = '" + type + "' AND created_on > " + days);
+            addToQuery(countQuery, senderCode, "sender_code");
+            addToQuery(countQuery, recipientCode, "recipient_code");
+            ResultSet resultSet1 = postgres.executeQuery(countQuery.toString());
+            Map<String, Object> resp = new HashMap<>();
+            while (resultSet1.next()) {
+                resp.put("count", resultSet1.getInt("count"));
+            }
+            String query = countQuery.toString().replace("count(*)", "count(*) over(),*") + " ORDER BY created_on DESC LIMIT " + limit + " OFFSET " + offset;
             ResultSet resultSet = postgres.executeQuery(query);
             while (resultSet.next()) {
                 Map<String, Object> map = new HashMap<>();
+                map.put("sender_code", resultSet.getString("sender_code"));
+                map.put("recipient_code", resultSet.getString("recipient_code"));
                 map.put("request_id", resultSet.getString("request_id"));
                 map.put("status", resultSet.getString("status"));
                 map.put("additional_info", JSONUtils.deserialize(resultSet.getString("additional_info"), Map.class));
                 map.put("payload", JSONUtils.deserialize(resultSet.getString("request_fhir"), Map.class));
                 result.add(map);
             }
-            String countQuery = "SELECT count(*) FROM " + table + " WHERE action = '" + type + "' AND created_on > " + days;
-            ResultSet resultSet1 = postgres.executeQuery(countQuery);
-            Map<String, Object> resp = new HashMap<>();
-            while (resultSet1.next()) {
-                resp.put("count", resultSet1.getInt("count"));
-            }
             resp.put(type, result);
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
             return exceptionHandler(new Response(), e);
+        }
+    }
+
+    private void addToQuery(StringBuilder query, String code, String field){
+        if(!StringUtils.isEmpty(code)) {
+            query.append(" AND " + field + " = '" + code + "'");
         }
     }
 
