@@ -48,7 +48,7 @@ public class PayerController extends BaseController {
             int offset = (int) requestBody.getOrDefault("offset", 0);
             validateStr("type", type);
             List<Object> result = new ArrayList<>();
-            String query = "SELECT * FROM " + table + " WHERE action like '%" + type + "%' AND created_on > " + days + " ORDER BY created_on DESC LIMIT " + limit + " OFFSET " + offset;
+            String query = "SELECT * FROM " + table + " WHERE action = '" + type + "' AND created_on > " + days + " ORDER BY created_on DESC LIMIT " + limit + " OFFSET " + offset;
             ResultSet resultSet = postgres.executeQuery(query);
             while (resultSet.next()) {
                 Map<String, Object> map = new HashMap<>();
@@ -58,7 +58,7 @@ public class PayerController extends BaseController {
                 map.put("payload", JSONUtils.deserialize(resultSet.getString("request_fhir"), Map.class));
                 result.add(map);
             }
-            String countQuery = "SELECT count(*) FROM " + table + " WHERE action like '%" + type + "%' AND created_on > " + days;
+            String countQuery = "SELECT count(*) FROM " + table + " WHERE action = '" + type + "' AND created_on > " + days;
             ResultSet resultSet1 = postgres.executeQuery(countQuery);
             Map<String, Object> resp = new HashMap<>();
             while (resultSet1.next()) {
@@ -120,19 +120,8 @@ public class PayerController extends BaseController {
                 if(status.equals(APPROVED)){
                     onActionCall.sendOnAction(respfhir, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
                 } else {
-                    IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
-                    Bundle newBundle = p.parseResource(Bundle.class, respfhir);
-                    for(int i=0; i < newBundle.getEntry().size(); i++){
-                        Bundle.BundleEntryComponent par = newBundle.getEntry().get(i);
-                        DomainResource dm = (DomainResource) par.getResource();
-                        System.out.println("type of dm" + dm);
-                        if(dm.getClass() == CoverageEligibilityResponse.class){
-                            System.out.println("index " + i);
-                            ((CoverageEligibilityResponse) dm).getError().add(new CoverageEligibilityResponse.ErrorsComponent(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication-error").setCode("a001").setDisplay("Coverage Eligibility Request has been rejected"))));
-                        }
-                    }
-                    String bundleString = p.encodeResourceToString(newBundle);
-                    System.out.println("Failure Response bundle: " + bundleString);
+                    String bundleString = getCoverageRejectedBundle(respfhir);
+                    System.out.println("Rejected Response bundle: " + bundleString);
                     onActionCall.sendOnAction(bundleString, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
                 }
             } else {
@@ -173,40 +162,12 @@ public class PayerController extends BaseController {
                     }
 
                     if (overallStatus.equals(APPROVED)) {
-                        IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
-                        Bundle newBundle = p.parseResource(Bundle.class, respfhir);
-                        for(int i=0; i < newBundle.getEntry().size(); i++){
-                            Bundle.BundleEntryComponent par = newBundle.getEntry().get(i);
-                            DomainResource dm = (DomainResource) par.getResource();
-                            System.out.println("type of dm" + dm);
-                            if(dm.getClass() == ClaimResponse.class){
-                                System.out.println("index " + i);
-                                if(entity.equals("preauth")){
-                                    ((ClaimResponse) dm).setUse(ClaimResponse.Use.PREAUTHORIZATION);
-                                }
-                                ((ClaimResponse) dm).getTotal().set(0,new ClaimResponse.TotalComponent().setCategory(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication").setCode("benefit"))).setAmount(new Money().setValue((int) requestBody.getOrDefault("approved_amount", 0)).setCurrency("INR")));
-                            }
-                        }
-                        String bundleString = p.encodeResourceToString(newBundle);
-                        System.out.println("Success Response bundle: " + bundleString);
+                        String bundleString = getApprovedClaimBundle(requestBody, entity, respfhir);
+                        System.out.println("Approved Response bundle: " + bundleString);
                         onActionCall.sendOnAction(bundleString, action.contains("preauth") ? Operations.PRE_AUTH_ON_SUBMIT : Operations.CLAIM_ON_SUBMIT, actionJwe, "response.complete", output);
                     } else if (overallStatus.equals(REJECTED)){
-                        IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
-                        Bundle newBundle = p.parseResource(Bundle.class, respfhir);
-                        for(int i=0; i < newBundle.getEntry().size(); i++){
-                            Bundle.BundleEntryComponent par = newBundle.getEntry().get(i);
-                            DomainResource dm = (DomainResource) par.getResource();
-                            System.out.println("type of dm" + dm);
-                            if(dm.getClass() == ClaimResponse.class){
-                                System.out.println("index " + i);
-                                if(entity.equals("preauth")){
-                                    ((ClaimResponse) dm).setUse(ClaimResponse.Use.PREAUTHORIZATION);
-                                }
-                                ((ClaimResponse) dm).getError().add(new ClaimResponse.ErrorComponent(new CodeableConcept(new Coding().setSystem("http://hcxprotocol.io/codes/claim-error-codes").setCode("AUTH-001").setDisplay(StringUtils.capitalize(type) + " adjudication failed"))));
-                            }
-                        }
-                        String bundleString = p.encodeResourceToString(newBundle);
-                        System.out.println("Failure Response bundle: " + bundleString);
+                        String bundleString = getRejectedClaimBundle(entity, type, respfhir);
+                        System.out.println("Rejected Response bundle: " + bundleString);
                         onActionCall.sendOnAction(bundleString, action.contains("preauth") ? Operations.PRE_AUTH_ON_SUBMIT : Operations.CLAIM_ON_SUBMIT, actionJwe, "response.complete", output);
                     }
                 }
@@ -220,6 +181,58 @@ public class PayerController extends BaseController {
         } catch (Exception e) {
             return exceptionHandler(new Response(), e);
         }
+    }
+
+    private static String getCoverageRejectedBundle(String respfhir) {
+        IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+        Bundle newBundle = p.parseResource(Bundle.class, respfhir);
+        for(int i=0; i < newBundle.getEntry().size(); i++){
+            Bundle.BundleEntryComponent par = newBundle.getEntry().get(i);
+            DomainResource dm = (DomainResource) par.getResource();
+            System.out.println("type of dm" + dm);
+            if(dm.getClass() == CoverageEligibilityResponse.class){
+                System.out.println("index " + i);
+                ((CoverageEligibilityResponse) dm).getError().add(new CoverageEligibilityResponse.ErrorsComponent(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication-error").setCode("a001").setDisplay("Coverage Eligibility Request has been rejected"))));
+            }
+        }
+        String bundleString = p.encodeResourceToString(newBundle);
+        return bundleString;
+    }
+
+    private static String getApprovedClaimBundle(Map<String, Object> requestBody, String entity, String respfhir) {
+        IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+        Bundle newBundle = p.parseResource(Bundle.class, respfhir);
+        for(int i=0; i < newBundle.getEntry().size(); i++){
+            Bundle.BundleEntryComponent par = newBundle.getEntry().get(i);
+            DomainResource dm = (DomainResource) par.getResource();
+            System.out.println("type of dm" + dm);
+            if(dm.getClass() == ClaimResponse.class){
+                System.out.println("index " + i);
+                if(entity.equals("preauth")){
+                    ((ClaimResponse) dm).setUse(ClaimResponse.Use.PREAUTHORIZATION);
+                }
+                ((ClaimResponse) dm).getTotal().set(0,new ClaimResponse.TotalComponent().setCategory(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication").setCode("benefit"))).setAmount(new Money().setValue((int) requestBody.getOrDefault("approved_amount", 0)).setCurrency("INR")));
+            }
+        }
+        return p.encodeResourceToString(newBundle);
+    }
+
+    private static String getRejectedClaimBundle(String entity, String type, String respfhir) {
+        IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+        Bundle newBundle = p.parseResource(Bundle.class, respfhir);
+        for(int i=0; i < newBundle.getEntry().size(); i++){
+            Bundle.BundleEntryComponent par = newBundle.getEntry().get(i);
+            DomainResource dm = (DomainResource) par.getResource();
+            System.out.println("type of dm" + dm);
+            if(dm.getClass() == ClaimResponse.class){
+                System.out.println("index " + i);
+                if(entity.equals("preauth")){
+                    ((ClaimResponse) dm).setUse(ClaimResponse.Use.PREAUTHORIZATION);
+                }
+                ((ClaimResponse) dm).getError().add(new ClaimResponse.ErrorComponent(new CodeableConcept(new Coding().setSystem("http://hcxprotocol.io/codes/claim-error-codes").setCode("AUTH-001").setDisplay(StringUtils.capitalize(type) + " adjudication failed"))));
+            }
+        }
+        return p.encodeResourceToString(newBundle);
     }
 
     private String getStatus(Map<String,Object> addInfo){

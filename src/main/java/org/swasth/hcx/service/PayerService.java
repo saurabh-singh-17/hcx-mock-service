@@ -33,8 +33,18 @@ public class PayerService {
             info.put("medical", Collections.singletonMap("status", PENDING));
             info.put("financial", Collections.singletonMap("status", PENDING));
         }
-        String query = String.format("INSERT INTO %s (request_id,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on) VALUES ('%s','%s','%s','%s','%s','%s','%s',%d,%d);",
-                table, request.getApiCallId(), request.getAction(), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis());
+        System.out.println("action" + request.getAction());
+        System.out.println("action" + getEntity(request.getAction()));
+        String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d);",
+                table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis());
         postgres.execute(query);
+    }
+
+    private String getEntity(String action){
+        Map<String,String> actionMap = new HashMap();
+        actionMap.put("/v0.7/coverageeligibility/check", "coverageeligibility");
+        actionMap.put("/v0.7/preauth/submit", "preauth");
+        actionMap.put("/v0.7/claim/submit", "claim");
+        return actionMap.get(action);
     }
 }
