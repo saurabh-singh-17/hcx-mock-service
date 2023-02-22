@@ -44,9 +44,11 @@ public class PayerController extends BaseController {
         try {
             String type = (String) requestBody.getOrDefault("type", "");
             long days = System.currentTimeMillis()-(int) requestBody.getOrDefault("days", dayLimit)*24*60*60*1000;
+            int limit = (int) requestBody.getOrDefault("limit", listLimit);
+            int offset = (int) requestBody.getOrDefault("offset", 0);
             validateStr("type", type);
             List<Object> result = new ArrayList<>();
-            String query = "SELECT * FROM " + table + " WHERE action like '%" + type + "%' AND created_on > " + days + " ORDER BY created_on DESC LIMIT " + listLimit;
+            String query = "SELECT * FROM " + table + " WHERE action like '%" + type + "%' AND created_on > " + days + " ORDER BY created_on DESC LIMIT " + limit + " OFFSET " + offset;
             ResultSet resultSet = postgres.executeQuery(query);
             while (resultSet.next()) {
                 Map<String, Object> map = new HashMap<>();
@@ -56,9 +58,13 @@ public class PayerController extends BaseController {
                 map.put("payload", JSONUtils.deserialize(resultSet.getString("request_fhir"), Map.class));
                 result.add(map);
             }
+            String countQuery = "SELECT count(*) FROM " + table + " WHERE action like '%" + type + "%' AND created_on > " + days;
+            ResultSet resultSet1 = postgres.executeQuery(countQuery);
             Map<String, Object> resp = new HashMap<>();
+            while (resultSet1.next()) {
+                resp.put("count", resultSet1.getInt("count"));
+            }
             resp.put(type, result);
-            resp.put("count", result.size());
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
             return exceptionHandler(new Response(), e);

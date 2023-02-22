@@ -27,7 +27,7 @@ import java.util.Map;
 public class EnDeController extends BaseController {
 
     @PostMapping(value = "/payer/request/encrypt")
-    public ResponseEntity<Object> encrypt(@RequestBody Map<String, Object> request) throws Exception {
+    public ResponseEntity<Object> encrypt(@RequestBody Map<String, Object> request) {
         try {
             Map<String,Object> payload = (Map<String, Object>) request.getOrDefault("payload", new HashMap<>());
             String publicKeyPath = (String) request.getOrDefault("publicKeyPath", "");
@@ -42,7 +42,7 @@ public class EnDeController extends BaseController {
     }
 
     @PostMapping(value = "/payer/request/decrypt")
-    public ResponseEntity<Object> decrypt(@RequestBody Map<String, Object> request) throws Exception {
+    public ResponseEntity<Object> decrypt(@RequestBody Map<String, Object> request) {
         try {
             String payload = (String) request.getOrDefault("payload", "");
             String privateKeyPath = (String) request.getOrDefault("privateKeyPath", "");
