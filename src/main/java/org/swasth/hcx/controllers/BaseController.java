@@ -140,7 +140,7 @@ public class BaseController {
                     replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityResponseBundle.html", CoverageEligibilityRequest.class, new Bundle.BundleEntryComponent().setFullUrl(covRes.getResourceType() + "/" + covRes.getId().toString().replace("#","")).setResource(covRes));
                     System.out.println("bundle reply " + p.encodeResourceToString(bundle));
                     //sending the onaction call
-                    sendResponse(p.encodeResourceToString(bundle),(String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
+                    sendResponse(apiAction,p.encodeResourceToString(bundle),(String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
                 } else if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
                     boolean result = incoming.process(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT,output);
                     if(!result){
@@ -152,7 +152,7 @@ public class BaseController {
                     bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
                     ClaimResponse claimRes = OnActionFhirExamples.claimResponseExample();
                     replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#","")).setResource(claimRes));
-                    sendResponse(p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
+                    sendResponse(apiAction,p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
                 } else if (PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
                     boolean result = incoming.process(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT,output);
                     if(!result){
@@ -165,17 +165,17 @@ public class BaseController {
                     ClaimResponse preAuthRes = OnActionFhirExamples.claimResponseExample();
                     preAuthRes.setUse(ClaimResponse.Use.PREAUTHORIZATION);
                     replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(preAuthRes.getResourceType() + "/" + preAuthRes.getId().toString().replace("#","")).setResource(preAuthRes));
-                    sendResponse(p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
+                    sendResponse(apiAction,p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
                 }
         }
 
     }
 
-    private void sendResponse(String respfhir, String reqFhir, Operations operation, String actionJwe, String onActionStatus, Map<String,Object> output) throws Exception {
+    private void sendResponse(String apiAction, String respfhir, String reqFhir, Operations operation, String actionJwe, String onActionStatus, Map<String,Object> output) throws Exception {
         if (autoResponse) {
             onActionCall.sendOnAction(respfhir, operation, actionJwe, onActionStatus, output);
         } else {
-            Request request = new Request(Collections.singletonMap("payload", actionJwe), operation.getOperation());
+            Request request = new Request(Collections.singletonMap("payload", actionJwe), apiAction);
             payerService.process(request, reqFhir, respfhir);
         }
     }
