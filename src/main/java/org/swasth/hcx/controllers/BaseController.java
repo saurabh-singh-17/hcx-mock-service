@@ -206,7 +206,7 @@ public class BaseController {
     }
 
     protected ResponseEntity<Object> exceptionHandler(Response response, Exception e){
-        logger.error("Exception: " + e.getMessage() + " :: trace: " + e.getStackTrace());
+        e.printStackTrace();
         if (e instanceof ClientException) {
             return new ResponseEntity<>(errorResponse(response, ((ClientException) e).getErrCode(), e), HttpStatus.BAD_REQUEST);
         } else if (e instanceof ServiceUnavailbleException) {
