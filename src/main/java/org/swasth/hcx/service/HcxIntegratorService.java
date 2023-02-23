@@ -34,7 +34,7 @@ public class HcxIntegratorService {
 
             Map<String, Object> configMap = new HashMap<>();
             configMap.put("protocolBasePath", "https://staging-hcx.swasth.app/api/v0.7");
-            configMap.put("participantCode", "1-521eaec7-8cb9-4b6c-8b4e-4dba300af6f4");
+            configMap.put("participantCode", "1-29482df3-e875-45ef-a4e9-592b6f565782");
             configMap.put("authBasePath", "https://staging-hcx.swasth.app/auth/realms/swasth-health-claim-exchange/protocol/openid-connect/token");
             configMap.put("username", env.getProperty("hcx_application.user"));
             configMap.put("password", env.getProperty("hcx_application.password"));

@@ -35,7 +35,7 @@ public class EnDeController extends BaseController {
             validateStr("publicKeyPath", publicKeyPath);
             JweRequest jweRequest = new JweRequest(new HashMap<>(), payload);
             jweRequest.encryptRequest(getPublicKey(publicKeyPath));
-            return new ResponseEntity<>(Collections.singletonMap("encryptedPayload", jweRequest.getEncryptedObject()), HttpStatus.OK);
+            return new ResponseEntity<>(Collections.singletonMap("encryptedPayload", jweRequest.getEncryptedObject().get("payload")), HttpStatus.OK);
         } catch (Exception e) {
             return exceptionHandler(new Response(), e);
         }
@@ -52,7 +52,7 @@ public class EnDeController extends BaseController {
                 put("payload", payload);
             }});
             jweRequest.decryptRequest(getPrivateKey(privateKeyPath));
-            return new ResponseEntity<>(Collections.singletonMap("decryptedPayload", jweRequest.getEncryptedObject()), HttpStatus.OK);
+            return new ResponseEntity<>(Collections.singletonMap("decryptedPayload", jweRequest.getPayload()), HttpStatus.OK);
         } catch (Exception e) {
             return exceptionHandler(new Response(), e);
         }
