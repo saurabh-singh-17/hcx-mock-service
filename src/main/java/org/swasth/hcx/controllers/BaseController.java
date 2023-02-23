@@ -9,6 +9,8 @@ import lombok.SneakyThrows;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -74,6 +76,8 @@ public class BaseController {
     public void init(){
         hcxIntegrator = hcxIntegratorService.initialiseHcxIntegrator();
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(BaseController.class);
 
     protected Response errorResponse(Response response, ErrorCodes code, java.lang.Exception e){
         ResponseError error= new ResponseError(code, e.getMessage(), e.getCause());
@@ -202,6 +206,7 @@ public class BaseController {
     }
 
     protected ResponseEntity<Object> exceptionHandler(Response response, Exception e){
+        logger.error("Exception: " + e.getMessage() + " :: trace: " + e.getStackTrace());
         if (e instanceof ClientException) {
             return new ResponseEntity<>(errorResponse(response, ((ClientException) e).getErrCode(), e), HttpStatus.BAD_REQUEST);
         } else if (e instanceof ServiceUnavailbleException) {
