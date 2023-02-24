@@ -31,9 +31,10 @@ public class EnDeController extends BaseController {
         try {
             Map<String,Object> payload = (Map<String, Object>) request.getOrDefault("payload", new HashMap<>());
             String publicKeyPath = (String) request.getOrDefault("publicKeyPath", "");
+            Map<String,Object> headers = (Map<String, Object>) request.getOrDefault("headers", new HashMap<>());
             validateMap("payload", payload);
             validateStr("publicKeyPath", publicKeyPath);
-            JweRequest jweRequest = new JweRequest(new HashMap<>(), payload);
+            JweRequest jweRequest = new JweRequest(headers, payload);
             jweRequest.encryptRequest(getPublicKey(publicKeyPath));
             return new ResponseEntity<>(Collections.singletonMap("encryptedPayload", jweRequest.getEncryptedObject().get("payload")), HttpStatus.OK);
         } catch (Exception e) {
@@ -52,7 +53,11 @@ public class EnDeController extends BaseController {
                 put("payload", payload);
             }});
             jweRequest.decryptRequest(getPrivateKey(privateKeyPath));
-            return new ResponseEntity<>(Collections.singletonMap("decryptedPayload", jweRequest.getPayload()), HttpStatus.OK);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("headers", jweRequest.getHeaders());
+            response.put("decryptedPayload", jweRequest.getPayload());
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return exceptionHandler(new Response(), e);
         }
