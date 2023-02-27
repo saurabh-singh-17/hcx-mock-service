@@ -23,10 +23,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestController
+
 public class EnDeController extends BaseController {
 
-    @PostMapping(value = "/payer/request/encrypt")
     public ResponseEntity<Object> encrypt(@RequestBody Map<String, Object> request) {
         try {
             Map<String,Object> payload = (Map<String, Object>) request.getOrDefault("payload", new HashMap<>());
@@ -42,7 +41,6 @@ public class EnDeController extends BaseController {
         }
     }
 
-    @PostMapping(value = "/payer/request/decrypt")
     public ResponseEntity<Object> decrypt(@RequestBody Map<String, Object> request) {
         try {
             String payload = (String) request.getOrDefault("payload", "");
