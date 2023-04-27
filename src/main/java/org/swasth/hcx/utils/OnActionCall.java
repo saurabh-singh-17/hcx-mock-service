@@ -42,16 +42,8 @@ public class OnActionCall {
 
     private String onCheckPayloadType;
 
-    private HCXIntegrator hcxIntegrator;
-
     @Autowired
     protected HcxIntegratorService hcxIntegratorService;
-
-    @SneakyThrows
-    @PostConstruct
-    public void init(){
-        hcxIntegrator = hcxIntegratorService.initialiseHcxIntegrator();
-    }
 
     public static String getRandomChestItem(List<String> items) {
         return items.get(new Random().nextInt(items.size()));
@@ -83,8 +75,9 @@ public class OnActionCall {
         return encryptedObject;
     }
     @Async("asyncExecutor")
-    public void sendOnAction(String fhirPayload, Operations operation, String actionJwe, String onActionStatus, Map<String,Object> output) throws Exception{
+    public void sendOnAction(String recipientCode, String fhirPayload, Operations operation, String actionJwe, String onActionStatus, Map<String,Object> output) throws Exception{
         IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+        HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(recipientCode);
         hcxIntegrator.processOutgoingCallback(fhirPayload, operation,"", actionJwe,onActionStatus, new HashMap<>(), output);
         System.out.println("output of onaction" + output);
     }

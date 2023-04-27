@@ -27,7 +27,7 @@ import static org.swasth.hcx.utils.Constants.*;
 @RestController
 public class PayerController extends BaseController {
 
-    @Value("${postgres.payerTable}")
+    @Value("${postgres.table.payerData}")
     private String table;
 
     @Autowired
@@ -118,6 +118,7 @@ public class PayerController extends BaseController {
             System.out.println("Review: " + status + " :: entity: " + entity + " :: request body: " + requestBody);
             String id = (String) requestBody.getOrDefault("request_id", "");
             validateStr("request_id", id);
+            validateStr("recipient_code", (String) requestBody.getOrDefault("recipient_code", ""));
             Map<String,Object> output = new HashMap<>();
             if (StringUtils.equals(entity, "coverageeligibility")) {
                 String updateQuery = String.format("UPDATE %s SET status='%s',updated_on=%d WHERE request_id='%s' RETURNING %s,%s",
@@ -130,11 +131,11 @@ public class PayerController extends BaseController {
                     actionJwe = resultset.getString("raw_payload");
                 }
                 if(status.equals(APPROVED)){
-                    onActionCall.sendOnAction(respfhir, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
+                    onActionCall.sendOnAction((String) requestBody.get("recipient_code"), respfhir, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
                 } else {
                     String bundleString = getCoverageRejectedBundle(respfhir);
                     System.out.println("Rejected Response bundle: " + bundleString);
-                    onActionCall.sendOnAction(bundleString, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
+                    onActionCall.sendOnAction((String) requestBody.get("recipient_code"), bundleString, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
                 }
             } else {
                 String type = (String) requestBody.getOrDefault("type", "");
@@ -176,11 +177,11 @@ public class PayerController extends BaseController {
                     if (overallStatus.equals(APPROVED)) {
                         String bundleString = getApprovedClaimBundle(requestBody, entity, respfhir);
                         System.out.println("Approved Response bundle: " + bundleString);
-                        onActionCall.sendOnAction(bundleString, action.contains("preauth") ? Operations.PRE_AUTH_ON_SUBMIT : Operations.CLAIM_ON_SUBMIT, actionJwe, "response.complete", output);
+                        onActionCall.sendOnAction((String) requestBody.get("recipient_code"), bundleString, action.contains("preauth") ? Operations.PRE_AUTH_ON_SUBMIT : Operations.CLAIM_ON_SUBMIT, actionJwe, "response.complete", output);
                     } else if (overallStatus.equals(REJECTED)){
                         String bundleString = getRejectedClaimBundle(entity, type, respfhir);
                         System.out.println("Rejected Response bundle: " + bundleString);
-                        onActionCall.sendOnAction(bundleString, action.contains("preauth") ? Operations.PRE_AUTH_ON_SUBMIT : Operations.CLAIM_ON_SUBMIT, actionJwe, "response.complete", output);
+                        onActionCall.sendOnAction((String) requestBody.get("recipient_code"), bundleString, action.contains("preauth") ? Operations.PRE_AUTH_ON_SUBMIT : Operations.CLAIM_ON_SUBMIT, actionJwe, "response.complete", output);
                     }
                 }
             }

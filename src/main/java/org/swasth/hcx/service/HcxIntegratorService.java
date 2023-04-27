@@ -5,9 +5,14 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.swasth.hcx.exception.ClientException;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,33 +23,44 @@ public class HcxIntegratorService {
     @Autowired
     Environment env;
 
-    private HCXIntegrator integrator;
+    @Autowired
+    private PostgresService postgres;
+
+    private Map<String,Object> configCache = new HashMap<>();
 
 
-    public HCXIntegrator initialiseHcxIntegrator() throws Exception {
+    public HCXIntegrator getHCXIntegrator(String participantCode) throws Exception {
         /**
          * Initializing hcx_sdk to use helper functions and FHIR validator
          * Documentation is available at https://github.com/Swasth-Digital-Health-Foundation/hcx-platform/releases/tag/hcx-integrator-sdk-1.0.0
          */
+        System.out.println("We are intiliazing the integrator SDK: " + env.getProperty("hcx_application.user"));
+        if(!configCache.containsKey(participantCode))
+            configCache.put(participantCode, HCXIntegrator.getInstance(getParticipantConfig(participantCode)));
+        return (HCXIntegrator) configCache.get(participantCode);
+    }
 
-        if (integrator == null) {
-            System.out.println("We are intiliazing the integrator SDK: " + env.getProperty("hcx_application.user"));
-            String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/sprint-29/demo-app/server/resources/keys/x509-private-key.pem";
-            String certificate = IOUtils.toString(new URL(keyUrl), StandardCharsets.UTF_8.toString());
-
-            Map<String, Object> configMap = new HashMap<>();
-            configMap.put("protocolBasePath", "https://staging-hcx.swasth.app/api/v0.7");
-            configMap.put("participantCode", "1-29482df3-e875-45ef-a4e9-592b6f565782");
-            configMap.put("authBasePath", "https://staging-hcx.swasth.app/auth/realms/swasth-health-claim-exchange/protocol/openid-connect/token");
-            configMap.put("username", env.getProperty("hcx_application.user"));
-            configMap.put("password", env.getProperty("hcx_application.password"));
-            configMap.put("encryptionPrivateKey", certificate);
-            configMap.put("igUrl", "https://ig.hcxprotocol.io/v0.7.1");
-            integrator = HCXIntegrator.getInstance(configMap);
+    public Map<String,Object> getParticipantConfig(String participantCode) throws ClientException, SQLException, IOException {
+        String query = String.format("SELECT * FROM %s WHERE participant_code='%s'", env.getProperty("postgres.table.mockParticipant"), participantCode);
+        ResultSet resultSet = postgres.executeQuery(query);
+        if(resultSet.next()){
+            return getConfig(participantCode, resultSet.getString("primary_email"), resultSet.getString("password"),  resultSet.getString("private_key"));
         } else {
-            System.out.println("The Integrator SDK initialized already: " + env.getProperty("hcx_application.user"));
+            return getConfig(env.getProperty("mock_payer.participant_code"), env.getProperty("mock_payer.username"), env.getProperty("mock_payer.password"),env.getProperty("mock_payer.private_key"));
         }
+    }
 
-        return integrator;
+    public Map<String,Object> getConfig(String code, String username, String password, String privateKey) throws IOException {
+        String certificate = IOUtils.toString(new URL(privateKey), StandardCharsets.UTF_8.toString());
+
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put("protocolBasePath", env.getProperty("hcx_application.url") + "/api/" + env.getProperty("hcx_application.api_version"));
+        configMap.put("participantCode", code);
+        configMap.put("authBasePath", env.getProperty("hcx_application.token_url"));
+        configMap.put("username", username);
+        configMap.put("password", password);
+        configMap.put("encryptionPrivateKey", certificate);
+
+        return configMap;
     }
 }
