@@ -20,7 +20,7 @@ import static org.swasth.hcx.utils.Constants.PENDING;
 @Service
 public class PayerService {
 
-    @Value("${postgres.payerTable}")
+    @Value("${postgres.table.payerData}")
     private String table;
 
     @Autowired

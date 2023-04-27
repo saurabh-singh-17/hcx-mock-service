@@ -58,23 +58,11 @@ public class BaseController {
 
     private String baseURL;
 
-
-    @Value("${hcx_application.url}")
-    private String hcxBasePath;
-
     @Value("${autoresponse}")
     private Boolean autoResponse;
 
     @Autowired
     private PayerService payerService;
-
-    private HCXIntegrator hcxIntegrator;
-
-    @SneakyThrows
-    @PostConstruct
-    public void init(){
-        hcxIntegrator = hcxIntegratorService.initialiseHcxIntegrator();
-    }
 
     private static final Logger logger = LoggerFactory.getLogger(BaseController.class);
 
@@ -116,6 +104,8 @@ public class BaseController {
                 Map<String, Object> outputOfOnAction = new HashMap<>();
                 System.out.println("create the oncheck payload");
                 Bundle bundle = new Bundle();
+                Request req = new Request(requestBody, apiAction);
+                HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(req.getRecipientCode());
                 if (COVERAGE_ELIGIBILITY_ONCHECK.equalsIgnoreCase(onApiAction)) {
                     boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK,output);
                     if(!result){
@@ -161,10 +151,10 @@ public class BaseController {
     }
 
     private void sendResponse(String apiAction, String respfhir, String reqFhir, Operations operation, String actionJwe, String onActionStatus, Map<String,Object> output) throws Exception {
+        Request request = new Request(Collections.singletonMap("payload", actionJwe), apiAction);
         if (autoResponse) {
-            onActionCall.sendOnAction(respfhir, operation, actionJwe, onActionStatus, output);
+            onActionCall.sendOnAction(request.getRecipientCode(), respfhir, operation, actionJwe, onActionStatus, output);
         } else {
-            Request request = new Request(Collections.singletonMap("payload", actionJwe), apiAction);
             payerService.process(request, reqFhir, respfhir);
         }
     }
