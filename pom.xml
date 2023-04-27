@@ -35,9 +35,7 @@
 		<dependency>
 			<groupId>io.hcxprotocol</groupId>
 			<artifactId>hcx-integrator-sdk</artifactId>
-			<version>1.0.2</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/lib/hcx-integrator-sdk-1.0.2.jar</systemPath>
+			<version>1.0.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.swasth</groupId>

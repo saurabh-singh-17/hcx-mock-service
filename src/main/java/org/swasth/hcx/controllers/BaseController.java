@@ -2,7 +2,6 @@ package org.swasth.hcx.controllers;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
-import io.hcxprotocol.impl.HCXIncomingRequest;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
 import lombok.SneakyThrows;
@@ -104,19 +103,6 @@ public class BaseController {
         }
     }
 
-
-    protected void processAndSendEvent(String apiAction, String metadataTopic, Request request) throws Exception {
-        String mid = UUID.randomUUID().toString();
-        String serviceMode = env.getProperty(SERVICE_MODE);
-        String payloadTopic = env.getProperty(KAFKA_TOPIC_PAYLOAD);
-        String key = request.getSenderCode();
-        String payloadEvent = eventGenerator.generatePayloadEvent(mid, request);
-        String metadataEvent = eventGenerator.generateMetadataEvent(mid, apiAction, request);
-        System.out.println("Mode: " + serviceMode + " :: mid: " + mid + " :: Event: " + metadataEvent);
-        if(StringUtils.equalsIgnoreCase(serviceMode, GATEWAY)) {
-            System.out.println("Process and send event");
-        }
-    }
     protected void processAndValidate(String onApiAction, String metadataTopic, Request request, Map<String, Object> requestBody, String apiAction) throws Exception {
         IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         String mid = UUID.randomUUID().toString();
@@ -128,11 +114,10 @@ public class BaseController {
                 pay.put("payload", String.valueOf(requestBody.get("payload")));
                 Map<String, Object> output = new HashMap<>();
                 Map<String, Object> outputOfOnAction = new HashMap<>();
-                HCXIncomingRequest incoming = new HCXIncomingRequest();
                 System.out.println("create the oncheck payload");
                 Bundle bundle = new Bundle();
                 if (COVERAGE_ELIGIBILITY_ONCHECK.equalsIgnoreCase(onApiAction)) {
-                    boolean result = incoming.process(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK,output);
+                    boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK,output);
                     if(!result){
                         System.out.println("Error while processing incoming request: " +  output);
                     }
@@ -146,7 +131,7 @@ public class BaseController {
                     //sending the onaction call
                     sendResponse(apiAction,p.encodeResourceToString(bundle),(String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
                 } else if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
-                    boolean result = incoming.process(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT,output);
+                    boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT,output);
                     if(!result){
                         System.out.println("Error while processing incoming request: " +  output);
                     }
@@ -158,7 +143,7 @@ public class BaseController {
                     replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#","")).setResource(claimRes));
                     sendResponse(apiAction,p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
                 } else if (PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
-                    boolean result = incoming.process(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT,output);
+                    boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT,output);
                     if(!result){
                         System.out.println("Error while processing incoming request: " +  output);
                     }
@@ -184,7 +169,7 @@ public class BaseController {
         }
     }
 
-    public ResponseEntity<Object> validateReqAndPushToKafka(Map<String, Object> requestBody, String apiAction, String onApiAction, String kafkaTopic) {
+    public ResponseEntity<Object> processRequest(Map<String, Object> requestBody, String apiAction, String onApiAction, String kafkaTopic) {
         Response response = new Response();
         try {
             Request request = new Request(requestBody, apiAction);

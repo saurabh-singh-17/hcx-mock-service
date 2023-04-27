@@ -57,7 +57,7 @@ public class StatusController extends BaseController {
                 response.setResult(statusResponseMap);
             } else if (auditData.getStatus().equals("request.dispatched")) {
                 response.setResult(statusResponseMap);
-                processAndSendEvent(HCX_STATUS, topic, request);
+                //processAndSendEvent(HCX_STATUS, topic, request);
             } else {
                 // TODO: handle for other status
                 System.out.println("TODO for status " + auditData.getStatus());
@@ -79,7 +79,7 @@ public class StatusController extends BaseController {
                 throw new ClientException("Invalid request, status response is missing or empty.");
             }
             // TODO: status response property validation
-            processAndSendEvent(HCX_ONSTATUS, topic, request);
+            //processAndSendEvent(HCX_ONSTATUS, topic, request);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             return exceptionHandler(response, e);

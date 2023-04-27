@@ -44,7 +44,7 @@ public class SearchController extends BaseController {
             if(requestMap.containsKey(Constants.SEARCH_FILTERS)){
                 validateSearchFilters(request);
             }
-            processAndSendEvent(HCX_SEARCH, topic, request);
+            //processAndSendEvent(HCX_SEARCH, topic, request);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             return exceptionHandler(response, e);
@@ -61,7 +61,7 @@ public class SearchController extends BaseController {
             validateRegistryCode(request);
             Map<String,Object> responseMap = request.getSearchResponse();
             validateSearch(responseMap, "Search response details cannot be null, empty and should be 'JSON Object'", Constants.SEARCH_RES_KEYS, "Search response details should contain only: ");
-            processAndSendEvent(HCX_ON_SEARCH, responseTopic, request);
+            //processAndSendEvent(HCX_ON_SEARCH, responseTopic, request);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             return exceptionHandler(response, e);
