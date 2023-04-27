@@ -20,11 +20,11 @@ public class PredeterminationController extends BaseController {
 
     @RequestMapping(value = "/submit", method = RequestMethod.POST)
     public ResponseEntity<Object> submitPredetermination(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return validateReqAndPushToKafka(requestBody, Constants.PREDETERMINATION_SUBMIT,Constants.PREDETERMINATION_ONSUBMIT, kafkaTopic);
+        return processRequest(requestBody, Constants.PREDETERMINATION_SUBMIT,Constants.PREDETERMINATION_ONSUBMIT, kafkaTopic);
     }
 
     @RequestMapping(value = "/on_submit", method = RequestMethod.POST)
     public ResponseEntity<Object> onSubmitPredetermination(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return validateReqAndPushToKafka(requestBody, Constants.PREDETERMINATION_ONSUBMIT,Constants.PREDETERMINATION_ONSUBMIT, kafkaTopic);
+        return processRequest(requestBody, Constants.PREDETERMINATION_ONSUBMIT,Constants.PREDETERMINATION_ONSUBMIT, kafkaTopic);
     }
 }

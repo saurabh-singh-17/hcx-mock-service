@@ -17,12 +17,12 @@ public class PaymentsController extends BaseController {
 
     @RequestMapping(value = "/request", method = RequestMethod.POST)
     public ResponseEntity<Object> paymentNoticeRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return validateReqAndPushToKafka(requestBody, Constants.PAYMENT_NOTICE_REQUEST,Constants.PAYMENT_NOTICE_ONREQUEST, kafkaTopic);
+        return processRequest(requestBody, Constants.PAYMENT_NOTICE_REQUEST,Constants.PAYMENT_NOTICE_ONREQUEST, kafkaTopic);
     }
 
     @RequestMapping(value = "/on_request", method = RequestMethod.POST)
     public ResponseEntity<Object> paymentNoticeOnRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return validateReqAndPushToKafka(requestBody, Constants.PAYMENT_NOTICE_ONREQUEST,Constants.PAYMENT_NOTICE_ONREQUEST, kafkaTopic);
+        return processRequest(requestBody, Constants.PAYMENT_NOTICE_ONREQUEST,Constants.PAYMENT_NOTICE_ONREQUEST, kafkaTopic);
     }
 
 }

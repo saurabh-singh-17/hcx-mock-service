@@ -1,6 +1,5 @@
 package org.swasth.hcx.controllers.v1;
 
-import org.apache.tomcat.util.bcel.Const;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,11 +20,11 @@ public class CoverageEligibilityController extends BaseController {
 
     @RequestMapping(value = "/check", method = RequestMethod.POST)
     public ResponseEntity<Object> checkCoverageEligibility(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return validateReqAndPushToKafka(requestBody, Constants.COVERAGE_ELIGIBILITY_CHECK, Constants.COVERAGE_ELIGIBILITY_ONCHECK, kafkaTopic);
+        return processRequest(requestBody, Constants.COVERAGE_ELIGIBILITY_CHECK, Constants.COVERAGE_ELIGIBILITY_ONCHECK, kafkaTopic);
     }
 
     @RequestMapping(value = "/on_check", method = RequestMethod.POST)
     public ResponseEntity<Object> onCheckCoverageEligibility(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return validateReqAndPushToKafka(requestBody, Constants.COVERAGE_ELIGIBILITY_ONCHECK,  Constants.COVERAGE_ELIGIBILITY_ONCHECK, kafkaTopic);
+        return processRequest(requestBody, Constants.COVERAGE_ELIGIBILITY_ONCHECK,  Constants.COVERAGE_ELIGIBILITY_ONCHECK, kafkaTopic);
     }
 }

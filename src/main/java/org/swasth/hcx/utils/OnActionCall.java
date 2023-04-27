@@ -4,11 +4,13 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hcxprotocol.impl.HCXOutgoingRequest;
+import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import lombok.SneakyThrows;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.joda.time.DateTime;
@@ -16,7 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.swasth.hcx.service.HcxIntegratorService;
 
+import javax.annotation.PostConstruct;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -37,6 +41,17 @@ public class OnActionCall {
     Environment env;
 
     private String onCheckPayloadType;
+
+    private HCXIntegrator hcxIntegrator;
+
+    @Autowired
+    protected HcxIntegratorService hcxIntegratorService;
+
+    @SneakyThrows
+    @PostConstruct
+    public void init(){
+        hcxIntegrator = hcxIntegratorService.initialiseHcxIntegrator();
+    }
 
     public static String getRandomChestItem(List<String> items) {
         return items.get(new Random().nextInt(items.size()));
@@ -70,8 +85,7 @@ public class OnActionCall {
     @Async("asyncExecutor")
     public void sendOnAction(String fhirPayload, Operations operation, String actionJwe, String onActionStatus, Map<String,Object> output) throws Exception{
         IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
-        HCXOutgoingRequest outgoing = new HCXOutgoingRequest();
-        outgoing.generate(fhirPayload, operation, actionJwe,onActionStatus, output);
+        hcxIntegrator.processOutgoingCallback(fhirPayload, operation,"", actionJwe,onActionStatus, new HashMap<>(), output);
         System.out.println("output of onaction" + output);
     }
 

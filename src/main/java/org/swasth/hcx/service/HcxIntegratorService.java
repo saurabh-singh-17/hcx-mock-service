@@ -40,8 +40,7 @@ public class HcxIntegratorService {
             configMap.put("password", env.getProperty("hcx_application.password"));
             configMap.put("encryptionPrivateKey", certificate);
             configMap.put("igUrl", "https://ig.hcxprotocol.io/v0.7.1");
-            HCXIntegrator.init(configMap);
-            integrator = HCXIntegrator.getInstance();
+            integrator = HCXIntegrator.getInstance(configMap);
         } else {
             System.out.println("The Integrator SDK initialized already: " + env.getProperty("hcx_application.user"));
         }

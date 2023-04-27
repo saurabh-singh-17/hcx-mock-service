@@ -50,7 +50,7 @@ public class EnDeController extends BaseController {
             JweRequest jweRequest = new JweRequest(new HashMap<>() {{
                 put("payload", payload);
             }});
-            jweRequest.decryptRequest(getPrivateKey(privateKeyPath));
+            jweRequest.decryptRequest(privateKeyPath);
 
             Map<String, Object> response = new HashMap<>();
             response.put("headers", jweRequest.getHeaders());
