@@ -27,7 +27,7 @@ postgres:
   password: ${postgres_password:postgres}
   table:
    payerData: ${payer_data_table:payersystem_data}
-   mockParticipant: ${mock_participant_table:mock_participants}
+   mockParticipant: ${mock_participant_table:mock_participant}
 
 #hcx headers
 protocol:

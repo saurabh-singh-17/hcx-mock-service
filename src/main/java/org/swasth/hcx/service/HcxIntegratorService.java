@@ -41,7 +41,7 @@ public class HcxIntegratorService {
     }
 
     public Map<String,Object> getParticipantConfig(String participantCode) throws ClientException, SQLException, IOException {
-        String query = String.format("SELECT * FROM %s WHERE participant_code='%s'", env.getProperty("postgres.table.mockParticipant"), participantCode);
+        String query = String.format("SELECT * FROM %s WHERE child_participant_code='%s'", env.getProperty("postgres.table.mockParticipant"), participantCode);
         ResultSet resultSet = postgres.executeQuery(query);
         if(resultSet.next()){
             return getConfig(participantCode, resultSet.getString("primary_email"), resultSet.getString("password"),  resultSet.getString("private_key"));
