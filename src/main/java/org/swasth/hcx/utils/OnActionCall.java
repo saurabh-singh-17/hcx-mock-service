@@ -87,8 +87,8 @@ public class OnActionCall {
         HttpResponse<String> response = Unirest.post(env.getProperty("hcx_application.token_url"))
                 .header("content-type", "application/x-www-form-urlencoded")
                 .field("client_id", "registry-frontend")
-                .field("username", env.getProperty("hcx_application.user"))
-                .field("password", env.getProperty("hcx_application.password"))
+                .field("username", env.getProperty("mock_payer.username"))
+                .field("password", env.getProperty("mock_payer.password"))
                 .field("grant_type", "password")
                 .asString();
         ObjectMapper mapper = new ObjectMapper();
