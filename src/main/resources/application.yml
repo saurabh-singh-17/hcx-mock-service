@@ -22,7 +22,7 @@ registry:
 
 #postgres config
 postgres:
-  url: ${postgres_url:jdbc:postgresql://localhost:5432/postgres}
+  url: ${mock_service_db_url:jdbc:postgresql://localhost:5432/mock_service}
   user: ${postgres_user:postgres}
   password: ${postgres_password:postgres}
   table:
