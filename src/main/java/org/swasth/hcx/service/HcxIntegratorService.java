@@ -34,10 +34,13 @@ public class HcxIntegratorService {
          * Initializing hcx_sdk to use helper functions and FHIR validator
          * Documentation is available at https://github.com/Swasth-Digital-Health-Foundation/hcx-platform/releases/tag/hcx-integrator-sdk-1.0.0
          */
-
-        if(!configCache.containsKey(participantCode))
-            configCache.put(participantCode, HCXIntegrator.getInstance(getParticipantConfig(participantCode)));
-        HCXIntegrator hcxIntegrator = (HCXIntegrator) configCache.get(participantCode);
+        HCXIntegrator hcxIntegrator = null;
+        if(!configCache.containsKey(participantCode)) {
+            hcxIntegrator = HCXIntegrator.getInstance(getParticipantConfig(participantCode));
+            configCache.put(hcxIntegrator.getParticipantCode(), hcxIntegrator);
+        } else {
+            hcxIntegrator = (HCXIntegrator) configCache.get(participantCode);
+        }
         System.out.println("Config map cache: " + configCache);
         System.out.println("We are intiliazing the integrator SDK: " + hcxIntegrator.getParticipantCode());
         return hcxIntegrator;
@@ -48,7 +51,7 @@ public class HcxIntegratorService {
         System.out.println("config fetch query" + query);
         ResultSet resultSet = postgres.executeQuery(query);
         if(resultSet.next()){
-            System.out.println("inside resultset " + resultSet.getString("private_key"));
+            System.out.println("inside result set " + resultSet.getString("private_key"));
             return getConfig(participantCode, resultSet.getString("primary_email"), resultSet.getString("password"),  resultSet.getString("private_key"));
         } else {
             return getConfig(env.getProperty("mock_payer.participant_code"), env.getProperty("mock_payer.username"), env.getProperty("mock_payer.password"),env.getProperty("mock_payer.private_key"));
