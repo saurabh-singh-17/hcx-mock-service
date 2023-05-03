@@ -4,11 +4,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.swasth.common.exception.ClientException;
-import org.swasth.common.exception.ErrorCodes;
-import org.swasth.common.utils.JSONUtils;
 import org.swasth.hcx.controllers.BaseController;
 import org.swasth.hcx.dto.Response;
+import org.swasth.hcx.utils.JSONUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,13 +1,11 @@
 package org.swasth.hcx.service;
 
 
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.swasth.hcx.exception.ClientException;
 
 import javax.annotation.PostConstruct;
-import java.sql.*;
 import java.sql.*;
 
 @Service
