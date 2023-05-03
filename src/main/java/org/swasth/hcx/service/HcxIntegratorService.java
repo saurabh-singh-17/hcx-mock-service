@@ -59,7 +59,6 @@ public class HcxIntegratorService {
     }
 
     public Map<String,Object> getConfig(String code, String username, String password, String privateKey) throws IOException {
-        String certificate = IOUtils.toString(new URL(privateKey), StandardCharsets.UTF_8.toString());
 
         Map<String, Object> configMap = new HashMap<>();
         configMap.put("protocolBasePath", env.getProperty("hcx_application.url") + "/api/" + env.getProperty("hcx_application.api_version"));
@@ -67,7 +66,7 @@ public class HcxIntegratorService {
         configMap.put("authBasePath", env.getProperty("hcx_application.token_url"));
         configMap.put("username", username);
         configMap.put("password", password);
-        configMap.put("encryptionPrivateKey", certificate);
+        configMap.put("encryptionPrivateKey", privateKey);
 
         return configMap;
     }
