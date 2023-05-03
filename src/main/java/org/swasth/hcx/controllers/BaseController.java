@@ -163,7 +163,7 @@ public class BaseController {
         Response response = new Response();
         try {
             Request request = new Request(requestBody, apiAction);
-            notificationService.notify(request,onApiAction.split("/")[2],"Request received");
+            //notificationService.notify(request,onApiAction.split("/")[2],"Request received");
             setResponseParams(request, response);
             processAndValidate(onApiAction, kafkaTopic, request, requestBody,apiAction);
             System.out.println("http respond sent");
