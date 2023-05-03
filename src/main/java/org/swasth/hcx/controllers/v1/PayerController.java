@@ -59,7 +59,8 @@ public class PayerController extends BaseController {
                 resp.put("count", resultSet1.getInt("count"));
             }
             String query = countQuery.toString().replace("count(*)", "count(*) over(),*") + " ORDER BY created_on DESC LIMIT " + limit + " OFFSET " + offset;
-            ResultSet resultSet = postgres.executeQuery(query);
+            String listQuery = String.format("SELECT * FROM %s WHERE action='%s' ORDER BY created_on DESC", table, type);
+            ResultSet resultSet = postgres.executeQuery(listQuery);
             while (resultSet.next()) {
                 Map<String, Object> map = new HashMap<>();
                 map.put("sender_code", resultSet.getString("sender_code"));
