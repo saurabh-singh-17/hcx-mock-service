@@ -31,7 +31,6 @@ public class PostgresService {
     public Connection getConnection() throws ClientException {
         Connection conn;
         try {
-            System.out.println("Postgres url " + url);
             conn = DriverManager.getConnection(url, user, password);
         } catch (Exception e) {
             throw new ClientException("Error connecting to the PostgreSQL server: " + e.getMessage());
