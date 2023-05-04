@@ -42,7 +42,7 @@ public class HcxIntegratorService {
             hcxIntegrator = (HCXIntegrator) configCache.get(participantCode);
         }
         System.out.println("Config map cache: " + configCache);
-        System.out.println("We are intiliazing the integrator SDK: " + hcxIntegrator.getParticipantCode());
+        System.out.println("We are intiliazing the integrator SDK: " + hcxIntegrator.getParticipantCode() + "private key " + hcxIntegrator.getPrivateKey());
         return hcxIntegrator;
     }
 
