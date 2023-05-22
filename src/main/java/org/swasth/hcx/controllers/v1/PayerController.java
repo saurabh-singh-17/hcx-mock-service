@@ -113,6 +113,43 @@ public class PayerController extends BaseController {
         return review(requestBody,"claim", REJECTED);
     }
 
+    @PostMapping(value = "/payer/response/send")
+    public ResponseEntity<Object> sendResponse(@RequestBody Map<String, Object> requestBody) {
+        try{
+            String query = String.format("SELECT * FROM %s WHERE request_id = '%s'", table, requestBody.getOrDefault("id", ""));
+            ResultSet resultset = postgres.executeQuery(query);
+            Map<String,Object> output = new HashMap<>();
+            String respfhir = "";
+            String recipientCode = "";
+            String action = "";
+            String onActionStatus = "";
+            String actionJwe = "";
+            while(resultset.next()){
+                respfhir = resultset.getString("response_fhir");
+                recipientCode = resultset.getString("recipient_code");
+                action = resultset.getString("action");
+                onActionStatus = resultset.getString("on_action_status");
+                actionJwe = resultset.getString("raw_payload");
+            }
+            onActionCall.sendOnAction(recipientCode, respfhir, getOperation(action), actionJwe, onActionStatus, output);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return exceptionHandler(new Response(), e);
+        }
+    }
+
+    @PostMapping(value = "/payer/response/update")
+    public ResponseEntity<Object> updateResponse(@RequestBody Map<String, Object> requestBody) throws ClientException {
+        updateDB((String) requestBody.get("request_id"), (String) requestBody.get("response_fhir"), "response.complete");
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    public void updateDB(String requestId, String respfhir, String onActionStatus) throws ClientException {
+        String query = String.format("UPDATE %s SET response_fhir = '%s', on_action_status= '%s' WHERE request_id ='%s'", table, respfhir, onActionStatus, requestId);
+        postgres.execute(query);
+    }
+
+
     public ResponseEntity<Object> review(Map<String, Object> requestBody, String entity, String status){
         try {
             System.out.println("Review: " + status + " :: entity: " + entity + " :: request body: " + requestBody);
@@ -125,17 +162,15 @@ public class PayerController extends BaseController {
                         table, status, System.currentTimeMillis(), id, "raw_payload", "response_fhir");
                 ResultSet resultset = postgres.executeQuery(updateQuery);
                 String respfhir = "";
-                String actionJwe = "";
                 while(resultset.next()){
                     respfhir = resultset.getString("response_fhir");
-                    actionJwe = resultset.getString("raw_payload");
                 }
                 if(status.equals(APPROVED)){
-                    onActionCall.sendOnAction((String) requestBody.get("recipient_code"), respfhir, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
+                    updateDB(id, respfhir, "response.complete");
                 } else {
                     String bundleString = getCoverageRejectedBundle(respfhir);
                     System.out.println("Rejected Response bundle: " + bundleString);
-                    onActionCall.sendOnAction((String) requestBody.get("recipient_code"), bundleString, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
+                    updateDB(id, respfhir, "response.complete");
                 }
             } else {
                 String type = (String) requestBody.getOrDefault("type", "");
@@ -156,14 +191,10 @@ public class PayerController extends BaseController {
                 Map<String, Object> addInfo = new HashMap<>();
                 String existingStatus = PENDING;
                 String respfhir = "";
-                String actionJwe = "";
-                String action = "";
                 while (resultSet.next()) {
                     addInfo.putAll(JSONUtils.deserialize(resultSet.getString("additional_info"), Map.class));
                     existingStatus = resultSet.getString("status");
                     respfhir = resultSet.getString("response_fhir");
-                    actionJwe = resultSet.getString("raw_payload");
-                    action = resultSet.getString("action");
                 }
 
                 if (!addInfo.isEmpty()) {
@@ -173,15 +204,14 @@ public class PayerController extends BaseController {
                                 , table, overallStatus, System.currentTimeMillis(), id);
                         postgres.execute(updateQuery);
                     }
-
                     if (overallStatus.equals(APPROVED)) {
                         String bundleString = getApprovedClaimBundle(requestBody, entity, respfhir);
                         System.out.println("Approved Response bundle: " + bundleString);
-                        onActionCall.sendOnAction((String) requestBody.get("recipient_code"), bundleString, action.contains("preauth") ? Operations.PRE_AUTH_ON_SUBMIT : Operations.CLAIM_ON_SUBMIT, actionJwe, "response.complete", output);
+                        updateDB(id, respfhir, "response.complete");
                     } else if (overallStatus.equals(REJECTED)){
                         String bundleString = getRejectedClaimBundle(entity, type, respfhir);
                         System.out.println("Rejected Response bundle: " + bundleString);
-                        onActionCall.sendOnAction((String) requestBody.get("recipient_code"), bundleString, action.contains("preauth") ? Operations.PRE_AUTH_ON_SUBMIT : Operations.CLAIM_ON_SUBMIT, actionJwe, "response.complete", output);
+                        updateDB(id, respfhir, "response.complete");
                     }
                 }
             }
@@ -208,8 +238,7 @@ public class PayerController extends BaseController {
                 ((CoverageEligibilityResponse) dm).getError().add(new CoverageEligibilityResponse.ErrorsComponent(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication-error").setCode("a001").setDisplay("Coverage Eligibility Request has been rejected"))));
             }
         }
-        String bundleString = p.encodeResourceToString(newBundle);
-        return bundleString;
+        return p.encodeResourceToString(newBundle);
     }
 
     private static String getApprovedClaimBundle(Map<String, Object> requestBody, String entity, String respfhir) {
@@ -263,6 +292,25 @@ public class PayerController extends BaseController {
             status = APPROVED;
         }
         return status;
+    }
+
+    private Operations getOperation(String action) {
+        Operations operation;
+        switch (action) {
+            case "coverageeligibility":
+                operation = Operations.COVERAGE_ELIGIBILITY_ON_CHECK;
+                break;
+            case "preauth":
+                operation = Operations.PRE_AUTH_ON_SUBMIT;
+                break;
+            case "claim":
+                operation = Operations.CLAIM_ON_SUBMIT;
+                break;
+            default:
+                operation = null;
+                break;
+        }
+        return operation;
     }
 
 }
