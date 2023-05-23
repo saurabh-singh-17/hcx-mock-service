@@ -84,7 +84,6 @@ public class OnActionCall {
 
     public String searchRegistry(String email) throws Exception {
         System.out.println("Timestamp before registry call: "+ new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()));
-        System.out.println("---token url---" + env.getProperty("hcx_application.token_url"));
         HttpResponse<String> response = Unirest.post(env.getProperty("hcx_application.token_url"))
                 .header("content-type", "application/x-www-form-urlencoded")
                 .field("client_id", "registry-frontend")
@@ -94,9 +93,6 @@ public class OnActionCall {
                 .asString();
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> responseBody = mapper.readValue(response.getBody(), Map.class);
-        System.out.println("---keycloak response body---" + responseBody);
-
-        System.out.println("---registy url---" + env.getProperty("hcx_application.registry_url"));
         //creating filter for search query on email
         HashMap<String, HashMap<String, Object>> filter = new HashMap<>();
         filter.put("filters",new HashMap<String, Object>(Map.of("primary_email", new HashMap<>(Map.of("eq", email)))));

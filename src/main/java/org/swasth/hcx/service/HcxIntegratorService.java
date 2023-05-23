@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.swasth.hcx.exception.ClientException;
+import org.swasth.hcx.utils.JSONUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -34,10 +35,15 @@ public class HcxIntegratorService {
          * Initializing hcx_sdk to use helper functions and FHIR validator
          * Documentation is available at https://github.com/Swasth-Digital-Health-Foundation/hcx-platform/releases/tag/hcx-integrator-sdk-1.0.0
          */
-        System.out.println("We are intiliazing the integrator SDK: " + env.getProperty("hcx_application.user"));
-        if(!configCache.containsKey(participantCode))
-            configCache.put(participantCode, HCXIntegrator.getInstance(getParticipantConfig(participantCode)));
-        return (HCXIntegrator) configCache.get(participantCode);
+        HCXIntegrator hcxIntegrator = null;
+        if(!configCache.containsKey(participantCode)) {
+            hcxIntegrator = HCXIntegrator.getInstance(getParticipantConfig(participantCode));
+            configCache.put(hcxIntegrator.getParticipantCode(), hcxIntegrator);
+        } else {
+            hcxIntegrator = (HCXIntegrator) configCache.get(participantCode);
+        }
+        System.out.println("We are intiliazing the integrator SDK: " + hcxIntegrator.getParticipantCode() + " :: config map: " + hcxIntegrator.getConfig().toString());
+        return hcxIntegrator;
     }
 
     public Map<String,Object> getParticipantConfig(String participantCode) throws ClientException, SQLException, IOException {
@@ -51,7 +57,6 @@ public class HcxIntegratorService {
     }
 
     public Map<String,Object> getConfig(String code, String username, String password, String privateKey) throws IOException {
-        String certificate = IOUtils.toString(new URL(privateKey), StandardCharsets.UTF_8.toString());
 
         Map<String, Object> configMap = new HashMap<>();
         configMap.put("protocolBasePath", env.getProperty("hcx_application.url") + "/api/" + env.getProperty("hcx_application.api_version"));
@@ -59,7 +64,7 @@ public class HcxIntegratorService {
         configMap.put("authBasePath", env.getProperty("hcx_application.token_url"));
         configMap.put("username", username);
         configMap.put("password", password);
-        configMap.put("encryptionPrivateKey", certificate);
+        configMap.put("encryptionPrivateKey", privateKey);
 
         return configMap;
     }
