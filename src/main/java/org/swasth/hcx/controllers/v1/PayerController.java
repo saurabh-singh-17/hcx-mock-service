@@ -65,7 +65,7 @@ public class PayerController extends BaseController {
                 map.put("sender_code", resultSet.getString("sender_code"));
                 map.put("recipient_code", resultSet.getString("recipient_code"));
                 map.put("request_id", resultSet.getString("request_id"));
-                map.put("response_fhir", JSONUtils.deserialize(resultSet.getString("response"), Map.class));
+                map.put("response_fhir", JSONUtils.deserialize(resultSet.getString("response_fhir"), Map.class));
                 map.put("status", resultSet.getString("status"));
                 map.put("additional_info", JSONUtils.deserialize(resultSet.getString("additional_info"), Map.class));
                 map.put("payload", JSONUtils.deserialize(resultSet.getString("request_fhir"), Map.class));
