@@ -142,7 +142,7 @@ public class PayerController extends BaseController {
     @PostMapping(value = "/payer/response/update")
     public ResponseEntity<Object> updateResponse(@RequestBody Map<String, Object> requestBody) throws ClientException {
         updateDB((String) requestBody.get("request_id"), (String) requestBody.get("response_fhir"), "response.complete");
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(new Response(), HttpStatus.OK);
     }
 
     public void updateDB(String requestId, String respfhir, String onActionStatus) throws ClientException {
