@@ -52,7 +52,8 @@ public class HcxIntegratorService {
         if(resultSet.next()){
             return getConfig(participantCode, resultSet.getString("primary_email"), resultSet.getString("password"),  resultSet.getString("private_key"));
         } else {
-            return getConfig(env.getProperty("mock_payer.participant_code"), env.getProperty("mock_payer.username"), env.getProperty("mock_payer.password"),env.getProperty("mock_payer.private_key"));
+            String certificate = IOUtils.toString(new URL(env.getProperty("mock_payer.private_key")), StandardCharsets.UTF_8.toString());
+            return getConfig(env.getProperty("mock_payer.participant_code"), env.getProperty("mock_payer.username"), env.getProperty("mock_payer.password"), certificate);
         }
     }
 
