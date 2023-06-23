@@ -57,7 +57,7 @@ redirect:
 hcx_application:
   url: ${hcx_gateway_url:http://staging-hcx.swasth.app}
   api_version: ${version:v0.7}
-  token_url: ${auth_url:${hcx_application.url}/auth/realms/swasth-health-claim-exchange/protocol/openid-connect/token}
+  token_url: ${auth_url:${hcx_application.url}/auth/realms/swasth-hcx-participants/protocol/openid-connect/token}
   registry_url: ${registry:${hcx_application.url}/api/v0.7/participant/search}
 
 
