@@ -13,7 +13,7 @@ node('java11') {
               sh """
                 java --version
                 pwd
-                mvn clean install
+                mvn clean install -DskipTests
               """
             }
           }

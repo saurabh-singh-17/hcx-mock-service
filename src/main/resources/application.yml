@@ -22,10 +22,12 @@ registry:
 
 #postgres config
 postgres:
-  url: ${postgres_url:jdbc:postgresql://localhost:5432/postgres}
+  url: ${postgres_db_url:jdbc:postgresql://localhost:5432/mock_service}
   user: ${postgres_user:postgres}
   password: ${postgres_password:postgres}
-  tablename: ${postgres_tablename:payload}
+  table:
+   payerData: ${payer_data_table:payersystem_data}
+   mockParticipant: ${mock_participant_table:mock_participant}
 
 #hcx headers
 protocol:
@@ -53,9 +55,21 @@ redirect:
 
 #hcx base url
 hcx_application:
-  url: ${base_url:http://staging-hcx.swasth.app/api}
+  url: ${hcx_gateway_url:http://staging-hcx.swasth.app}
   api_version: ${version:v0.7}
-  user: ${email:swasth_mock_payer@swasthapp.org}
-  password: ${pass:Opensaber@123}
-  token_url: ${url:http://a9dd63de91ee94d59847a1225da8b111-273954130.ap-south-1.elb.amazonaws.com:8080/auth/realms/swasth-health-claim-exchange/protocol/openid-connect/token}
-  registry_url: ${registry:http://staging-hcx.swasth.app/api/v0.7/participant/search}
+  token_url: ${auth_url:${hcx_application.url}/auth/realms/swasth-hcx-participants/protocol/openid-connect/token}
+  registry_url: ${registry:${hcx_application.url}/api/v0.7/participant/search}
+
+
+autoresponse: ${auto_response:false}
+
+request_list:
+  default_limit: ${request_list_default_limit:100}
+  default_latest_data_by_day: ${request_list_default_latest_data_by_day:2}
+
+mock_payer:
+  private_key: ${mock_payer_private_key:https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/demo-app/server/resources/keys/x509-private-key.pem}
+  username: ${mock_payer_username:swasth_mock_payer@swasthapp.org}
+  password: ${mock_payer_password:Opensaber@123}
+  participant_code: ${mock_payer_participant_code:1-29482df3-e875-45ef-a4e9-592b6f565782}
+

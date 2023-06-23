@@ -39,7 +39,7 @@ public class NotificationService {
     public void notify(Request request , String entity, String status) throws Exception {
         HashMap<String, Object> notification_header = new HashMap<>();
         //getting the sendor code from the registry
-        String osid = onActionCall.searchRegistry(env.getProperty("hcx_application.user"));
+        String osid = onActionCall.searchRegistry(env.getProperty("mock_payer.username"));
         notification_header.put("sender_code",osid);
         notification_header.put("timestamp", String.valueOf(System.currentTimeMillis()));
         ArrayList<String> recipient_type = new ArrayList<>();

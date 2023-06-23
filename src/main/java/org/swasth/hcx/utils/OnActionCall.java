@@ -4,11 +4,13 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hcxprotocol.impl.HCXOutgoingRequest;
+import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import lombok.SneakyThrows;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.joda.time.DateTime;
@@ -16,7 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.swasth.hcx.service.HcxIntegratorService;
 
+import javax.annotation.PostConstruct;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -37,6 +41,9 @@ public class OnActionCall {
     Environment env;
 
     private String onCheckPayloadType;
+
+    @Autowired
+    protected HcxIntegratorService hcxIntegratorService;
 
     public static String getRandomChestItem(List<String> items) {
         return items.get(new Random().nextInt(items.size()));
@@ -68,10 +75,10 @@ public class OnActionCall {
         return encryptedObject;
     }
     @Async("asyncExecutor")
-    public void sendOnAction(String fhirPayload, Operations operation, String actionJwe, String onActionStatus, Map<String,Object> output) throws Exception{
+    public void sendOnAction(String recipientCode, String fhirPayload, Operations operation, String actionJwe, String onActionStatus, Map<String,Object> output) throws Exception{
         IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
-        HCXOutgoingRequest outgoing = new HCXOutgoingRequest();
-        outgoing.generate(fhirPayload, operation, actionJwe,onActionStatus, output);
+        HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(recipientCode);
+        hcxIntegrator.processOutgoingCallback(fhirPayload, operation,"", actionJwe,onActionStatus, new HashMap<>(), output);
         System.out.println("output of onaction" + output);
     }
 
@@ -80,18 +87,17 @@ public class OnActionCall {
         HttpResponse<String> response = Unirest.post(env.getProperty("hcx_application.token_url"))
                 .header("content-type", "application/x-www-form-urlencoded")
                 .field("client_id", "registry-frontend")
-                .field("username", env.getProperty("hcx_application.user"))
-                .field("password", env.getProperty("hcx_application.password"))
+                .field("username", env.getProperty("mock_payer.username"))
+                .field("password", env.getProperty("mock_payer.password"))
                 .field("grant_type", "password")
                 .asString();
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> responseBody = mapper.readValue(response.getBody(), Map.class);
-
         //creating filter for search query on email
         HashMap<String, HashMap<String, Object>> filter = new HashMap<>();
         filter.put("filters",new HashMap<String, Object>(Map.of("primary_email", new HashMap<>(Map.of("eq", email)))));
         HttpResponse<String> onActionResponse = Unirest.post(env.getProperty("hcx_application.registry_url"))
-                .header("Authorization", "Bearer " + responseBody.get("access_token").toString())
+                    .header("Authorization", "Bearer " + responseBody.get("access_token").toString())
                 .header("Content-Type", "application/json")
                 .body(filter)
                 .asString();

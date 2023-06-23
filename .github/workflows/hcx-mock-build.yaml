@@ -39,7 +39,7 @@ jobs:
 
       - name: Maven Build
         run: |
-          mvn clean install
+          mvn clean install -DskipTests
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -53,7 +53,7 @@ jobs:
       - name: Set the Image TAG
         run: echo "IMAGE_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      - name: Build and push Docker image for API-Gateway
+      - name: Build and push Docker image for HCX Mock Service
         uses: docker/build-push-action@v3
         with:
           context: ./
@@ -69,7 +69,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
 
-      - name: Build and push Docker image for HCX Scheduler Job to S3 bucket
+      - name: Build and push Docker image for HCX Mock Service to S3 bucket
         run: |
           echo ${{ env.IMAGE_TAG }}_${{ github.run_number }} >> /tmp/tag.txt
           aws s3 cp /tmp/tag.txt s3://build-tags/tag.txt

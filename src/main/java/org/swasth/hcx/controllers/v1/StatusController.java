@@ -31,7 +31,7 @@ public class StatusController extends BaseController {
     public ResponseEntity<Object> status(@RequestBody Map<String, Object> requestBody) throws Exception {
         Response response = new Response();
         try {
-            Request request = new Request(requestBody);
+            Request request = new Request(requestBody, "/hcx/status");
             setResponseParams(request, response);
             Map<String, Object> hcxHeaders = request.getHcxHeaders();
             // TODO: filter properties validation
@@ -57,7 +57,7 @@ public class StatusController extends BaseController {
                 response.setResult(statusResponseMap);
             } else if (auditData.getStatus().equals("request.dispatched")) {
                 response.setResult(statusResponseMap);
-                processAndSendEvent(HCX_STATUS, topic, request);
+                //processAndSendEvent(HCX_STATUS, topic, request);
             } else {
                 // TODO: handle for other status
                 System.out.println("TODO for status " + auditData.getStatus());
@@ -72,14 +72,14 @@ public class StatusController extends BaseController {
     public ResponseEntity<Object> onStatus(@RequestBody Map<String, Object> requestBody) {
         Response response = new Response();
         try {
-            Request request = new Request(requestBody);
+            Request request = new Request(requestBody, "/hcx/on_status");
             setResponseParams(request, response);
             Map<String, Object> hcxHeaders = request.getHcxHeaders();
             if(!hcxHeaders.containsKey(STATUS_RESPONSE) || ((Map<String, Object>) hcxHeaders.get(STATUS_RESPONSE)).isEmpty()) {
                 throw new ClientException("Invalid request, status response is missing or empty.");
             }
             // TODO: status response property validation
-            processAndSendEvent(HCX_ONSTATUS, topic, request);
+            //processAndSendEvent(HCX_ONSTATUS, topic, request);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             return exceptionHandler(response, e);

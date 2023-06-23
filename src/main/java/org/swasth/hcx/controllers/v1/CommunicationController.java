@@ -20,11 +20,11 @@ public class CommunicationController extends BaseController {
 
     @RequestMapping(value = "/request", method = RequestMethod.POST)
     public ResponseEntity<Object> communicationRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return validateReqAndPushToKafka(requestBody, Constants.COMMUNICATION_REQUEST, Constants.COMMUNICATION_ONREQUEST, kafkaTopic);
+        return processRequest(requestBody, Constants.COMMUNICATION_REQUEST, Constants.COMMUNICATION_ONREQUEST, kafkaTopic);
     }
 
     @RequestMapping(value = "/on_request", method = RequestMethod.POST)
     public ResponseEntity<Object> communicationOnRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return validateReqAndPushToKafka(requestBody, Constants.COMMUNICATION_ONREQUEST,Constants.COMMUNICATION_ONREQUEST, kafkaTopic);
+        return processRequest(requestBody, Constants.COMMUNICATION_ONREQUEST,Constants.COMMUNICATION_ONREQUEST, kafkaTopic);
     }
 }

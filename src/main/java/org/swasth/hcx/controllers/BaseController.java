@@ -2,35 +2,36 @@ package org.swasth.hcx.controllers;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.hcxprotocol.impl.HCXIncomingRequest;
-import io.hcxprotocol.impl.HCXOutgoingRequest;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
+import lombok.SneakyThrows;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.hl7.fhir.r4.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.swasth.hcx.dto.Request;
-import org.swasth.hcx.fhirexamples.OnActionFhirExamples;
-import org.swasth.hcx.service.HcxIntegratorService;
-import org.swasth.hcx.service.NotificationService;
-import org.swasth.hcx.dto.*;
+import org.swasth.hcx.dto.Response;
+import org.swasth.hcx.dto.ResponseError;
 import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.exception.ErrorCodes;
 import org.swasth.hcx.exception.ServerException;
 import org.swasth.hcx.exception.ServiceUnavailbleException;
-import org.swasth.hcx.utils.JSONUtils;
+import org.swasth.hcx.fhirexamples.OnActionFhirExamples;
 import org.swasth.hcx.helpers.EventGenerator;
+import org.swasth.hcx.service.HcxIntegratorService;
 import org.swasth.hcx.service.HeaderAuditService;
+import org.swasth.hcx.service.NotificationService;
+import org.swasth.hcx.service.PayerService;
+import org.swasth.hcx.utils.JSONUtils;
 import org.swasth.hcx.utils.OnActionCall;
 
-import java.io.*;
-import java.security.interfaces.RSAPrivateKey;
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 import static org.swasth.hcx.utils.Constants.*;
@@ -38,7 +39,7 @@ import static org.swasth.hcx.utils.Constants.*;
 public class BaseController {
 
     @Autowired
-    private OnActionCall onActionCall;
+    protected OnActionCall onActionCall;
 
     @Autowired
     private EventGenerator eventGenerator;
@@ -57,10 +58,13 @@ public class BaseController {
 
     private String baseURL;
 
+    @Value("${autoresponse}")
+    private Boolean autoResponse;
 
-    @Value("${hcx_application.url}")
-    private String hcxBasePath;
+    @Autowired
+    private PayerService payerService;
 
+    private static final Logger logger = LoggerFactory.getLogger(BaseController.class);
 
     protected Response errorResponse(Response response, ErrorCodes code, java.lang.Exception e){
         ResponseError error= new ResponseError(code, e.getMessage(), e.getCause());
@@ -87,19 +91,6 @@ public class BaseController {
         }
     }
 
-
-    protected void processAndSendEvent(String apiAction, String metadataTopic, Request request) throws Exception {
-        String mid = UUID.randomUUID().toString();
-        String serviceMode = env.getProperty(SERVICE_MODE);
-        String payloadTopic = env.getProperty(KAFKA_TOPIC_PAYLOAD);
-        String key = request.getSenderCode();
-        String payloadEvent = eventGenerator.generatePayloadEvent(mid, request);
-        String metadataEvent = eventGenerator.generateMetadataEvent(mid, apiAction, request);
-        System.out.println("Mode: " + serviceMode + " :: mid: " + mid + " :: Event: " + metadataEvent);
-        if(StringUtils.equalsIgnoreCase(serviceMode, GATEWAY)) {
-            System.out.println("Process and send event");
-        }
-    }
     protected void processAndValidate(String onApiAction, String metadataTopic, Request request, Map<String, Object> requestBody, String apiAction) throws Exception {
         IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         String mid = UUID.randomUUID().toString();
@@ -111,14 +102,15 @@ public class BaseController {
                 pay.put("payload", String.valueOf(requestBody.get("payload")));
                 Map<String, Object> output = new HashMap<>();
                 Map<String, Object> outputOfOnAction = new HashMap<>();
-                HCXIntegrator hcxIntegrator = hcxIntegratorService.initialiseHcxIntegrator();
-                HCXIncomingRequest incoming = new HCXIncomingRequest();
                 System.out.println("create the oncheck payload");
-                ObjectMapper mapper = new ObjectMapper();
-                InputStream file;;
                 Bundle bundle = new Bundle();
+                Request req = new Request(requestBody, apiAction);
+                HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(req.getRecipientCode());
                 if (COVERAGE_ELIGIBILITY_ONCHECK.equalsIgnoreCase(onApiAction)) {
-                    incoming.process(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK,output);
+                    boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK,output);
+                    if(!result){
+                        System.out.println("Error while processing incoming request: " +  output);
+                    }
                     System.out.println("outmap after decryption " +  output.get("fhirPayload"));
                     System.out.println("decryption successful");
                     //processing the decrypted incoming bundle
@@ -127,40 +119,57 @@ public class BaseController {
                     replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityResponseBundle.html", CoverageEligibilityRequest.class, new Bundle.BundleEntryComponent().setFullUrl(covRes.getResourceType() + "/" + covRes.getId().toString().replace("#","")).setResource(covRes));
                     System.out.println("bundle reply " + p.encodeResourceToString(bundle));
                     //sending the onaction call
-                    onActionCall.sendOnAction(p.encodeResourceToString(bundle),Operations.COVERAGE_ELIGIBILITY_ON_CHECK,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
+                    sendResponse(apiAction,p.encodeResourceToString(bundle),(String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
                 } else if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
-                    incoming.process(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT,output);
+                    boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT,output);
+                    if(!result){
+                        System.out.println("Error while processing incoming request: " +  output);
+                    }
                     System.out.println("outmap after decryption " +  output);
                     System.out.println("decryption successful");
                     //processing the decrypted incoming bundle
-                    bundle = p.parseResource(Bundle.class, (String) (output.get("fhirPayload")));
+                    bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
                     ClaimResponse claimRes = OnActionFhirExamples.claimResponseExample();
                     replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#","")).setResource(claimRes));
-                    onActionCall.sendOnAction(p.encodeResourceToString(bundle),Operations.CLAIM_ON_SUBMIT,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
+                    sendResponse(apiAction,p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
                 } else if (PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
-                    incoming.process(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT,output);
+                    boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT,output);
+                    if(!result){
+                        System.out.println("Error while processing incoming request: " +  output);
+                    }
                     System.out.println("outmap after decryption " +  output);
                     System.out.println("decryption successful");
                     //processing the decrypted incoming bundle
-                    bundle = p.parseResource(Bundle.class, (String) (output.get("fhirPayload")));
+                    bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
                     ClaimResponse preAuthRes = OnActionFhirExamples.claimResponseExample();
                     preAuthRes.setUse(ClaimResponse.Use.PREAUTHORIZATION);
                     replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(preAuthRes.getResourceType() + "/" + preAuthRes.getId().toString().replace("#","")).setResource(preAuthRes));
-                    onActionCall.sendOnAction(p.encodeResourceToString(bundle),Operations.PRE_AUTH_ON_SUBMIT,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
+                    sendResponse(apiAction,p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
                 }
+        }
+
+    }
+
+    private void sendResponse(String apiAction, String respfhir, String reqFhir, Operations operation, String actionJwe, String onActionStatus, Map<String,Object> output) throws Exception {
+        Request request = new Request(Collections.singletonMap("payload", actionJwe), apiAction);
+        if (autoResponse || StringUtils.equalsIgnoreCase(request.getRecipientCode(), env.getProperty("mock_payer.participant_code"))) {
+            onActionCall.sendOnAction(request.getRecipientCode(), respfhir, operation, actionJwe, onActionStatus, output);
+        } else {
+            payerService.process(request, reqFhir, respfhir);
         }
     }
 
-    public ResponseEntity<Object> validateReqAndPushToKafka(Map<String, Object> requestBody, String apiAction, String onApiAction, String kafkaTopic) {
+    public ResponseEntity<Object> processRequest(Map<String, Object> requestBody, String apiAction, String onApiAction, String kafkaTopic) {
         Response response = new Response();
         try {
-            Request request = new Request(requestBody);
-            notificationService.notify(request,onApiAction.split("/")[2],"Request recieved");
+            Request request = new Request(requestBody, apiAction);
+            //notificationService.notify(request,onApiAction.split("/")[2],"Request received");
             setResponseParams(request, response);
             processAndValidate(onApiAction, kafkaTopic, request, requestBody,apiAction);
             System.out.println("http respond sent");
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println("error   " + e);
             return exceptionHandler(response, e);
         }
@@ -172,6 +181,7 @@ public class BaseController {
     }
 
     protected ResponseEntity<Object> exceptionHandler(Response response, Exception e){
+        e.printStackTrace();
         if (e instanceof ClientException) {
             return new ResponseEntity<>(errorResponse(response, ((ClientException) e).getErrCode(), e), HttpStatus.BAD_REQUEST);
         } else if (e instanceof ServiceUnavailbleException) {
@@ -181,6 +191,16 @@ public class BaseController {
         } else {
             return new ResponseEntity<>(errorResponse(response, ErrorCodes.INTERNAL_SERVER_ERROR, e), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    protected void validateStr(String field, String value) throws ClientException {
+        if(StringUtils.isEmpty(value))
+            throw new ClientException("Missing required field " + field);
+    }
+
+    protected void validateMap(String field, Map<String,Object> value) throws ClientException {
+        if(MapUtils.isEmpty(value))
+            throw new ClientException("Missing required field " + field);
     }
 
 }
