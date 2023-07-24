@@ -77,6 +77,7 @@ public class NotificationController extends BaseController {
     @GetMapping(value = "/" + "${hcx_application.api_version}" + GET_NOTIFICATION)
     public ResponseEntity<Object> getNotification(@PathVariable("participantCode") String code) throws Exception {
         try {
+            System.out.println("Getting the values for participant code :" + code);
             List<Map<String,Object>> details = redisService.get(code);
             Map<String, Object> output = new HashMap<>();
             output.put("notification", details);
