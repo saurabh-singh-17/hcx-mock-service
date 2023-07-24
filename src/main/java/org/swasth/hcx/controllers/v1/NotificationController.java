@@ -66,7 +66,7 @@ public class NotificationController extends BaseController {
             String topicCode = request.getTopicCode();
             HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(senderCode);
             hcxIntegrator.receiveNotification(JSONUtils.serialize(requestBody), output);
-            String key = senderCode + "-" + topicCode + " New one";
+            String key = senderCode + "-" + topicCode;
             redisService.set(key, notificationService.notificationResponse(output), redisExpires);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
