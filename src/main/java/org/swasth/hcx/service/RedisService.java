@@ -51,7 +51,7 @@ public class RedisService {
             }
             return notificationList;
         } catch (Exception e) {
-            throw new ServerException(ErrorCodes.INTERNAL_SERVER_ERROR, "Exception Occurred While Fetching Data from Redis Cache for Key : " + key + "| Exception is:" + e);
+            throw new ServerException(ErrorCodes.INTERNAL_SERVER_ERROR, "Exception Occurred While Fetching Data from Redis Cache for Key : " + key + "| Exception is:" + e.getMessage());
         }
     }
 }
