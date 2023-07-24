@@ -36,6 +36,7 @@ public class Constants {
     //Predetermination APIs
     public static final String PREDETERMINATION_SUBMIT = VERSION_PREFIX + "/predetermination/submit";
     public static final String PREDETERMINATION_ONSUBMIT = VERSION_PREFIX + "/predetermination/on_submit";
+    public static final String GET_NOTIFICATION = "/get/notification/{participantCode}";
 
     public static final String HEALTHY = "healthy";
     public static final String NAME = "name";
