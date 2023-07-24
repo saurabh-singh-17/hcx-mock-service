@@ -55,7 +55,7 @@ public class NotificationService {
         payload.put("topic_code","notif-workflow-update");
         String template = "%s has updated a %s request with correlation id: %s status to %s.";
         payload.put("message", String.format(template, osid, entity, request.getCorrelationId(),status));
-        resBody.put("payload",payload);
+        resBody.put("paylaod",payload);
         System.out.println("Notification notify body "+resBody);
         //JWS encryption
         String privateKeyPath =  "key/x509-private-key.pem";
