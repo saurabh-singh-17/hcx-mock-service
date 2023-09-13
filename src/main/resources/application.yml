@@ -28,6 +28,7 @@ postgres:
   table:
    payerData: ${payer_data_table:payersystem_data}
    mockParticipant: ${mock_participant_table:mock_participant}
+   beneficiary: ${beneficiary_table:beneficiary_verification}
 
 #hcx headers
 protocol:
@@ -73,3 +74,20 @@ mock_payer:
   password: ${mock_payer_password:Opensaber@123}
   participant_code: ${mock_payer_participant_code:1-29482df3-e875-45ef-a4e9-592b6f565782}
 
+aws:
+  access-key: ${aws_accessKey:}
+  access-secret: ${aws_accessSecret:}
+  region: ${aws_region:}
+
+phone:
+  content : ${phone_content:Your OTP for beneficiary app registration is:}
+
+verification-otp:
+  expiry: ${link_expiry:604800000}
+
+beneficiary:
+    protocol-base-path: ${beneficiary_protocol_base_path:https://dev-hcx.swasth.app/api/v0.8}
+    participant-code: ${beneficiary_sender_code:testprovider1.apollo@swasth-hcx-dev}
+    username: ${beneficiary_username:testprovider1@apollo.com}
+    password: ${beneficiary_password:Opensaber@123}
+    recipient-code: ${beneficiary-config_recipient_code:testpayor1.icici@swasth-hcx-dev}

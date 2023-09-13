@@ -52,4 +52,18 @@ public class OnActionFhirExamples {
         return claimRes;
     }
 
+    public static CommunicationRequest communicationRequestExample(){
+        CommunicationRequest comReq = new CommunicationRequest();
+        comReq.setId(UUID.randomUUID().toString());
+        Meta meta = new Meta();
+        meta.getProfile().add(new CanonicalType("https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CommunicationRequest.html%22"));
+                meta.setLastUpdated(new Date());
+        comReq.setMeta(meta);
+        comReq.getIdentifier().add(new Identifier().setSystem("http://irdai.gov.in/insurer/123456%22").setValue("%22ABCD123%22"));
+                comReq.setStatus(CommunicationRequest.CommunicationRequestStatus.ACTIVE);
+        comReq.getBasedOn().add(new Reference("Patient/RVH1003"));
+        comReq.getPayload().add(new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please provide the otp sent to the mobile number.")));
+        return comReq;
+    }
+
 }

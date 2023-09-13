@@ -11,6 +11,9 @@ public class Constants {
     public static final String COVERAGE_ELIGIBILITY_CHECK = VERSION_PREFIX + "/coverageeligibility/check";
     public static final String COVERAGE_ELIGIBILITY_ONCHECK = VERSION_PREFIX + "/coverageeligibility/on_check";
 
+    public static final String CREATE_COVERAGEELIGIBILITY_REQUEST =  "/create/coverageeligibility/check";
+    public static final String CREATE_CLAIM_SUBMIT = "/create/claim/submit";
+    public static final String CREATE_PRE_AUTH_SUBMIT = "/create/preauth/submit";
     // Claims APIs
     public static final String PRE_AUTH_SUBMIT = VERSION_PREFIX + "/preauth/submit";
     public static final String PRE_AUTH_ONSUBMIT = VERSION_PREFIX + "/preauth/on_submit";
