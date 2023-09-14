@@ -36,7 +36,6 @@ public class BeneficiaryService {
     }
 
 
-    @PostMapping("/send/otp")
     public ResponseEntity<Object> sendOTP(@RequestBody Map<String, Object> requestBody) {
         try {
             String mobile = (String) requestBody.get(Constants.MOBILE);

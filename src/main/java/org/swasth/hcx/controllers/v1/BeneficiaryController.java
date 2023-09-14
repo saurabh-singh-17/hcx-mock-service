@@ -1,11 +1,7 @@
 package org.swasth.hcx.controllers.v1;
 
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.parser.IParser;
-import io.hcxprotocol.exception.ClientException;
 import io.hcxprotocol.utils.Operations;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.swasth.hcx.controllers.BaseController;
 import org.swasth.hcx.service.BeneficiaryService;
 import org.swasth.hcx.service.GenerateOutgoingRequest;
-import org.swasth.hcx.service.PostgresService;
-import org.swasth.hcx.service.SMSService;
 import org.swasth.hcx.utils.Constants;
 
-import java.io.IOException;
-import java.sql.ResultSet;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.swasth.hcx.utils.Constants.*;
@@ -49,17 +40,44 @@ public class BeneficiaryController extends BaseController {
 
     @PostMapping(CREATE_COVERAGEELIGIBILITY_REQUEST)
     public ResponseEntity<Object> createCoverageEligibility(@RequestHeader HttpHeaders headers, @RequestBody Map<String, Object> requestBody) throws Exception {
-        return outgoingRequest.processOutgoingRequest(requestBody, Constants.COVERAGE_ELIGIBILITY_CHECK , Operations.COVERAGE_ELIGIBILITY_CHECK);
+        return outgoingRequest.processOutgoingRequest(requestBody, CREATE_COVERAGEELIGIBILITY_REQUEST, Operations.COVERAGE_ELIGIBILITY_CHECK);
     }
 
     @PostMapping(CREATE_CLAIM_SUBMIT)
-    public ResponseEntity<Object> createClaimSubmit(@RequestBody Map<String,Object> requestBody) throws Exception {
-        return outgoingRequest.processOutgoingRequest(requestBody, Constants.CLAIM_SUBMIT, Operations.CLAIM_SUBMIT);
+    public ResponseEntity<Object> createClaimSubmit(@RequestBody Map<String, Object> requestBody) throws Exception {
+        return outgoingRequest.processOutgoingRequest(requestBody, CREATE_CLAIM_SUBMIT, Operations.CLAIM_SUBMIT);
     }
 
     @PostMapping(CREATE_PRE_AUTH_SUBMIT)
-    public ResponseEntity<Object> createPreAuthSubmit(@RequestBody Map<String,Object> requestBody) throws Exception {
-        return outgoingRequest.processOutgoingRequest(requestBody, PRE_AUTH_SUBMIT, Operations.PRE_AUTH_SUBMIT);
+    public ResponseEntity<Object> createPreAuthSubmit(@RequestBody Map<String, Object> requestBody) throws Exception {
+        return outgoingRequest.processOutgoingRequest(requestBody, CREATE_PRE_AUTH_SUBMIT, Operations.PRE_AUTH_SUBMIT);
+    }
+
+    @PostMapping(CREATE_COMMUNICATION_REQUEST)
+    public ResponseEntity<Object> createCommunication(@RequestBody Map<String, Object> requestBody) throws Exception {
+        return outgoingRequest.processOutgoingRequest(requestBody, CREATE_COMMUNICATION_REQUEST, Operations.COMMUNICATION_REQUEST);
+    }
+
+    @PostMapping("/send/otp")
+    public ResponseEntity<Object> sendOTP(@RequestBody Map<String, Object> requestBody) {
+        try {
+            String mobile = (String) requestBody.get("mobile");
+            beneficiaryService.sendOTP(mobile);
+            return ResponseEntity.ok("OTP sent successfully to " + mobile);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("verify/otp")
+    public ResponseEntity<Object> verifyOTP(@RequestBody Map<String, Object> requestBody) {
+        try {
+
+            return
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
     }
 
 }
