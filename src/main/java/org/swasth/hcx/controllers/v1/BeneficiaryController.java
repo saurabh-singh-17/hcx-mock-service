@@ -40,12 +40,12 @@ public class BeneficiaryController extends BaseController {
 
     @PostMapping(CREATE_COVERAGEELIGIBILITY_REQUEST)
     public ResponseEntity<Object> createCoverageEligibility(@RequestHeader HttpHeaders headers, @RequestBody Map<String, Object> requestBody) throws Exception {
-        return outgoingRequest.processOutgoingRequest(requestBody, CREATE_COVERAGEELIGIBILITY_REQUEST, Operations.COVERAGE_ELIGIBILITY_CHECK);
+        return outgoingRequest.createCoverageEligibilityRequest(requestBody,Operations.COVERAGE_ELIGIBILITY_CHECK);
     }
 
     @PostMapping(CREATE_CLAIM_SUBMIT)
     public ResponseEntity<Object> createClaimSubmit(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return outgoingRequest.processOutgoingRequest(requestBody, CREATE_CLAIM_SUBMIT, Operations.CLAIM_SUBMIT);
+        return outgoingRequest.createClaimRequest(requestBody, Operations.CLAIM_SUBMIT);
     }
 
     @PostMapping(CREATE_PRE_AUTH_SUBMIT)
@@ -73,7 +73,7 @@ public class BeneficiaryController extends BaseController {
     public ResponseEntity<Object> verifyOTP(@RequestBody Map<String, Object> requestBody) {
         try {
 
-            return
+            return ResponseEntity.ok("a");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -124,4 +124,64 @@ public class GenerateOutgoingRequest {
         return parser.encodeResourceToString(bundleTest);
     }
 
+    public ResponseEntity<Object> createCoverageEligibilityRequest(Map<String, Object> requestBody, Operations operations) {
+        Response response = new Response();
+        try {
+            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
+            IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+            CoverageEligibilityRequest ce = OnActionFhirExamples.coverageEligibilityRequestExample();
+            Practitioner practitioner = OnActionFhirExamples.practitionerExample();
+            Organization hospital = OnActionFhirExamples.providerOrganizationExample();
+            Patient patient = OnActionFhirExamples.patientExample();
+            Organization insurerOrganization = OnActionFhirExamples.insurerOrganizationExample();
+            Coverage coverage = OnActionFhirExamples.coverageExample();
+            List<DomainResource> domList = List.of(hospital, insurerOrganization, patient, coverage, practitioner);
+            Bundle bundleTest = new Bundle();
+            try {
+                bundleTest = HCXFHIRUtils.resourceToBundle(ce, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityRequestBundle.html", hcxIntegrator);
+                System.out.println("Resource To Bundle generated successfully");
+            } catch (Exception e) {
+                System.out.println("Error message " + e.getMessage());
+            }
+            Map<String, Object> output = new HashMap<>();
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, mockRecipientCode, "", "", new HashMap<>(), output);
+            System.out.println("The outgoing request has been successfully generated.");
+            return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("error   " + e);
+            return exceptionHandler(response, e);
+        }
+    }
+
+    public ResponseEntity<Object> createClaimRequest(Map<String, Object> requestBody, Operations operations) {
+        Response response = new Response();
+        try {
+            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
+            IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+            Claim claim = OnActionFhirExamples.claimExample();
+            Practitioner practitioner = OnActionFhirExamples.practitionerExample();
+            Organization hospital = OnActionFhirExamples.providerOrganizationExample();
+            Patient patient = OnActionFhirExamples.patientExample();
+            Organization insurerOrganization = OnActionFhirExamples.insurerOrganizationExample();
+            Coverage coverage = OnActionFhirExamples.coverageExample();
+            List<DomainResource> domList = List.of(hospital, insurerOrganization, patient, coverage, practitioner);
+            Bundle bundleTest = new Bundle();
+            try {
+                bundleTest = HCXFHIRUtils.resourceToBundle(claim, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityRequestBundle.html", hcxIntegrator);
+                System.out.println("Resource To Bundle generated successfully");
+            } catch (Exception e) {
+                System.out.println("Error message " + e.getMessage());
+            }
+            Map<String, Object> output = new HashMap<>();
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, mockRecipientCode, "", "", new HashMap<>(), output);
+            System.out.println("The outgoing request has been successfully generated.");
+            return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("error   " + e);
+            return exceptionHandler(response, e);
+        }
+    }
+
 }
