@@ -35,22 +35,7 @@ public class BeneficiaryService {
         smsService.sendSMS(mobile, phoneContent + "\r\n" + otpCode);
     }
 
-
-    public ResponseEntity<Object> sendOTP(@RequestBody Map<String, Object> requestBody) {
-        try {
-            String mobile = (String) requestBody.get(Constants.MOBILE);
-            Integer otpCode = Integer.valueOf(RandomStringUtils.randomNumeric(6));
-            String query = String.format("INSERT INTO %s (mobile, otp_code, mobile_verified, createdon, otp_expiry) VALUES ('%s', %d, false, %d, %d)", beneficiaryTable, mobile, otpCode, System.currentTimeMillis(), System.currentTimeMillis() + otpExpiry);
-            postgresService.execute(query);
-            smsService.sendSMS(mobile, phoneContent + "\r\n" + otpCode);
-            return new ResponseEntity<>(HttpStatus.ACCEPTED);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PostMapping("/verify/otp")
-    public ResponseEntity<Object> verifyOTP(@RequestBody Map<String, Object> requestBody) {
+    public ResponseEntity<Object> verifyOTP(Map<String, Object> requestBody) {
         try {
             String mobile = (String) requestBody.get(Constants.MOBILE);
             int userEnteredOTP = Integer.parseInt((String) requestBody.get("otp_code"));

@@ -48,20 +48,20 @@ public class BeneficiaryController extends BaseController {
         return outgoingRequest.createClaimRequest(requestBody, Operations.CLAIM_SUBMIT);
     }
 
-    @PostMapping(CREATE_PRE_AUTH_SUBMIT)
-    public ResponseEntity<Object> createPreAuthSubmit(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return outgoingRequest.processOutgoingRequest(requestBody, CREATE_PRE_AUTH_SUBMIT, Operations.PRE_AUTH_SUBMIT);
-    }
+//    @PostMapping(CREATE_PRE_AUTH_SUBMIT)
+//    public ResponseEntity<Object> createPreAuthSubmit(@RequestBody Map<String, Object> requestBody) throws Exception {
+//        return outgoingRequest.processOutgoingRequest(requestBody, CREATE_PRE_AUTH_SUBMIT, Operations.PRE_AUTH_SUBMIT);
+//    }
 
     @PostMapping(CREATE_COMMUNICATION_REQUEST)
     public ResponseEntity<Object> createCommunication(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return outgoingRequest.processOutgoingRequest(requestBody, CREATE_COMMUNICATION_REQUEST, Operations.COMMUNICATION_REQUEST);
+        return outgoingRequest.communicationRequest(requestBody, Operations.COMMUNICATION_REQUEST);
     }
 
     @PostMapping("/send/otp")
     public ResponseEntity<Object> sendOTP(@RequestBody Map<String, Object> requestBody) {
         try {
-            String mobile = (String) requestBody.get("mobile");
+            String mobile = (String) requestBody.get(MOBILE);
             beneficiaryService.sendOTP(mobile);
             return ResponseEntity.ok("OTP sent successfully to " + mobile);
         } catch (Exception e) {
@@ -72,12 +72,10 @@ public class BeneficiaryController extends BaseController {
     @PostMapping("verify/otp")
     public ResponseEntity<Object> verifyOTP(@RequestBody Map<String, Object> requestBody) {
         try {
-
-            return ResponseEntity.ok("a");
+            return beneficiaryService.verifyOTP(requestBody);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-
     }
 
 }
