@@ -15,6 +15,8 @@ public class Constants {
     public static final String CREATE_CLAIM_SUBMIT = "/create/claim/submit";
     public static final String CREATE_PRE_AUTH_SUBMIT = "/create/preauth/submit";
     public static final String CREATE_COMMUNICATION_REQUEST = "/create/communication/request";
+    public static final String SEND_OTP = "/send/otp";
+    public static final String VERIFY_OTP = "verify/otp";
     // Claims APIs
     public static final String PRE_AUTH_SUBMIT = VERSION_PREFIX + "/preauth/submit";
     public static final String PRE_AUTH_ONSUBMIT = VERSION_PREFIX + "/preauth/on_submit";

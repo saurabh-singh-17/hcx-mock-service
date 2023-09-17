@@ -58,18 +58,18 @@ public class BeneficiaryController extends BaseController {
         return outgoingRequest.communicationRequest(requestBody, Operations.COMMUNICATION_REQUEST);
     }
 
-    @PostMapping("/send/otp")
+    @PostMapping(SEND_OTP)
     public ResponseEntity<Object> sendOTP(@RequestBody Map<String, Object> requestBody) {
         try {
             String mobile = (String) requestBody.get(MOBILE);
             beneficiaryService.sendOTP(mobile);
-            return ResponseEntity.ok("OTP sent successfully to " + mobile);
+            return ResponseEntity.ok(Map.of("message", "OTP sent successfully", "mobile", mobile));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @PostMapping("verify/otp")
+    @PostMapping(VERIFY_OTP)
     public ResponseEntity<Object> verifyOTP(@RequestBody Map<String, Object> requestBody) {
         try {
             return beneficiaryService.verifyOTP(requestBody);
