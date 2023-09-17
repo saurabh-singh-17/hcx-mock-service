@@ -1,13 +1,9 @@
 package org.swasth.hcx.service;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.utils.Constants;
 
@@ -23,44 +19,44 @@ public class BeneficiaryService {
     private PostgresService postgresService;
     @Autowired
     private SMSService smsService;
-    @Value("${phone.content}")
-    private String phoneContent;
     @Value("${postgres.table.beneficiary}")
     private String beneficiaryTable;
     @Value("${verification-otp.expiry}")
     private int otpExpiry;
 
-    public void sendOTP(String mobile) throws ClientException, SQLException {
+    public void sendOTP(String mobile, String phoneContent) throws ClientException, SQLException {
         try {
             String query = String.format("SELECT * FROM %s WHERE mobile = '%s'", beneficiaryTable, mobile);
             ResultSet resultSet = postgresService.executeQuery(query);
             if (!resultSet.next()) {
-                createUserAndSendOTP(mobile);
+                createUserAndSendOTP(mobile, phoneContent);
             } else {
-                sendOTPToExistingUser(mobile);
+                sendOTPToExistingUser(mobile, phoneContent);
             }
         } catch (ClientException e) {
             throw new ClientException(e.getMessage());
         }
     }
 
-    private void sendOTPToExistingUser(String mobile) throws ClientException {
+    private void sendOTPToExistingUser(String mobile, String phoneContent) throws ClientException {
         int otpCode = 100_000 + new Random().nextInt(900_000);
         String query = String.format("UPDATE %s SET otp_code = %d, otp_expiry = %d WHERE mobile = '%s'", beneficiaryTable, otpCode, System.currentTimeMillis() + otpExpiry, mobile);
         try {
             postgresService.execute(query);
             smsService.sendSMS(mobile, phoneContent + "\r\n" + otpCode);
+            System.out.println("OTP sent successfully for " + mobile);
         } catch (Exception e) {
             throw new ClientException(e.getMessage());
         }
     }
 
-    private void createUserAndSendOTP(String mobile) throws ClientException {
+    private void createUserAndSendOTP(String mobile,String phoneContent) throws ClientException {
         int otpCode = 100_000 + new Random().nextInt(900_000);
         String query = String.format("INSERT INTO %s (mobile, otp_code, mobile_verified, createdon, otp_expiry) VALUES ('%s', %d, false, %d, %d)", beneficiaryTable, mobile, otpCode, System.currentTimeMillis(), System.currentTimeMillis() + otpExpiry);
         try {
             postgresService.execute(query);
             smsService.sendSMS(mobile, phoneContent + "\r\n" + otpCode);
+            System.out.println("OTP sent successfully for " + mobile);
         } catch (Exception e) {
             throw new ClientException(e.getMessage());
         }

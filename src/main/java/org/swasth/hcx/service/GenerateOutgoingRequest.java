@@ -5,9 +5,11 @@ import ca.uhn.fhir.parser.IParser;
 import com.amazonaws.services.dynamodbv2.xspec.S;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
+import kong.unirest.HttpResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import org.swasth.hcx.exception.ServiceUnavailbleException;
 import org.swasth.hcx.fhirexamples.OnActionFhirExamples;
 import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.utils.HCXFHIRUtils;
+import org.swasth.hcx.utils.HttpUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -29,10 +32,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static org.swasth.hcx.utils.Constants.CREATE_COMMUNICATION_REQUEST;
+import static org.swasth.hcx.utils.Constants.MOBILE;
 
 @Service
 public class GenerateOutgoingRequest {
 
+    @Autowired
+    private BeneficiaryService beneficiaryService;
+
+    @Value("${phone.communication-content}")
+    private String communicationContent;
     @Value("${beneficiary.protocol-base-path}")
     private String protocolBasePath;
     @Value("${beneficiary.participant-code}")
@@ -108,28 +117,25 @@ public class GenerateOutgoingRequest {
         }
     }
 
-    public ResponseEntity<Object> communicationRequest(Map<String, Object> requestBody, Operations operations) {
+    public ResponseEntity<Object> createCommunicationRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
-//            Practitioner practitioner = OnActionFhirExamples.practitionerExample();
-//            Organization hospital = OnActionFhirExamples.providerOrganizationExample();
             Patient patient = OnActionFhirExamples.patientExample();
-//            Organization insurerOrganization = OnActionFhirExamples.insurerOrganizationExample();
-//            Coverage coverage = OnActionFhirExamples.coverageExample();
             List<DomainResource> domList = List.of(patient);
             Bundle bundleTest = new Bundle();
             try {
-                bundleTest = HCXFHIRUtils.resourceToBundle(communicationRequest, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityRequestBundle.html", hcxIntegrator);
-                System.out.println("Resource To Bundle generated successfully");
+                bundleTest = HCXFHIRUtils.resourceToBundle(communicationRequest, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CommunicationRequest.html", hcxIntegrator);
+                System.out.println("Resource To Bundle generated successfully\n" + parser.encodeResourceToString(bundleTest));
             } catch (Exception e) {
                 System.out.println("Error message " + e.getMessage());
             }
             Map<String, Object> output = new HashMap<>();
             hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, mockRecipientCode, "", "", new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated.");
+            beneficiaryService.sendOTP((String) requestBody.get(MOBILE), communicationContent);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();

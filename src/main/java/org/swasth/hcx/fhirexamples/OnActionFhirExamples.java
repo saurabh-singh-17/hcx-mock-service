@@ -205,7 +205,7 @@ public class OnActionFhirExamples {
         comReq.getIdentifier().add(new Identifier().setSystem("http://irdai.gov.in/insurer/123456").setValue("ABCD123"));
         comReq.setStatus(CommunicationRequest.CommunicationRequestStatus.ACTIVE);
         comReq.getBasedOn().add(new Reference("Patient/RVH1003"));
-        comReq.getPayload().add(new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please provide the accident report and any associated pictures to support your Claim# DEF5647.")));
+        comReq.getPayload().add(new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please verify the OTP sent to your mobile number to proceed.")));
         return comReq;
     }
 

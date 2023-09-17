@@ -29,8 +29,11 @@ public class BeneficiaryController extends BaseController {
 
     @Autowired
     private BeneficiaryService beneficiaryService;
-    @Value("${phone.content}")
-    private String phoneContent;
+    @Value("${phone.beneficiary-register}")
+    private String beneficiaryRegisterContent;
+
+    @Value("${phone.communication-content}")
+    private String communicationContent;
 
     @Value("${postgres.table.beneficiary}")
     private String beneficiaryTable;
@@ -55,14 +58,14 @@ public class BeneficiaryController extends BaseController {
 
     @PostMapping(CREATE_COMMUNICATION_REQUEST)
     public ResponseEntity<Object> createCommunication(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return outgoingRequest.communicationRequest(requestBody, Operations.COMMUNICATION_REQUEST);
+        return outgoingRequest.createCommunicationRequest(requestBody, Operations.COMMUNICATION_REQUEST);
     }
 
     @PostMapping(SEND_OTP)
     public ResponseEntity<Object> sendOTP(@RequestBody Map<String, Object> requestBody) {
         try {
             String mobile = (String) requestBody.get(MOBILE);
-            beneficiaryService.sendOTP(mobile);
+            beneficiaryService.sendOTP(mobile, beneficiaryRegisterContent);
             return ResponseEntity.ok(Map.of("message", "OTP sent successfully", "mobile", mobile));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
