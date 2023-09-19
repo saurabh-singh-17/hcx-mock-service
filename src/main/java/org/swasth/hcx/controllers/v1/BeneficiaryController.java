@@ -38,9 +38,6 @@ public class BeneficiaryController extends BaseController {
     @Value("${postgres.table.beneficiary}")
     private String beneficiaryTable;
 
-    @Value("${verification-otp.expiry}")
-    private int otpExpiry;
-
     @PostMapping(CREATE_COVERAGEELIGIBILITY_REQUEST)
     public ResponseEntity<Object> createCoverageEligibility(@RequestHeader HttpHeaders headers, @RequestBody Map<String, Object> requestBody) throws Exception {
         return outgoingRequest.createCoverageEligibilityRequest(requestBody,Operations.COVERAGE_ELIGIBILITY_CHECK);

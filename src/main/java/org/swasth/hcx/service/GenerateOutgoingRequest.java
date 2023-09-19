@@ -40,6 +40,8 @@ public class GenerateOutgoingRequest {
     @Autowired
     private BeneficiaryService beneficiaryService;
 
+    @Value("${postgres.table.payerData}")
+    private String payorDataTable;
     @Value("${phone.communication-content}")
     private String communicationContent;
     @Value("${beneficiary.protocol-base-path}")
@@ -107,7 +109,7 @@ public class GenerateOutgoingRequest {
             Bundle bundleTest = new Bundle();
             try {
                 bundleTest = HCXFHIRUtils.resourceToBundle(claim, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Claim.html", hcxIntegrator);
-                System.out.println("Resource To Bundle generated successfully" + parser.encodeResourceToString(bundleTest));
+                System.out.println("resource To Bundle claim Request\n" + parser.encodeResourceToString(bundleTest));
             } catch (Exception e) {
                 System.out.println("Error message " + e.getMessage());
             }
@@ -125,8 +127,13 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createCommunicationRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
-            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+            String fhirPayload = beneficiaryService.getFhirPayload((String) requestBody.get("request_id"));
+            Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+            Patient patient1 = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
+            String mobile = patient1.getTelecom().get(0).getValue();
+            System.out.println("-------mobile number ----------" + mobile);
+            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
             Patient patient = OnActionFhirExamples.patientExample();
             List<DomainResource> domList = List.of(patient);
@@ -140,7 +147,7 @@ public class GenerateOutgoingRequest {
             Map<String, Object> output = new HashMap<>();
             hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, mockRecipientCode, "", "", new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated.");
-            beneficiaryService.sendOTP((String) requestBody.get(MOBILE), communicationContent);
+            beneficiaryService.sendOTP(mobile, communicationContent);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();
