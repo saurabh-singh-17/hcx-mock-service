@@ -51,10 +51,10 @@ public class BeneficiaryController extends BaseController {
         return outgoingRequest.createClaimRequest(requestBody, Operations.CLAIM_SUBMIT);
     }
 
-//    @PostMapping(CREATE_PRE_AUTH_SUBMIT)
-//    public ResponseEntity<Object> createPreAuthSubmit(@RequestBody Map<String, Object> requestBody) throws Exception {
-//        return outgoingRequest.processOutgoingRequest(requestBody, CREATE_PRE_AUTH_SUBMIT, Operations.PRE_AUTH_SUBMIT);
-//    }
+    @PostMapping(CREATE_PRE_AUTH_SUBMIT)
+    public ResponseEntity<Object> createPreAuthSubmit(@RequestBody Map<String, Object> requestBody) throws Exception {
+        return outgoingRequest.createClaimRequest(requestBody, Operations.PRE_AUTH_SUBMIT);
+    }
 
     @PostMapping(CREATE_COMMUNICATION_REQUEST)
     public ResponseEntity<Object> createCommunication(@RequestBody Map<String, Object> requestBody) throws Exception {

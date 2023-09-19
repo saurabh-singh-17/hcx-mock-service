@@ -40,7 +40,7 @@ public class BeneficiaryService {
 
     private void sendOTPToExistingUser(String mobile, String phoneContent) throws ClientException {
         int otpCode = 100_000 + new Random().nextInt(900_000);
-        String query = String.format("UPDATE %s SET otp_code = %d, otp_expiry = %d WHERE mobile = '%s'", beneficiaryTable, otpCode, System.currentTimeMillis() + otpExpiry, mobile);
+        String query = String.format("UPDATE %s SET otp_code = %d, otp_expiry = %d , mobile_verified = %b WHERE mobile = '%s'", beneficiaryTable, otpCode, System.currentTimeMillis() + otpExpiry, false, mobile);
         try {
             postgresService.execute(query);
             smsService.sendSMS(mobile, phoneContent + "\r\n" + otpCode);

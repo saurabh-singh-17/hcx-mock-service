@@ -54,7 +54,7 @@ public class BaseController {
     protected NotificationService notificationService;
 
     @Autowired
-    protected  HcxIntegratorService hcxIntegratorService;
+    protected HcxIntegratorService hcxIntegratorService;
 
     private String baseURL;
 
@@ -66,14 +66,14 @@ public class BaseController {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseController.class);
 
-    protected Response errorResponse(Response response, ErrorCodes code, java.lang.Exception e){
-        ResponseError error= new ResponseError(code, e.getMessage(), e.getCause());
+    protected Response errorResponse(Response response, ErrorCodes code, java.lang.Exception e) {
+        ResponseError error = new ResponseError(code, e.getMessage(), e.getCause());
         response.setError(error);
         return response;
     }
 
 
-    protected void replaceResourceInBundleEntry(Bundle bundle, String bundleURL, Class matchClass, Bundle.BundleEntryComponent bundleEntry){
+    protected void replaceResourceInBundleEntry(Bundle bundle, String bundleURL, Class matchClass, Bundle.BundleEntryComponent bundleEntry) {
 
         //updating the meta
         Meta meta = new Meta();
@@ -81,12 +81,12 @@ public class BaseController {
         meta.setLastUpdated(new Date());
         bundle.setMeta(meta);
 
-        for(int i=0; i < bundle.getEntry().size(); i++){
+        for (int i = 0; i < bundle.getEntry().size(); i++) {
             System.out.println("in the loop " + i);
             Bundle.BundleEntryComponent par = bundle.getEntry().get(i);
             DomainResource dm = (DomainResource) par.getResource();
-            if(dm.getClass() == matchClass){
-                bundle.getEntry().set(i,bundleEntry);
+            if (dm.getClass() == matchClass) {
+                bundle.getEntry().set(i, bundleEntry);
             }
         }
     }
@@ -96,61 +96,71 @@ public class BaseController {
         String mid = UUID.randomUUID().toString();
         String serviceMode = env.getProperty(SERVICE_MODE);
         System.out.println("\n" + "Mode: " + serviceMode + " :: mid: " + mid + " :: Event: " + onApiAction);
-        if(StringUtils.equalsIgnoreCase(serviceMode, GATEWAY)) {
-                Map<String, String> pay = new HashMap<>();
-                System.out.println("payload received " + requestBody);
-                pay.put("payload", String.valueOf(requestBody.get("payload")));
-                Map<String, Object> output = new HashMap<>();
-                Map<String, Object> outputOfOnAction = new HashMap<>();
-                System.out.println("create the oncheck payload");
-                Bundle bundle = new Bundle();
-                Request req = new Request(requestBody, apiAction);
-                HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(req.getRecipientCode());
-                if (COVERAGE_ELIGIBILITY_ONCHECK.equalsIgnoreCase(onApiAction)) {
-                    boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK,output);
-                    if(!result){
-                        System.out.println("Error while processing incoming request: " +  output);
-                    }
-                    System.out.println("outmap after decryption " +  output.get("fhirPayload"));
-                    System.out.println("decryption successful");
-                    //processing the decrypted incoming bundle
-                    bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
-                    CoverageEligibilityResponse covRes = OnActionFhirExamples.coverageEligibilityResponseExample();
-                    replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityResponseBundle.html", CoverageEligibilityRequest.class, new Bundle.BundleEntryComponent().setFullUrl(covRes.getResourceType() + "/" + covRes.getId().toString().replace("#","")).setResource(covRes));
-                    System.out.println("bundle reply " + p.encodeResourceToString(bundle));
-                    //sending the onaction call
-                    sendResponse(apiAction,p.encodeResourceToString(bundle),(String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
-                } else if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
-                    boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT,output);
-                    if(!result){
-                        System.out.println("Error while processing incoming request: " +  output);
-                    }
-                    System.out.println("outmap after decryption " +  output);
-                    System.out.println("decryption successful");
-                    //processing the decrypted incoming bundle
-                    bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
-                    ClaimResponse claimRes = OnActionFhirExamples.claimResponseExample();
-                    replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#","")).setResource(claimRes));
-                    sendResponse(apiAction,p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
-                } else if (PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
-                    boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT,output);
-                    if(!result){
-                        System.out.println("Error while processing incoming request: " +  output);
-                    }
-                    System.out.println("outmap after decryption " +  output);
-                    System.out.println("decryption successful");
-                    //processing the decrypted incoming bundle
-                    bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
-                    ClaimResponse preAuthRes = OnActionFhirExamples.claimResponseExample();
-                    preAuthRes.setUse(ClaimResponse.Use.PREAUTHORIZATION);
-                    replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(preAuthRes.getResourceType() + "/" + preAuthRes.getId().toString().replace("#","")).setResource(preAuthRes));
-                    sendResponse(apiAction,p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT,  String.valueOf(requestBody.get("payload")),"response.complete" ,outputOfOnAction);
+        if (StringUtils.equalsIgnoreCase(serviceMode, GATEWAY)) {
+            Map<String, String> pay = new HashMap<>();
+            System.out.println("payload received " + requestBody);
+            pay.put("payload", String.valueOf(requestBody.get("payload")));
+            Map<String, Object> output = new HashMap<>();
+            Map<String, Object> outputOfOnAction = new HashMap<>();
+            System.out.println("create the oncheck payload");
+            Bundle bundle = new Bundle();
+            Request req = new Request(requestBody, apiAction);
+            HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(req.getRecipientCode());
+            if (COVERAGE_ELIGIBILITY_ONCHECK.equalsIgnoreCase(onApiAction)) {
+                boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK, output);
+                if (!result) {
+                    System.out.println("Error while processing incoming request: " + output);
                 }
+                System.out.println("output map after decryption  coverageEligibility" + output.get("fhirPayload"));
+                System.out.println("decryption successful");
+                //processing the decrypted incoming bundle
+                bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
+                CoverageEligibilityResponse covRes = OnActionFhirExamples.coverageEligibilityResponseExample();
+                replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityResponseBundle.html", CoverageEligibilityRequest.class, new Bundle.BundleEntryComponent().setFullUrl(covRes.getResourceType() + "/" + covRes.getId().toString().replace("#", "")).setResource(covRes));
+                System.out.println("bundle reply " + p.encodeResourceToString(bundle));
+                //sending the onaction call
+                sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+            } else if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
+                boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT, output);
+                if (!result) {
+                    System.out.println("Error while processing incoming request: " + output);
+                }
+                System.out.println("output map after decryption claim " + output);
+                System.out.println("decryption successful");
+                //processing the decrypted incoming bundle
+                bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
+                ClaimResponse claimRes = OnActionFhirExamples.claimResponseExample();
+                replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#", "")).setResource(claimRes));
+                sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+            } else if (PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
+                boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT, output);
+                if (!result) {
+                    System.out.println("Error while processing incoming request: " + output);
+                }
+                System.out.println("output map after decryption preauth " + output);
+                System.out.println("decryption successful");
+                //processing the decrypted incoming bundle
+                bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
+                ClaimResponse preAuthRes = OnActionFhirExamples.claimResponseExample();
+                preAuthRes.setUse(ClaimResponse.Use.PREAUTHORIZATION);
+                replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(preAuthRes.getResourceType() + "/" + preAuthRes.getId().toString().replace("#", "")).setResource(preAuthRes));
+                sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+            } else if (COMMUNICATION_ONREQUEST.equalsIgnoreCase(onApiAction)) {
+                boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_ON_REQUEST, output);
+                if (!result) {
+                    System.out.println("Error while processing incoming request: " + output);
+                }
+                System.out.println("output map after decryption communication" + output);
+                System.out.println("decryption successful");
+                bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
+                Communication communication = OnActionFhirExamples.communicationExample();
+                replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Communication.html", CommunicationRequest.class, new Bundle.BundleEntryComponent().setFullUrl(communication.getResourceType() + "/" + communication.getId().toString().replace("#", "")).setResource(communication));
+                sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+            }
         }
-
     }
 
-    private void sendResponse(String apiAction, String respfhir, String reqFhir, Operations operation, String actionJwe, String onActionStatus, Map<String,Object> output) throws Exception {
+    private void sendResponse(String apiAction, String respfhir, String reqFhir, Operations operation, String actionJwe, String onActionStatus, Map<String, Object> output) throws Exception {
         Request request = new Request(Collections.singletonMap("payload", actionJwe), apiAction);
         if (autoResponse || StringUtils.equalsIgnoreCase(request.getRecipientCode(), env.getProperty("mock_payer.participant_code"))) {
             onActionCall.sendOnAction(request.getRecipientCode(), respfhir, operation, actionJwe, onActionStatus, output);
@@ -165,7 +175,7 @@ public class BaseController {
             Request request = new Request(requestBody, apiAction);
             //notificationService.notify(request,onApiAction.split("/")[2],"Request received");
             setResponseParams(request, response);
-            processAndValidate(onApiAction, kafkaTopic, request, requestBody,apiAction);
+            processAndValidate(onApiAction, kafkaTopic, request, requestBody, apiAction);
             System.out.println("http respond sent");
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
@@ -175,12 +185,12 @@ public class BaseController {
         }
     }
 
-    protected void setResponseParams(Request request, Response response){
+    protected void setResponseParams(Request request, Response response) {
         response.setCorrelationId(request.getCorrelationId());
         response.setApiCallId(request.getApiCallId());
     }
 
-    protected ResponseEntity<Object> exceptionHandler(Response response, Exception e){
+    protected ResponseEntity<Object> exceptionHandler(Response response, Exception e) {
         e.printStackTrace();
         if (e instanceof ClientException) {
             return new ResponseEntity<>(errorResponse(response, ((ClientException) e).getErrCode(), e), HttpStatus.BAD_REQUEST);
@@ -194,12 +204,12 @@ public class BaseController {
     }
 
     protected void validateStr(String field, String value) throws ClientException {
-        if(StringUtils.isEmpty(value))
+        if (StringUtils.isEmpty(value))
             throw new ClientException("Missing required field " + field);
     }
 
-    protected void validateMap(String field, Map<String,Object> value) throws ClientException {
-        if(MapUtils.isEmpty(value))
+    protected void validateMap(String field, Map<String, Object> value) throws ClientException {
+        if (MapUtils.isEmpty(value))
             throw new ClientException("Missing required field " + field);
     }
 

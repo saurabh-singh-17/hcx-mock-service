@@ -61,12 +61,12 @@ public class GenerateOutgoingRequest {
             CoverageEligibilityRequest ce = OnActionFhirExamples.coverageEligibilityRequestExample();
             Practitioner practitioner = OnActionFhirExamples.practitionerExample();
             Organization hospital = OnActionFhirExamples.providerOrganizationExample();
-            hospital.setName("WeMeanWell Hospital(provider name)");
+            hospital.setName("WeMeanWell Hospital");
             Patient patient = OnActionFhirExamples.patientExample();
             patient.getTelecom().add(new ContactPoint().setValue("9008496789 ()patient mobile" ).setSystem(ContactPoint.ContactPointSystem.PHONE));        String date_string = "26-09-1960";
             patient.getName().add(new HumanName().setText("Abhishek(patient name)"));
             Organization insurerOrganization = OnActionFhirExamples.insurerOrganizationExample();
-            insurerOrganization.setName("Mock Payor HCX(payor code)");
+            insurerOrganization.setName("GICOFINDIA");
             Coverage coverage = OnActionFhirExamples.coverageExample();
             List<DomainResource> domList = List.of(hospital, insurerOrganization, patient, coverage, practitioner);
             Bundle bundleTest = new Bundle();
@@ -95,14 +95,18 @@ public class GenerateOutgoingRequest {
             Claim claim = OnActionFhirExamples.claimExample();
             Practitioner practitioner = OnActionFhirExamples.practitionerExample();
             Organization hospital = OnActionFhirExamples.providerOrganizationExample();
+            hospital.setName("WeMeanWell Hospital");
             Patient patient = OnActionFhirExamples.patientExample();
+            patient.getTelecom().add(new ContactPoint().setValue("9008496789 ()patient mobile" ).setSystem(ContactPoint.ContactPointSystem.PHONE));        String date_string = "26-09-1960";
+            patient.getName().add(new HumanName().setText("Abhishek(patient name)"));
             Organization insurerOrganization = OnActionFhirExamples.insurerOrganizationExample();
+            insurerOrganization.setName("GICOFINDIA");
             Coverage coverage = OnActionFhirExamples.coverageExample();
             List<DomainResource> domList = List.of(hospital, insurerOrganization, patient, coverage, practitioner);
             Bundle bundleTest = new Bundle();
             try {
-                bundleTest = HCXFHIRUtils.resourceToBundle(claim, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityRequestBundle.html", hcxIntegrator);
-                System.out.println("Resource To Bundle generated successfully");
+                bundleTest = HCXFHIRUtils.resourceToBundle(claim, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Claim.html", hcxIntegrator);
+                System.out.println("Resource To Bundle generated successfully" + parser.encodeResourceToString(bundleTest));
             } catch (Exception e) {
                 System.out.println("Error message " + e.getMessage());
             }
