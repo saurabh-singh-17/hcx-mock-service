@@ -108,7 +108,6 @@ public class BeneficiaryService {
     }
 
     public String getFhirPayload(String requestID) throws ClientException, SQLException {
-        String fhirPayload = "";
         String searchQuery = String.format("SELECT request_fhir from %s WHERE request_id = %s", payorDataTable, requestID);
         ResultSet resultSet = postgresService.executeQuery(searchQuery);
         if (resultSet.next()) {

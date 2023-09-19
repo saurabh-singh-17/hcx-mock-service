@@ -83,8 +83,9 @@ phone:
   beneficiary-register : ${phone_beneficiary_register:The OTP for beneficiary app registration is:}
   communication-content: ${phone_communication_content:The OTP for the communication request is:}
 
-verification-otp:
-  expiry: ${link_expiry:604800000}
+otp:
+  expiry: ${verification_otp_expiry:300000}
+  send-per-minute: ${otp_sent_per_minute:5}
 
 beneficiary:
     protocol-base-path: ${beneficiary_protocol_base_path:https://dev-hcx.swasth.app/api/v0.8}
