@@ -61,13 +61,14 @@ public class GenerateOutgoingRequest {
             CoverageEligibilityRequest ce = OnActionFhirExamples.coverageEligibilityRequestExample();
             Practitioner practitioner = OnActionFhirExamples.practitionerExample();
             Organization hospital = OnActionFhirExamples.providerOrganizationExample();
-            hospital.setName("WeMeanWell Hospital");
+            hospital.setName((String) requestBody.getOrDefault("providerName",""));
             Patient patient = OnActionFhirExamples.patientExample();
-            patient.getTelecom().add(new ContactPoint().setValue("9008496789 ()patient mobile" ).setSystem(ContactPoint.ContactPointSystem.PHONE));        String date_string = "26-09-1960";
-            patient.getName().add(new HumanName().setText("Abhishek(patient name)"));
+            patient.getTelecom().add(new ContactPoint().setValue((String) requestBody.getOrDefault("mobile","")).setSystem(ContactPoint.ContactPointSystem.PHONE));        String date_string = "26-09-1960";
+            patient.getName().add(new HumanName().setText((String) requestBody.getOrDefault("patientName","")));
             Organization insurerOrganization = OnActionFhirExamples.insurerOrganizationExample();
-            insurerOrganization.setName("GICOFINDIA");
+            insurerOrganization.setName((String) requestBody.getOrDefault("payor",""));
             Coverage coverage = OnActionFhirExamples.coverageExample();
+            coverage.setSubscriberId((String) requestBody.getOrDefault("insuranceId",""));
             List<DomainResource> domList = List.of(hospital, insurerOrganization, patient, coverage, practitioner);
             Bundle bundleTest = new Bundle();
             try {
@@ -97,8 +98,8 @@ public class GenerateOutgoingRequest {
             Organization hospital = OnActionFhirExamples.providerOrganizationExample();
             hospital.setName("WeMeanWell Hospital");
             Patient patient = OnActionFhirExamples.patientExample();
-            patient.getTelecom().add(new ContactPoint().setValue("9008496789 ()patient mobile" ).setSystem(ContactPoint.ContactPointSystem.PHONE));        String date_string = "26-09-1960";
-            patient.getName().add(new HumanName().setText("Abhishek(patient name)"));
+            patient.getTelecom().add(new ContactPoint().setValue("9008496789" ).setSystem(ContactPoint.ContactPointSystem.PHONE));        String date_string = "26-09-1960";
+            patient.getName().add(new HumanName().setText("Abhishek"));
             Organization insurerOrganization = OnActionFhirExamples.insurerOrganizationExample();
             insurerOrganization.setName("GICOFINDIA");
             Coverage coverage = OnActionFhirExamples.coverageExample();

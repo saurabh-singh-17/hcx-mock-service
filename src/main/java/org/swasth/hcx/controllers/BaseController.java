@@ -152,10 +152,7 @@ public class BaseController {
                 }
                 System.out.println("output map after decryption communication" + output);
                 System.out.println("decryption successful");
-                bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
-                Communication communication = OnActionFhirExamples.communicationExample();
-                replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Communication.html", CommunicationRequest.class, new Bundle.BundleEntryComponent().setFullUrl(communication.getResourceType() + "/" + communication.getId().toString().replace("#", "")).setResource(communication));
-                sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+                p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
             }
         }
     }
