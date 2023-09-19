@@ -108,13 +108,16 @@ public class BeneficiaryService {
     }
 
     public String getFhirPayload(String requestID) throws ClientException, SQLException {
-        String searchQuery = String.format("SELECT request_fhir FROM %s WHERE request_id = '%s'", payorDataTable, requestID);
+        System.out.println("-------requestID -----" + requestID);
+        String searchQuery = String.format("SELECT * FROM %s WHERE request_id = '%s'", payorDataTable, requestID);
+        System.out.println("-----------search ----" + searchQuery);
+        System.out.println("------------table name----------" + searchQuery);
         ResultSet resultSet = postgresService.executeQuery(searchQuery);
-        if (resultSet.next()) {
-            return resultSet.getString("request_fhir");
-        } else {
+        while (!resultSet.next()) {
             throw new ClientException("request does not exist in the database");
         }
+        return resultSet.getString("request_fhir");
     }
+
 
 }
