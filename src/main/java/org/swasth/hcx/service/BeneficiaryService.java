@@ -124,16 +124,16 @@ public class BeneficiaryService {
 
     public ResponseEntity<Object> getClaimCycles(Map<String, Object> requestBody) throws Exception {
         String mobile = (String) requestBody.getOrDefault("mobile", "");
-        List<Object> result = new ArrayList<>();
-        String countQuery = String.format("SELECT COUNT(*) AS count FROM payersystem_data WHERE mobile = '%s'", mobile);
+        String countQuery = String.format("SELECT COUNT(*) AS count FROM %s WHERE mobile = '%s'", payorDataTable, mobile);
         ResultSet resultSet = postgresService.executeQuery(countQuery);
         Map<String, Object> resp = new HashMap<>();
         int count;
         if (resultSet.next()) {
             count = resultSet.getInt("count");
-            resp.put("Total count of the mobile number : " + mobile + "  :", count);
+            resp.put("Total count", count);
+            System.out.println("Total count of the mobile number : " + count);
         }
-        String searchQuery = String.format("SELECT * FROM payersystem_data WHERE mobile = '%s'", mobile);
+        String searchQuery = String.format("SELECT * FROM %s WHERE mobile = '%s'", payorDataTable, mobile);
         ResultSet resultSet1 = postgresService.executeQuery(searchQuery);
         List<Map<String, Object>> coverageEligibility = new ArrayList<>();
         List<Map<String, Object>> claim = new ArrayList<>();
@@ -156,7 +156,6 @@ public class BeneficiaryService {
             resp.put("claim", claim);
             resp.put("preauth", preauth);
         }
-        resp.put("request", result);
         return new ResponseEntity<>(resp, HttpStatus.OK);
     }
 
