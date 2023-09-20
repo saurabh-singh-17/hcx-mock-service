@@ -106,6 +106,7 @@ public class GenerateOutgoingRequest {
             Organization insurerOrganization = OnActionFhirExamples.insurerOrganizationExample();
             insurerOrganization.setName((String) requestBody.getOrDefault("payor",""));
             Coverage coverage = OnActionFhirExamples.coverageExample();
+            coverage.setSubscriberId((String) requestBody.getOrDefault("insuranceId",""));
             List<DomainResource> domList = List.of(hospital, insurerOrganization, patient, coverage, practitioner);
             Bundle bundleTest = new Bundle();
             try {

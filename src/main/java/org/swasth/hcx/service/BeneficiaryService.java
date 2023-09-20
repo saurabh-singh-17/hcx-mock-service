@@ -124,32 +124,39 @@ public class BeneficiaryService {
 
     public ResponseEntity<Object> getClaimCycles(Map<String, Object> requestBody) throws Exception {
         String mobile = (String) requestBody.getOrDefault("mobile", "");
-        String action = (String) requestBody.getOrDefault("action", "");
         List<Object> result = new ArrayList<>();
-        String countQuery = String.format("SELECT COUNT(*) AS count FROM payersystem_data WHERE mobile = '%s' AND action = '%s'", mobile, action);
+        String countQuery = String.format("SELECT COUNT(*) AS count FROM payersystem_data WHERE mobile = '%s'", mobile);
         ResultSet resultSet = postgresService.executeQuery(countQuery);
         Map<String, Object> resp = new HashMap<>();
         int count;
         if (resultSet.next()) {
             count = resultSet.getInt("count");
-            resp.put("count", count);
-            System.out.println("count of the " + action  + " :" + count);
+            resp.put("Total count of the mobile number : " + mobile + "  :", count);
         }
-        String searchQuery = String.format("SELECT * FROM payersystem_data WHERE mobile = '%s' AND action = '%s'", mobile, action);
+        String searchQuery = String.format("SELECT * FROM payersystem_data WHERE mobile = '%s'", mobile);
         ResultSet resultSet1 = postgresService.executeQuery(searchQuery);
+        List<Map<String, Object>> coverageEligibility = new ArrayList<>();
+        List<Map<String, Object>> claim = new ArrayList<>();
+        List<Map<String, Object>> preauth = new ArrayList<>();
         while (resultSet1.next()) {
-            System.out.println("---status ----" + resultSet1.getString("status"));
-            System.out.println("-----claimId----" + resultSet1.getString("request_id") );
             Map<String, Object> map = new HashMap<>();
             map.put("status", resultSet1.getString("status"));
             map.put("claimID", resultSet1.getString("request_id"));
             map.put("claimType", "OPD");
             map.put("date", resultSet1.getString("created_on"));
             map.put("insurance_id", getInsuranceId(resultSet1.getString("request_fhir")));
-            result.add(map);
+            if (resultSet1.getString("action").equalsIgnoreCase("coverageeligibility")) {
+                coverageEligibility.add(map);
+            } else if (resultSet1.getString("action").equalsIgnoreCase("claim")) {
+                claim.add(map);
+            } else {
+                preauth.add(map);
+            }
+            resp.put("coverageEligibility", coverageEligibility);
+            resp.put("claim", claim);
+            resp.put("preauth", preauth);
         }
-        System.out.println("----------result----------------" + result);
-        resp.put(action, result);
+        resp.put("request", result);
         return new ResponseEntity<>(resp, HttpStatus.OK);
     }
 
