@@ -138,6 +138,8 @@ public class BeneficiaryService {
         String searchQuery = String.format("SELECT * FROM payersystem_data WHERE mobile = '%s' AND action = '%S'", mobile, action);
         ResultSet resultSet1 = postgresService.executeQuery(searchQuery);
         while (resultSet1.next()) {
+            System.out.println("---status ----" + resultSet1.getString("status"));
+            System.out.println("-----claimId----" + resultSet1.getString("request_id") );
             Map<String, Object> map = new HashMap<>();
             map.put("status", resultSet1.getString("status"));
             map.put("claimID", resultSet1.getString("request_id"));
@@ -146,6 +148,7 @@ public class BeneficiaryService {
             map.put("insurance_id", getInsuranceId(resultSet1.getString("request_fhir")));
             result.add(map);
         }
+        System.out.println("----------result----------------" + result);
         resp.put(action, result);
         return new ResponseEntity<>(resp, HttpStatus.OK);
     }
@@ -154,6 +157,7 @@ public class BeneficiaryService {
         IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
+        System.out.println("------coverage subscriber ID ---------------" + coverage.getSubscriberId());
         return coverage.getSubscriberId();
     }
 }
