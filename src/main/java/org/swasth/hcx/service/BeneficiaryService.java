@@ -1,8 +1,13 @@
 package org.swasth.hcx.service;
 
-import com.google.common.util.concurrent.RateLimiter;
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.IParser;
+import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Coverage;
+import org.hl7.fhir.r4.model.Patient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.swasth.hcx.exception.ClientException;
@@ -11,9 +16,7 @@ import org.swasth.hcx.utils.Constants;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -31,7 +34,6 @@ public class BeneficiaryService {
     private int otpExpiry;
     @Value("${otp.send-per-minute}")
     private int otpSendPerMinute;
-    private final AtomicInteger otpCounter = new AtomicInteger(0);
     long lastOTPSendTime = 0;
     int otpSentThisMinute = 0;
 
@@ -117,5 +119,41 @@ public class BeneficiaryService {
         payloadMap.put("request_fhir", resultSet.getString("request_fhir"));
         payloadMap.put("correlation_id", resultSet.getString("correlation_id"));
         return payloadMap;
+    }
+
+
+    public ResponseEntity<Object> getClaimCycles(Map<String, Object> requestBody) throws Exception {
+        String mobile = (String) requestBody.getOrDefault("mobile", "");
+        String action = (String) requestBody.getOrDefault("action", "");
+        List<Object> result = new ArrayList<>();
+        String countQuery = String.format("SELECT COUNT(*) AS count FROM payersystem_data WHERE mobile = '%s' AND action = '%s'", mobile, action);
+        ResultSet resultSet = postgresService.executeQuery(countQuery);
+        Map<String, Object> resp = new HashMap<>();
+        int count;
+        if (resultSet.next()) {
+            count = resultSet.getInt("count");
+            resp.put("count", count);
+            System.out.println("count of the " + action  + " :" + count);
+        }
+        String searchQuery = String.format("SELECT * FROM payersystem_data WHERE mobile = '%s' AND action = '%S'", mobile, action);
+        ResultSet resultSet1 = postgresService.executeQuery(searchQuery);
+        while (resultSet1.next()) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("status", resultSet1.getString("status"));
+            map.put("claimID", resultSet1.getString("request_id"));
+            map.put("claimType", "OPD");
+            map.put("date", resultSet1.getString("created_on"));
+            map.put("insurance_id", getInsuranceId(resultSet1.getString("request_fhir")));
+            result.add(map);
+        }
+        resp.put(action, result);
+        return new ResponseEntity<>(resp, HttpStatus.OK);
+    }
+
+    public String getInsuranceId(String fhirPayload) {
+        IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
+        return coverage.getSubscriberId();
     }
 }

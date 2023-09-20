@@ -63,6 +63,11 @@ public class BeneficiaryController extends BaseController {
         return outgoingRequest.createCommunicationRequest(requestBody, Operations.COMMUNICATION_REQUEST);
     }
 
+    @PostMapping("/claim/list")
+    public ResponseEntity<Object> claimList(@RequestBody Map<String,Object> requestBody) throws Exception {
+       return beneficiaryService.getClaimCycles(requestBody);
+    }
+
     @PostMapping(SEND_OTP)
     public ResponseEntity<Object> sendOTP(@RequestBody Map<String, Object> requestBody) {
         try {
