@@ -135,7 +135,7 @@ public class BeneficiaryService {
             resp.put("count", count);
             System.out.println("count of the " + action  + " :" + count);
         }
-        String searchQuery = String.format("SELECT * FROM payersystem_data WHERE mobile = '%s' AND action = '%S'", mobile, action);
+        String searchQuery = String.format("SELECT * FROM payersystem_data WHERE mobile = '%s' AND action = '%s'", mobile, action);
         ResultSet resultSet1 = postgresService.executeQuery(searchQuery);
         while (resultSet1.next()) {
             System.out.println("---status ----" + resultSet1.getString("status"));
