@@ -6,6 +6,7 @@ import com.amazonaws.services.dynamodbv2.xspec.S;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
 import kong.unirest.HttpResponse;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.*;
@@ -98,12 +99,12 @@ public class GenerateOutgoingRequest {
             Claim claim = OnActionFhirExamples.claimExample();
             Practitioner practitioner = OnActionFhirExamples.practitionerExample();
             Organization hospital = OnActionFhirExamples.providerOrganizationExample();
-            hospital.setName("WeMeanWell Hospital");
+            hospital.setName((String) requestBody.getOrDefault("providerName",""));
             Patient patient = OnActionFhirExamples.patientExample();
-            patient.getTelecom().add(new ContactPoint().setValue("9008496789" ).setSystem(ContactPoint.ContactPointSystem.PHONE));        String date_string = "26-09-1960";
-            patient.getName().add(new HumanName().setText("Abhishek"));
+            patient.getTelecom().add(new ContactPoint().setValue((String) requestBody.getOrDefault("mobile","") ).setSystem(ContactPoint.ContactPointSystem.PHONE));
+            patient.getName().add(new HumanName().setText((String) requestBody.getOrDefault("patientName","")));
             Organization insurerOrganization = OnActionFhirExamples.insurerOrganizationExample();
-            insurerOrganization.setName("GICOFINDIA");
+            insurerOrganization.setName((String) requestBody.getOrDefault("payor",""));
             Coverage coverage = OnActionFhirExamples.coverageExample();
             List<DomainResource> domList = List.of(hospital, insurerOrganization, patient, coverage, practitioner);
             Bundle bundleTest = new Bundle();
@@ -127,12 +128,42 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createCommunicationRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
+            validateMap((String) requestBody.get("request_id"), requestBody);
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
-            String fhirPayload = beneficiaryService.getFhirPayload((String) requestBody.get("request_id"));
-            Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+            Map<String, Object> payloadMap = beneficiaryService.getPayloadMap((String) requestBody.get("request_id"));
+            Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
+            String correlationId = (String) payloadMap.getOrDefault("correlation_id", "");
             Patient patient1 = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
             String mobile = patient1.getTelecom().get(0).getValue();
-            System.out.println("-------mobile number ----------" + mobile);
+            System.out.println("sending otp to the mobile number : " + mobile);
+            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
+            CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
+            Patient patient = OnActionFhirExamples.patientExample();
+            patient.getTelecom().add(new ContactPoint().setValue(mobile).setSystem(ContactPoint.ContactPointSystem.PHONE));
+            List<DomainResource> domList = List.of(patient);
+            Bundle bundleTest = new Bundle();
+            try {
+                bundleTest = HCXFHIRUtils.resourceToBundle(communicationRequest, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CommunicationRequest.html", hcxIntegrator);
+                System.out.println("Resource To Bundle generated successfully\n" + parser.encodeResourceToString(bundleTest));
+            } catch (Exception e) {
+                System.out.println("Error message " + e.getMessage());
+            }
+            Map<String, Object> output = new HashMap<>();
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, mockRecipientCode, "", correlationId, new HashMap<>(), output);
+            System.out.println("The outgoing request has been successfully generated.");
+            beneficiaryService.sendOTP(mobile, communicationContent);
+            return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("error   " + e);
+            return exceptionHandler(response, e);
+        }
+    }
+
+    public ResponseEntity<Object> createCommunicationOnRequest(Map<String, Object> requestBody, Operations operations) {
+        Response response = new Response();
+        try {
+            IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
             Patient patient = OnActionFhirExamples.patientExample();
@@ -145,9 +176,7 @@ public class GenerateOutgoingRequest {
                 System.out.println("Error message " + e.getMessage());
             }
             Map<String, Object> output = new HashMap<>();
-            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, mockRecipientCode, "", "", new HashMap<>(), output);
-            System.out.println("The outgoing request has been successfully generated.");
-            beneficiaryService.sendOTP(mobile, communicationContent);
+            hcxIntegrator.processOutgoingCallback("", operations, "","","", new HashMap<>(), output);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();
@@ -155,6 +184,7 @@ public class GenerateOutgoingRequest {
             return exceptionHandler(response, e);
         }
     }
+
 
     public Map<String, Object> initializingConfigMap() throws IOException {
         Map<String, Object> configMap = new HashMap<>();
@@ -188,5 +218,9 @@ public class GenerateOutgoingRequest {
         return response;
     }
 
+    protected void validateMap(String field, Map<String, Object> value) throws ClientException {
+        if (MapUtils.isEmpty(value))
+            throw new ClientException("Missing required field " + field);
+    }
 
 }

@@ -4,7 +4,6 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
-import lombok.SneakyThrows;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.*;
@@ -24,14 +23,11 @@ import org.swasth.hcx.exception.ServerException;
 import org.swasth.hcx.exception.ServiceUnavailbleException;
 import org.swasth.hcx.fhirexamples.OnActionFhirExamples;
 import org.swasth.hcx.helpers.EventGenerator;
-import org.swasth.hcx.service.HcxIntegratorService;
-import org.swasth.hcx.service.HeaderAuditService;
-import org.swasth.hcx.service.NotificationService;
-import org.swasth.hcx.service.PayerService;
+import org.swasth.hcx.service.*;
 import org.swasth.hcx.utils.JSONUtils;
 import org.swasth.hcx.utils.OnActionCall;
 
-import javax.annotation.PostConstruct;
+import java.sql.SQLException;
 import java.util.*;
 
 import static org.swasth.hcx.utils.Constants.*;
@@ -44,6 +40,11 @@ public class BaseController {
     @Autowired
     private EventGenerator eventGenerator;
 
+    @Autowired
+    private BeneficiaryService beneficiaryService;
+
+    @Autowired
+    private PostgresService postgresService;
     @Autowired
     protected Environment env;
 
@@ -61,6 +62,8 @@ public class BaseController {
     @Value("${autoresponse}")
     private Boolean autoResponse;
 
+    @Value("${postgres.table.payerData}")
+    private String table;
     @Autowired
     private PayerService payerService;
 
@@ -120,6 +123,7 @@ public class BaseController {
                 System.out.println("bundle reply " + p.encodeResourceToString(bundle));
                 //sending the onaction call
                 sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+                updateMobileNumber(request.getApiCallId());
             } else if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT, output);
                 if (!result) {
@@ -132,6 +136,7 @@ public class BaseController {
                 ClaimResponse claimRes = OnActionFhirExamples.claimResponseExample();
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#", "")).setResource(claimRes));
                 sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+                updateMobileNumber(request.getApiCallId());
             } else if (PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT, output);
                 if (!result) {
@@ -145,14 +150,16 @@ public class BaseController {
                 preAuthRes.setUse(ClaimResponse.Use.PREAUTHORIZATION);
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(preAuthRes.getResourceType() + "/" + preAuthRes.getId().toString().replace("#", "")).setResource(preAuthRes));
                 sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+                updateMobileNumber(request.getApiCallId());
             } else if (COMMUNICATION_ONREQUEST.equalsIgnoreCase(onApiAction)) {
-                boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_ON_REQUEST, output);
+                boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_REQUEST, output);
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
                 }
                 System.out.println("output map after decryption communication" + output);
                 System.out.println("decryption successful");
-                p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
+                bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
+                sendResponse(apiAction,p.encodeResourceToString(bundle),(String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST,String.valueOf(requestBody.get("payload")), "response.complete",outputOfOnAction);
             }
         }
     }
@@ -208,6 +215,16 @@ public class BaseController {
     protected void validateMap(String field, Map<String, Object> value) throws ClientException {
         if (MapUtils.isEmpty(value))
             throw new ClientException("Missing required field " + field);
+    }
+
+    public void updateMobileNumber(String requestID) throws SQLException, ClientException {
+        IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+        Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestID);
+        Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
+        Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
+        String mobile = patient.getTelecom().get(0).getValue();
+        String query = String.format("UPDATE %s SET mobile = '%s' WHERE request_id ='%s'", table, mobile, requestID);
+        postgresService.execute(query);
     }
 
 }

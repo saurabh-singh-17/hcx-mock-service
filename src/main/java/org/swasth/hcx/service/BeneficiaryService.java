@@ -107,14 +107,15 @@ public class BeneficiaryService {
         return response;
     }
 
-    public String getFhirPayload(String requestID) throws ClientException, SQLException {
+    public Map<String,Object> getPayloadMap(String requestID) throws ClientException, SQLException {
         String searchQuery = String.format("SELECT * FROM %s WHERE request_id = '%s'", payorDataTable, requestID);
         ResultSet resultSet = postgresService.executeQuery(searchQuery);
         if (!resultSet.next()) {
             throw new ClientException("Request does not exist in the database");
         }
-        return resultSet.getString("request_fhir");
+        Map<String, Object> payloadMap = new HashMap<>();
+        payloadMap.put("request_fhir", resultSet.getString("request_fhir"));
+        payloadMap.put("correlation_id", resultSet.getString("correlation_id"));
+        return payloadMap;
     }
-
-
 }
