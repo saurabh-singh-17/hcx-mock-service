@@ -135,6 +135,7 @@ public class BaseController {
                 bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
                 ClaimResponse claimRes = OnActionFhirExamples.claimResponseExample();
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#", "")).setResource(claimRes));
+                System.out.println("bundle reply " + p.encodeResourceToString(bundle));
                 sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
                 updateMobileNumber(request.getApiCallId());
             } else if (PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
