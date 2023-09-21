@@ -119,6 +119,7 @@ public class BaseController {
                 //processing the decrypted incoming bundle
                 bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
                 CoverageEligibilityResponse covRes = OnActionFhirExamples.coverageEligibilityResponseExample();
+                covRes.setPatient(new Reference("Patient/RVH1003"));
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityResponseBundle.html", CoverageEligibilityRequest.class, new Bundle.BundleEntryComponent().setFullUrl(covRes.getResourceType() + "/" + covRes.getId().toString().replace("#", "")).setResource(covRes));
                 System.out.println("bundle reply " + p.encodeResourceToString(bundle));
                 //sending the onaction call
@@ -134,6 +135,7 @@ public class BaseController {
                 //processing the decrypted incoming bundle
                 bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
                 ClaimResponse claimRes = OnActionFhirExamples.claimResponseExample();
+                claimRes.setPatient(new Reference("Patient/RVH1003"));
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#", "")).setResource(claimRes));
                 System.out.println("bundle reply " + p.encodeResourceToString(bundle));
                 sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
@@ -148,6 +150,7 @@ public class BaseController {
                 //processing the decrypted incoming bundle
                 bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
                 ClaimResponse preAuthRes = OnActionFhirExamples.claimResponseExample();
+                preAuthRes.setPatient(new Reference("Patient/RVH1003"));
                 preAuthRes.setUse(ClaimResponse.Use.PREAUTHORIZATION);
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(preAuthRes.getResourceType() + "/" + preAuthRes.getId().toString().replace("#", "")).setResource(preAuthRes));
                 sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);

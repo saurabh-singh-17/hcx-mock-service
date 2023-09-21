@@ -19,6 +19,7 @@ import org.swasth.hcx.utils.Constants;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.swasth.hcx.utils.Constants.*;
@@ -31,20 +32,12 @@ public class BeneficiaryController extends BaseController {
     @Autowired
     private GenerateOutgoingRequest outgoingRequest;
 
-    @Value("${certificates.bucketName}")
-    private String bucketName;
     @Autowired
     private CloudStorageClient cloudStorageClient;
     @Autowired
     private BeneficiaryService beneficiaryService;
     @Value("${phone.beneficiary-register}")
     private String beneficiaryRegisterContent;
-
-    @Value("${phone.communication-content}")
-    private String communicationContent;
-
-    @Value("${postgres.table.beneficiary}")
-    private String beneficiaryTable;
 
     @PostMapping(CREATE_COVERAGEELIGIBILITY_REQUEST)
     public ResponseEntity<Object> createCoverageEligibility(@RequestHeader HttpHeaders headers, @RequestBody Map<String, Object> requestBody) throws Exception {
@@ -97,10 +90,10 @@ public class BeneficiaryController extends BaseController {
     }
 
     @PostMapping(UPLOAD_DOCUMENTS)
-    public ResponseEntity<Object> uploadDocuments(@RequestHeader HttpHeaders headers, @RequestParam("file") MultipartFile file, @RequestParam("mobile") String mobile) {
+    public ResponseEntity<Object> uploadDocuments(@RequestParam("file") List<MultipartFile> files, @RequestParam("mobile") String mobile) {
         try {
-            Map<String, Object> response = beneficiaryService.getDocumentUrl(file, mobile);
-            return ResponseEntity.ok(response);
+            List<Map<String, Object>> responses = beneficiaryService.getDocumentUrls(files, mobile);
+            return ResponseEntity.ok(responses);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

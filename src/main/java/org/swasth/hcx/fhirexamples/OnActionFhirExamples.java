@@ -20,7 +20,7 @@ public class OnActionFhirExamples {
         covelires.setMeta(metaResponse);
         covelires.addIdentifier(new Identifier().setSystem("http://identifiersystem.com").setValue("IdentifierValue"));
         covelires.setStatus(CoverageEligibilityResponse.EligibilityResponseStatus.ACTIVE);
-        covelires.setPatient(new Reference("Patient/RVH1003"));
+//        covelires.setPatient(new Reference("Patient/RVH1003"));
         covelires.setCreated(new Date());
         covelires.setInsurer(new Reference("Organization/GICOFINDIA"));
         covelires.setRequest(new Reference("CoverageEligibilityRequest/dc82673b-8c71-48c2-8a17-16dcb3b035f6"));
@@ -43,7 +43,7 @@ public class OnActionFhirExamples {
         claimRes.addIdentifier(new Identifier().setSystem("http://identifiersystem.com").setValue(UUID.randomUUID().toString()));
         claimRes.setType(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/claim-type").setCode("institutional")));
         claimRes.setUse(ClaimResponse.Use.CLAIM);
-        claimRes.setPatient(new Reference("Patient/RVH1003"));
+//        claimRes.setPatient(new Reference("Patient/RVH1003"));
         claimRes.setCreated(new Date());
         claimRes.setInsurer(new Reference("Organization/GICOFINDIA"));
         claimRes.setRequestor(new Reference("Organization/WeMeanWell01"));
@@ -80,7 +80,7 @@ public class OnActionFhirExamples {
         details.getDiagnosis().add(new CoverageEligibilityRequest.DiagnosisComponent().setDiagnosis(new CodeableConcept(new Coding().setSystem("https://irdai.gov.in/package-code").setCode("E906184").setDisplay("SINGLE INCISION LAPAROSCOPIC APPENDECTOMY")).setText("SINGLE INCISION LAPAROSCOPIC APPENDECTOMY")));
         details.setProductOrService(new CodeableConcept(new Coding().setCode("E101021").setSystem("https://irdai.gov.in/package-code").setDisplay("Twin Sharing Ac")).setText(" twin sharing basis room package"));
         ce.getItem().add(details);
-        ce.setPatient(new Reference("Patient/RVH1003"));
+//        ce.setPatient(new Reference("Patient/RVH1003"));
         //ce.getServicedPeriod().setStart(new Date(System.currentTimeMillis())).setEnd(new Date(System.currentTimeMillis()));
         ce.setCreated(new Date(System.currentTimeMillis()));
         ce.setEnterer(new Reference("Practitioner/PractitionerViswasKar"));
@@ -141,7 +141,7 @@ public class OnActionFhirExamples {
         claim.setStatus(org.hl7.fhir.r4.model.Claim.ClaimStatus.ACTIVE);
         claim.setType(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/claim-type").setCode("institutional")));
         claim.setUse(org.hl7.fhir.r4.model.Claim.Use.CLAIM);
-        claim.setPatient(new Reference("Patient/RVH1003"));
+//        claim.setPatient(new Reference("Patient/RVH1003"));
         claim.addIdentifier(new Identifier().setSystem("http://identifiersystem.com").setValue("IdentifierValue"));
         claim.setCreated(new Date());
         claim.setInsurer(new Reference("Organization/GICOFINDIA"));
@@ -189,9 +189,9 @@ public class OnActionFhirExamples {
         cov.setMeta(metacov);
         cov.setStatus(Coverage.CoverageStatus.ACTIVE);
         cov.getIdentifier().add(new Identifier().setValue("policy-RVH1003").setSystem("https://www.gicofIndia.in/policies"));
-        cov.getSubscriber().setReference("Patient/RVH1003");
+//        cov.getSubscriber().setReference("Patient/RVH1003");
 //        cov.setSubscriberId("2XX8971");
-        cov.getBeneficiary().setReference( "Patient/RVH1003");
+//        cov.getBeneficiary().setReference( "Patient/RVH1003");
         cov.setRelationship(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/subscriber-relationship").setCode("self")));
         cov.getPayor().add(new Reference("Organization/GICOFINDIA"));
         return cov;

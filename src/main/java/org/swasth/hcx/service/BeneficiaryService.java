@@ -136,36 +136,38 @@ public class BeneficiaryService {
         int count;
         if (resultSet.next()) {
             count = resultSet.getInt("count");
-            resp.put("Total count", count);
-            System.out.println("Total count of the mobile number : " + count);
+            resp.put("count", count);
+            System.out.println("Total count of the requests : " + count);
         }
-        String searchQuery = String.format("SELECT * FROM %s WHERE mobile = '%s'", payorDataTable, mobile);
-        ResultSet resultSet1 = postgresService.executeQuery(searchQuery);
-        List<Map<String, Object>> coverageEligibility = new ArrayList<>();
-        List<Map<String, Object>> claim = new ArrayList<>();
-        List<Map<String, Object>> preauth = new ArrayList<>();
-        while (resultSet1.next()) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("status", resultSet1.getString("status"));
-            map.put("claimID", resultSet1.getString("request_id"));
-            map.put("claimType", "OPD");
-            map.put("date", resultSet1.getString("created_on"));
-            map.put("insurance_id", getInsuranceId(resultSet1.getString("request_fhir")));
-            map.put("correlationId", resultSet1.getString("correlation_id"));
-            map.put("participantCode", resultSet1.getString("sender_code"));
-            if (resultSet1.getString("action").equalsIgnoreCase("coverageeligibility")) {
-                coverageEligibility.add(map);
-            } else if (resultSet1.getString("action").equalsIgnoreCase("claim")) {
-                claim.add(map);
-            } else {
-                preauth.add(map);
-            }
-            resp.put("coverageEligibility", coverageEligibility);
-            resp.put("claim", claim);
-            resp.put("preauth", preauth);
+        List<Map<String, Object>> entries = new ArrayList<>();
+        String searchQuery = String.format("SELECT * FROM %s WHERE mobile = '%s' ORDER BY created_on DESC", payorDataTable, mobile);
+        ResultSet searchResultSet = postgresService.executeQuery(searchQuery);
+        while (searchResultSet.next()) {
+            Map<String, Object> responseMap = new HashMap<>();
+            responseMap.put("type", getType(searchResultSet.getString("action")));
+            responseMap.put("status", searchResultSet.getString("status"));
+            responseMap.put("claimID", searchResultSet.getString("request_id"));
+            responseMap.put("claimType", "OPD");
+            responseMap.put("date", searchResultSet.getString("created_on"));
+            responseMap.put("insurance_id", getInsuranceId(searchResultSet.getString("request_fhir")));
+            responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
+            entries.add(responseMap);
         }
+        resp.put("entries", entries);
         return new ResponseEntity<>(resp, HttpStatus.OK);
     }
+
+
+    private String getType(String action) {
+        if ("coverageeligibility".equalsIgnoreCase(action)) {
+            return "coverageEligibility";
+        } else if ("claim".equalsIgnoreCase(action)) {
+            return "claim";
+        } else {
+            return "preauth"; // You can add more handling as needed
+        }
+    }
+
 
     public String getInsuranceId(String fhirPayload) {
         IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
@@ -174,20 +176,25 @@ public class BeneficiaryService {
         return coverage.getSubscriberId();
     }
 
-    public Map<String, Object> getDocumentUrl(MultipartFile file, String mobile) throws ClientException, SQLException, IOException {
-        String query = String.format("SELECT bsp_reference_id FROM %s WHERE  mobile = '%s'", beneficiaryTable, mobile);
+    public List<Map<String, Object>> getDocumentUrls(List<MultipartFile> files, String mobile) throws ClientException, SQLException, IOException {
+        String query = String.format("SELECT bsp_reference_id FROM %s WHERE mobile = '%s'", beneficiaryTable, mobile);
         ResultSet resultSet = postgresService.executeQuery(query);
         String beneficiaryReferenceId = "";
         while (resultSet.next()) {
             beneficiaryReferenceId = resultSet.getString("bsp_reference_id");
         }
-        String fileName = file.getOriginalFilename();
-        cloudStorageClient.putObject(beneficiaryReferenceId, bucketName);
-        String pathToFile = "beneficiary-app" + "/" + beneficiaryReferenceId + "/" + fileName;
-        cloudStorageClient.putObject(bucketName, pathToFile, file);
-        Map<String, Object> response = new HashMap<>();
-        response.put("url", cloudStorageClient.getUrl(bucketName, pathToFile).toString());
-        response.put("reference_id", beneficiaryReferenceId);
-        return response;
+        List<Map<String, Object>> responses = new ArrayList<>();
+        for (MultipartFile file : files) {
+            String fileName = file.getOriginalFilename();
+            cloudStorageClient.putObject(beneficiaryReferenceId, bucketName);
+            String pathToFile = "beneficiary-app" + "/" + beneficiaryReferenceId + "/" + fileName;
+            cloudStorageClient.putObject(bucketName, pathToFile, file);
+            Map<String, Object> response = new HashMap<>();
+            response.put("url", cloudStorageClient.getUrl(bucketName, pathToFile).toString());
+            response.put("reference_id", beneficiaryReferenceId);
+            responses.add(response);
+        }
+        return responses;
     }
+
 }
