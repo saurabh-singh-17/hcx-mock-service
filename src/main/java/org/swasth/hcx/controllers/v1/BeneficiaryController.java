@@ -17,6 +17,7 @@ import org.swasth.hcx.service.GenerateOutgoingRequest;
 import org.swasth.hcx.utils.Constants;
 
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -95,15 +96,10 @@ public class BeneficiaryController extends BaseController {
         }
     }
 
-    @PostMapping("/upload/documents")
-    public ResponseEntity<Object> uploadFile(@RequestHeader HttpHeaders headers, @RequestParam("file") MultipartFile file, @RequestParam("folderName") String folderName) throws IOException {
+    @PostMapping(UPLOAD_DOCUMENTS)
+    public ResponseEntity<Object> uploadDocuments(@RequestHeader HttpHeaders headers, @RequestParam("file") MultipartFile file, @RequestParam("mobile") String mobile) {
         try {
-            String fileName = file.getOriginalFilename();
-            cloudStorageClient.putObject(folderName, bucketName);
-            String pathToFile = "beneficiary-app" + "/" + folderName + "/" + fileName;
-            cloudStorageClient.putObject(bucketName, pathToFile, file);
-            Map<String, Object> response = new HashMap<>();
-            response.put("url", cloudStorageClient.getUrl(bucketName, pathToFile).toString());
+            Map<String, Object> response = beneficiaryService.getDocumentUrl(file, mobile);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

@@ -9,10 +9,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.exception.ErrorCodes;
 import org.swasth.hcx.utils.Constants;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -24,6 +26,11 @@ public class BeneficiaryService {
     private String payorDataTable;
     @Autowired
     private PostgresService postgresService;
+
+    @Value("${certificates.bucketName}")
+    private String bucketName;
+    @Autowired
+    private CloudStorageClient cloudStorageClient;
     @Autowired
     private SMSService smsService;
     @Value("${postgres.table.beneficiary}")
@@ -42,7 +49,8 @@ public class BeneficiaryService {
                 String query = String.format("SELECT * FROM %s WHERE mobile = '%s'", beneficiaryTable, mobile);
                 ResultSet resultSet = postgresService.executeQuery(query);
                 if (!resultSet.next()) {
-                    String insertQuery = String.format("INSERT INTO %s (mobile, otp_code, mobile_verified, createdon, otp_expiry) VALUES ('%s', %d, false, %d, %d)", beneficiaryTable, mobile, otpCode, System.currentTimeMillis(), System.currentTimeMillis() + otpExpiry);
+                    String beneficiaryReferenceId = String.valueOf(UUID.randomUUID());
+                    String insertQuery = String.format("INSERT INTO %s (mobile, otp_code, mobile_verified, createdon, otp_expiry) VALUES ('%s', %d, false, %d, %d, '%s')", beneficiaryTable, mobile, otpCode, System.currentTimeMillis(), System.currentTimeMillis() + otpExpiry, beneficiaryReferenceId);
                     postgresService.execute(insertQuery);
                     smsService.sendSMS(mobile, phoneContent + "\r\n" + otpCode);
                     System.out.println("OTP sent successfully for " + mobile);
@@ -164,5 +172,22 @@ public class BeneficiaryService {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
         return coverage.getSubscriberId();
+    }
+
+    public Map<String, Object> getDocumentUrl(MultipartFile file, String mobile) throws ClientException, SQLException, IOException {
+        String query = String.format("SELECT bsp_reference_id FROM %s WHERE  mobile = '%s'", "", mobile);
+        ResultSet resultSet = postgresService.executeQuery(query);
+        String beneficiaryReferenceId = "";
+        while (resultSet.next()) {
+            beneficiaryReferenceId = resultSet.getString("bsp_reference_id");
+        }
+        String fileName = file.getOriginalFilename();
+        cloudStorageClient.putObject(beneficiaryReferenceId, bucketName);
+        String pathToFile = "beneficiary-app" + "/" + beneficiaryReferenceId + "/" + fileName;
+        cloudStorageClient.putObject(bucketName, pathToFile, file);
+        Map<String, Object> response = new HashMap<>();
+        response.put("url", cloudStorageClient.getUrl(bucketName, pathToFile).toString());
+        response.put("reference_id", beneficiaryReferenceId);
+        return response;
     }
 }

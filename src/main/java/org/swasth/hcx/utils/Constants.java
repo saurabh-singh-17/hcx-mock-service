@@ -19,6 +19,7 @@ public class Constants {
     public static final String BSP_REQUEST_LIST = "/bsp/request/list";
     public static final String SEND_OTP = "/send/otp";
     public static final String VERIFY_OTP = "verify/otp";
+    public static final String UPLOAD_DOCUMENTS  = "/upload/documents";
     // Claims APIs
     public static final String PRE_AUTH_SUBMIT = VERSION_PREFIX + "/preauth/submit";
     public static final String PRE_AUTH_ONSUBMIT = VERSION_PREFIX + "/preauth/on_submit";
