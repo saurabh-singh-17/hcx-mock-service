@@ -4,7 +4,6 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Coverage;
-import org.hl7.fhir.r4.model.Patient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -17,7 +16,6 @@ import org.swasth.hcx.utils.Constants;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class BeneficiaryService {
@@ -122,7 +120,7 @@ public class BeneficiaryService {
     }
 
 
-    public ResponseEntity<Object> getClaimCycles(Map<String, Object> requestBody) throws Exception {
+    public ResponseEntity<Object> getRequestFromDatabase(Map<String, Object> requestBody) throws Exception {
         String mobile = (String) requestBody.getOrDefault("mobile", "");
         String countQuery = String.format("SELECT COUNT(*) AS count FROM %s WHERE mobile = '%s'", payorDataTable, mobile);
         ResultSet resultSet = postgresService.executeQuery(countQuery);
@@ -145,6 +143,8 @@ public class BeneficiaryService {
             map.put("claimType", "OPD");
             map.put("date", resultSet1.getString("created_on"));
             map.put("insurance_id", getInsuranceId(resultSet1.getString("request_fhir")));
+            map.put("correlationId", resultSet1.getString("correlation_id"));
+            map.put("participantCode", resultSet1.getString("sender_code"));
             if (resultSet1.getString("action").equalsIgnoreCase("coverageeligibility")) {
                 coverageEligibility.add(map);
             } else if (resultSet1.getString("action").equalsIgnoreCase("claim")) {
@@ -163,7 +163,6 @@ public class BeneficiaryService {
         IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
-        System.out.println("------coverage subscriber ID ---------------" + coverage.getSubscriberId());
         return coverage.getSubscriberId();
     }
 }

@@ -16,6 +16,7 @@ public class Constants {
     public static final String CREATE_PRE_AUTH_SUBMIT = "/create/preauth/submit";
     public static final String CREATE_COMMUNICATION_REQUEST = "/create/communication/request";
     public static final String CREATE_COMMUNICATION_ON_REQUEST = "create/communication/on_request";
+    public static final String BSP_REQUEST_LIST = "/bsp/request/list";
     public static final String SEND_OTP = "/send/otp";
     public static final String VERIFY_OTP = "verify/otp";
     // Claims APIs

@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.sql.ResultSet;
 import java.util.*;
 
 import static org.swasth.hcx.utils.Constants.CREATE_COMMUNICATION_REQUEST;
@@ -41,6 +42,8 @@ public class GenerateOutgoingRequest {
     @Autowired
     private BeneficiaryService beneficiaryService;
 
+    @Autowired
+    private PostgresService postgresService;
     @Value("${postgres.table.payerData}")
     private String payorDataTable;
     @Value("${phone.communication-content}")
@@ -164,12 +167,29 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createCommunicationOnRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
+            String mobile = (String) requestBody.getOrDefault("mobile", "");
+            String requestId = (String) requestBody.getOrDefault("request_id", "");
+            ResponseEntity<Object> responseEntity = beneficiaryService.verifyOTP(requestBody);
+            if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE request_id = '%s'", payorDataTable, "successful", requestId);
+                postgresService.execute(query);
+            } else {
+                throw new ClientException(Objects.requireNonNull(responseEntity.getBody()).toString());
+            }
+            String searchQuery = String.format("SELECT * FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
+            ResultSet resultSet = postgresService.executeQuery(searchQuery);
+            String fhirPayload = "";
+            String actionJwe = "";
+            while (resultSet.next()){
+                fhirPayload = resultSet.getString("response_fhir");
+                actionJwe = resultSet.getString("raw_payload");
+            }
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
             Patient patient = OnActionFhirExamples.patientExample();
             List<DomainResource> domList = List.of(patient);
-            Bundle bundleTest = new Bundle();
+            Bundle bundleTest;
             try {
                 bundleTest = HCXFHIRUtils.resourceToBundle(communicationRequest, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CommunicationRequest.html", hcxIntegrator);
                 System.out.println("Resource To Bundle generated successfully\n" + parser.encodeResourceToString(bundleTest));
@@ -177,7 +197,7 @@ public class GenerateOutgoingRequest {
                 System.out.println("Error message " + e.getMessage());
             }
             Map<String, Object> output = new HashMap<>();
-            hcxIntegrator.processOutgoingCallback("", operations, "","","", new HashMap<>(), output);
+            hcxIntegrator.processOutgoingCallback(fhirPayload, operations, "", actionJwe, "response.complete", new HashMap<>(), output);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();

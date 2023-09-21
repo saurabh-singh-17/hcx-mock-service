@@ -1,20 +1,23 @@
 package org.swasth.hcx.controllers.v1;
 
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import io.hcxprotocol.utils.Operations;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.swasth.hcx.controllers.BaseController;
 import org.swasth.hcx.service.BeneficiaryService;
+import org.swasth.hcx.service.CloudStorageClient;
 import org.swasth.hcx.service.GenerateOutgoingRequest;
 import org.swasth.hcx.utils.Constants;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.swasth.hcx.utils.Constants.*;
@@ -27,6 +30,10 @@ public class BeneficiaryController extends BaseController {
     @Autowired
     private GenerateOutgoingRequest outgoingRequest;
 
+    @Value("${certificates.bucketName}")
+    private String bucketName;
+    @Autowired
+    private CloudStorageClient cloudStorageClient;
     @Autowired
     private BeneficiaryService beneficiaryService;
     @Value("${phone.beneficiary-register}")
@@ -60,12 +67,12 @@ public class BeneficiaryController extends BaseController {
 
     @PostMapping(CREATE_COMMUNICATION_ON_REQUEST)
     public ResponseEntity<Object> createOnCommunication(@RequestBody Map<String, Object> requestBody) {
-        return outgoingRequest.createCommunicationRequest(requestBody, Operations.COMMUNICATION_REQUEST);
+        return outgoingRequest.createCommunicationOnRequest(requestBody, Operations.COMMUNICATION_REQUEST);
     }
 
-    @PostMapping("/claim/list")
-    public ResponseEntity<Object> claimList(@RequestBody Map<String,Object> requestBody) throws Exception {
-       return beneficiaryService.getClaimCycles(requestBody);
+    @PostMapping(BSP_REQUEST_LIST)
+    public ResponseEntity<Object> claimList(@RequestBody Map<String, Object> requestBody) throws Exception {
+        return beneficiaryService.getRequestFromDatabase(requestBody);
     }
 
     @PostMapping(SEND_OTP)
@@ -88,4 +95,18 @@ public class BeneficiaryController extends BaseController {
         }
     }
 
+    @PostMapping("/upload/documents")
+    public ResponseEntity<Object> uploadFile(@RequestHeader HttpHeaders headers, @RequestParam("file") MultipartFile file, @RequestParam("folderName") String folderName) throws IOException {
+        try {
+            String fileName = file.getOriginalFilename();
+            cloudStorageClient.putObject(folderName, bucketName);
+            String pathToFile = "beneficiary-app" + "/" + folderName + "/" + fileName;
+            cloudStorageClient.putObject(bucketName, pathToFile, file);
+            Map<String, Object> response = new HashMap<>();
+            response.put("url", cloudStorageClient.getUrl(bucketName, pathToFile).toString());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
