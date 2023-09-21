@@ -72,8 +72,8 @@ public class BeneficiaryController extends BaseController {
     }
 
     @PostMapping(BSP_REQUEST_LIST)
-    public ResponseEntity<Object> claimList(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return beneficiaryService.getRequestFromDatabase(requestBody);
+    public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody) throws Exception {
+        return beneficiaryService.getRequestListFromDatabase(requestBody);
     }
 
     @PostMapping(SEND_OTP)

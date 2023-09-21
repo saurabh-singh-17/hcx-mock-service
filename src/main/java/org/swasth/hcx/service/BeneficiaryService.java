@@ -50,7 +50,7 @@ public class BeneficiaryService {
                 ResultSet resultSet = postgresService.executeQuery(query);
                 if (!resultSet.next()) {
                     String beneficiaryReferenceId = String.valueOf(UUID.randomUUID());
-                    String insertQuery = String.format("INSERT INTO %s (mobile, otp_code, mobile_verified, createdon, otp_expiry) VALUES ('%s', %d, false, %d, %d, '%s')", beneficiaryTable, mobile, otpCode, System.currentTimeMillis(), System.currentTimeMillis() + otpExpiry, beneficiaryReferenceId);
+                    String insertQuery = String.format("INSERT INTO %s (mobile, otp_code, mobile_verified, createdon, otp_expiry, bsp_reference_id) VALUES ('%s', %d, false, %d, %d, '%s', '%s')", beneficiaryTable, mobile, otpCode, System.currentTimeMillis(), System.currentTimeMillis() + otpExpiry, beneficiaryReferenceId);
                     postgresService.execute(insertQuery);
                     smsService.sendSMS(mobile, phoneContent + "\r\n" + otpCode);
                     System.out.println("OTP sent successfully for " + mobile);
@@ -128,7 +128,7 @@ public class BeneficiaryService {
     }
 
 
-    public ResponseEntity<Object> getRequestFromDatabase(Map<String, Object> requestBody) throws Exception {
+    public ResponseEntity<Object> getRequestListFromDatabase(Map<String, Object> requestBody) throws Exception {
         String mobile = (String) requestBody.getOrDefault("mobile", "");
         String countQuery = String.format("SELECT COUNT(*) AS count FROM %s WHERE mobile = '%s'", payorDataTable, mobile);
         ResultSet resultSet = postgresService.executeQuery(countQuery);

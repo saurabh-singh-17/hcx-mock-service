@@ -100,6 +100,8 @@ public class GenerateOutgoingRequest {
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             Claim claim = OnActionFhirExamples.claimExample();
+            // adding supporting documents (Bill/invoice or prescription)
+            claim.addSupportingInfo(new Claim.SupportingInformationComponent().setSequence(1).setCategory(new CodeableConcept(new Coding().setCode("POI").setSystem("http://hcxprotocol.io/codes/claim-supporting-info-categories").setDisplay("proof of identity"))).setValue(new StringType((String) requestBody.getOrDefault("url",""))));
             Practitioner practitioner = OnActionFhirExamples.practitionerExample();
             Organization hospital = OnActionFhirExamples.providerOrganizationExample();
             hospital.setName((String) requestBody.getOrDefault("providerName",""));
@@ -167,35 +169,16 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createCommunicationOnRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
-            String mobile = (String) requestBody.getOrDefault("mobile", "");
             String requestId = (String) requestBody.getOrDefault("request_id", "");
-            ResponseEntity<Object> responseEntity = beneficiaryService.verifyOTP(requestBody);
-            if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE request_id = '%s'", payorDataTable, "successful", requestId);
-                postgresService.execute(query);
-            } else {
-                throw new ClientException(Objects.requireNonNull(responseEntity.getBody()).toString());
-            }
             String searchQuery = String.format("SELECT * FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
             ResultSet resultSet = postgresService.executeQuery(searchQuery);
             String fhirPayload = "";
             String actionJwe = "";
-            while (resultSet.next()){
+            while (resultSet.next()) {
                 fhirPayload = resultSet.getString("response_fhir");
                 actionJwe = resultSet.getString("raw_payload");
             }
-            IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
-            CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
-            Patient patient = OnActionFhirExamples.patientExample();
-            List<DomainResource> domList = List.of(patient);
-            Bundle bundleTest;
-            try {
-                bundleTest = HCXFHIRUtils.resourceToBundle(communicationRequest, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CommunicationRequest.html", hcxIntegrator);
-                System.out.println("Resource To Bundle generated successfully\n" + parser.encodeResourceToString(bundleTest));
-            } catch (Exception e) {
-                System.out.println("Error message " + e.getMessage());
-            }
             Map<String, Object> output = new HashMap<>();
             hcxIntegrator.processOutgoingCallback(fhirPayload, operations, "", actionJwe, "response.complete", new HashMap<>(), output);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
