@@ -175,7 +175,7 @@ public class BeneficiaryService {
     }
 
     public Map<String, Object> getDocumentUrl(MultipartFile file, String mobile) throws ClientException, SQLException, IOException {
-        String query = String.format("SELECT bsp_reference_id FROM %s WHERE  mobile = '%s'", "", mobile);
+        String query = String.format("SELECT bsp_reference_id FROM %s WHERE  mobile = '%s'", beneficiaryTable, mobile);
         ResultSet resultSet = postgresService.executeQuery(query);
         String beneficiaryReferenceId = "";
         while (resultSet.next()) {
