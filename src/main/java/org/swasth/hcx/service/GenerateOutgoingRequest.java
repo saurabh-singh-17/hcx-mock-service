@@ -149,7 +149,7 @@ public class GenerateOutgoingRequest {
             Patient patient = OnActionFhirExamples.patientExample();
             patient.getTelecom().add(new ContactPoint().setValue(mobile).setSystem(ContactPoint.ContactPointSystem.PHONE));
             Map<String, Object> output = new HashMap<>();
-            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, "testprovider1.apollo@swasth-hcx-dev", "", correlationId, new HashMap<>(), output);
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, "wemeanhospital+mock_provider@yopmail.com", "", correlationId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated." + output);
             beneficiaryService.sendOTP(mobile, communicationContent);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
