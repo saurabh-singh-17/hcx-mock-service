@@ -156,7 +156,7 @@ public class GenerateOutgoingRequest {
             }
             Map<String, Object> output = new HashMap<>();
             hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, "testprovider1.apollo@swasth-hcx-dev", "", correlationId, new HashMap<>(), output);
-            System.out.println("The outgoing request has been successfully generated.");
+            System.out.println("The outgoing request has been successfully generated." + output);
             beneficiaryService.sendOTP(mobile, communicationContent);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
