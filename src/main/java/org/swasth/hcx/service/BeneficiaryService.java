@@ -151,6 +151,8 @@ public class BeneficiaryService {
             responseMap.put("date", searchResultSet.getString("created_on"));
             responseMap.put("insurance_id", getInsuranceId(searchResultSet.getString("request_fhir")));
             responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
+            responseMap.put("sender_code", searchResultSet.getString("recipient_code"));
+            responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
             entries.add(responseMap);
         }
         resp.put("entries", entries);

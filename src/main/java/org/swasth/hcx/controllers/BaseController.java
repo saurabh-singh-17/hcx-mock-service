@@ -2,6 +2,7 @@ package org.swasth.hcx.controllers;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import com.amazonaws.services.dynamodbv2.xspec.S;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
 import org.apache.commons.collections.MapUtils;
@@ -162,8 +163,8 @@ public class BaseController {
                 }
                 System.out.println("output map after decryption communication" + output);
                 System.out.println("decryption successful");
-                bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
-                sendResponse(apiAction,p.encodeResourceToString(bundle),(String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST,String.valueOf(requestBody.get("payload")), "response.complete",outputOfOnAction);
+                String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
+                postgresService.execute(query);
             }
         }
     }
