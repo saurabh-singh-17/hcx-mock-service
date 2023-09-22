@@ -89,9 +89,9 @@ otp:
 
 beneficiary:
     protocol-base-path: ${beneficiary_protocol_base_path:https://dev-hcx.swasth.app/api/v0.8}
-    participant-code: ${beneficiary_sender_code:wemeanhospital+mock_provider.yopmail@swasth-hcx-dev}
-    username: ${beneficiary_username:wemeanhospital+mock_provider@yopmail.com}
-    password: ${beneficiary_password:iOV8oJHNLgTr@}
+    participant-code: ${beneficiary_sender_code:testprovider1.apollo@swasth-hcx-dev}
+    username: ${beneficiary_username:testprovider1@apollo.com}
+    password: ${beneficiary_password:Opensaber@123}
     recipient-code: ${beneficiary-config_recipient_code:testpayor1.icici@swasth-hcx-dev}
 
 certificates:

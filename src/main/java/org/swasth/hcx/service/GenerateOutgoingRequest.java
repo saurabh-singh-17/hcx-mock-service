@@ -142,7 +142,7 @@ public class GenerateOutgoingRequest {
             Patient patient1 = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
             String mobile = patient1.getTelecom().get(0).getValue();
             System.out.println("sending otp to the mobile number : " + mobile);
-            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
+            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMapForPayor());
             CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
             Patient patient = OnActionFhirExamples.patientExample();
             patient.getTelecom().add(new ContactPoint().setValue(mobile).setSystem(ContactPoint.ContactPointSystem.PHONE));
@@ -155,7 +155,7 @@ public class GenerateOutgoingRequest {
                 System.out.println("Error message " + e.getMessage());
             }
             Map<String, Object> output = new HashMap<>();
-            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, mockRecipientCode, "", correlationId, new HashMap<>(), output);
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, "testprovider1.apollo@swasth-hcx-dev", "", correlationId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated.");
             beneficiaryService.sendOTP(mobile, communicationContent);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
@@ -226,5 +226,19 @@ public class GenerateOutgoingRequest {
         if (MapUtils.isEmpty(value))
             throw new ClientException("Missing required field " + field);
     }
+
+    public Map<String, Object> initializingConfigMapForPayor() throws IOException {
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put("protocolBasePath", protocolBasePath);
+        configMap.put("participantCode", "wemeanhospital+mock_payor.yopmail@swasth-hcx-dev");
+        configMap.put("username", "wemeanhospital+mock_payor@yopmail.com");
+        configMap.put("password", "i6cA0R0EZHF3@");
+        String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/x509-private-key.pem";
+        String certificate = IOUtils.toString(new URL(keyUrl), StandardCharsets.UTF_8);
+        configMap.put("encryptionPrivateKey", certificate);
+        configMap.put("signingPrivateKey",  certificate);
+        return configMap;
+    }
+
 
 }
