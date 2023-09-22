@@ -65,7 +65,6 @@ public class GenerateOutgoingRequest {
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             CoverageEligibilityRequest ce = OnActionFhirExamples.coverageEligibilityRequestExample();
-            ce.setPatient(new Reference("bsp_reference_id"));
             Practitioner practitioner = OnActionFhirExamples.practitionerExample();
             Organization hospital = OnActionFhirExamples.providerOrganizationExample();
             hospital.setName((String) requestBody.getOrDefault("providerName",""));
@@ -75,8 +74,6 @@ public class GenerateOutgoingRequest {
             Organization insurerOrganization = OnActionFhirExamples.insurerOrganizationExample();
             insurerOrganization.setName((String) requestBody.getOrDefault("payor",""));
             Coverage coverage = OnActionFhirExamples.coverageExample();
-            coverage.getSubscriber().setReference("bsp_reference_id");
-            coverage.getBeneficiary().setReference( "bsp_reference_id");
             coverage.setSubscriberId((String) requestBody.getOrDefault("insuranceId",""));
             List<DomainResource> domList = List.of(hospital, insurerOrganization, patient, coverage, practitioner);
             Bundle bundleTest = new Bundle();
@@ -103,7 +100,6 @@ public class GenerateOutgoingRequest {
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             Claim claim = OnActionFhirExamples.claimExample();
-            claim.setPatient(new Reference("bsp_reference_id"));
             // adding supporting documents (Bill/invoice or prescription)
             claim.addSupportingInfo(new Claim.SupportingInformationComponent().setSequence(1).setCategory(new CodeableConcept(new Coding().setCode("POI").setSystem("http://hcxprotocol.io/codes/claim-supporting-info-categories").setDisplay("proof of identity"))).setValue(new StringType((String) requestBody.getOrDefault("url",""))));
             Practitioner practitioner = OnActionFhirExamples.practitionerExample();
@@ -115,8 +111,6 @@ public class GenerateOutgoingRequest {
             Organization insurerOrganization = OnActionFhirExamples.insurerOrganizationExample();
             insurerOrganization.setName((String) requestBody.getOrDefault("payor",""));
             Coverage coverage = OnActionFhirExamples.coverageExample();
-            coverage.getSubscriber().setReference("bsp_reference_id");
-            coverage.getBeneficiary().setReference( "bsp_reference_id");
             coverage.setSubscriberId((String) requestBody.getOrDefault("insuranceId",""));
             List<DomainResource> domList = List.of(hospital, insurerOrganization, patient, coverage, practitioner);
             Bundle bundleTest = new Bundle();
