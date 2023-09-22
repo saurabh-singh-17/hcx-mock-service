@@ -69,6 +69,7 @@ public class PayerController extends BaseController {
                 map.put("status", resultSet.getString("status"));
                 map.put("additional_info", JSONUtils.deserialize(resultSet.getString("additional_info"), Map.class));
                 map.put("payload", JSONUtils.deserialize(resultSet.getString("request_fhir"), Map.class));
+                map.put("otp_verification", resultSet.getString("otp_verification"));
                 result.add(map);
             }
             resp.put(type, result);
