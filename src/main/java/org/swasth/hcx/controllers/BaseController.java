@@ -161,8 +161,9 @@ public class BaseController {
                 sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
                 updateMobileNumber(request.getApiCallId());
             } else if (COMMUNICATION_ONREQUEST.equalsIgnoreCase(onApiAction)) {
+                HCXIntegrator hcxIntegrator1 = HCXIntegrator.getInstance(initializingConfigMap());
                 System.out.println("-------it is coming inside the process request ------------------");
-                boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_REQUEST, output);
+                boolean result = hcxIntegrator1.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_REQUEST, output);
                 System.out.println("----------------communication response ---------------------- ");
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
@@ -236,6 +237,19 @@ public class BaseController {
         String mobile = patient.getTelecom().get(0).getValue();
         String query = String.format("UPDATE %s SET mobile = '%s' WHERE request_id ='%s'", table, mobile, requestID);
         postgresService.execute(query);
+    }
+
+    public Map<String, Object> initializingConfigMap() throws IOException {
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put("protocolBasePath", "https://dev-hcx.swasth.app/api/v0.8");
+        configMap.put("participantCode", "testprovider1.apollo@swasth-hcx-dev");
+        configMap.put("username", "testprovider1@apollo.com");
+        configMap.put("password", "Opensaber@123");
+        String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/x509-private-key.pem";
+        String certificate = IOUtils.toString(new URL(keyUrl), StandardCharsets.UTF_8);
+        configMap.put("encryptionPrivateKey", certificate);
+        configMap.put("signingPrivateKey",  certificate);
+        return configMap;
     }
 
 }
