@@ -183,7 +183,7 @@ public class GenerateOutgoingRequest {
         configMap.put("participantCode", participantCode);
         configMap.put("username", userName);
         configMap.put("password", password);
-        String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/x509-private-key.pem";
+        String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/test-keys/private-key.pem";
         String certificate = IOUtils.toString(new URL(keyUrl), StandardCharsets.UTF_8);
         configMap.put("encryptionPrivateKey", certificate);
         configMap.put("signingPrivateKey",  certificate);
@@ -220,7 +220,7 @@ public class GenerateOutgoingRequest {
         configMap.put("participantCode", "wemeanhospital+mock_payor.yopmail@swasth-hcx-dev");
         configMap.put("username", "wemeanhospital+mock_payor@yopmail.com");
         configMap.put("password", "i6cA0R0EZHF3@");
-        String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/x509-private-key.pem";
+        String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/test-keys/private-key.pem";
         String certificate = IOUtils.toString(new URL(keyUrl), StandardCharsets.UTF_8);
         configMap.put("encryptionPrivateKey", certificate);
         configMap.put("signingPrivateKey",  certificate);

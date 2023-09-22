@@ -245,7 +245,7 @@ public class BaseController {
         configMap.put("participantCode", "testprovider1.apollo@swasth-hcx-dev");
         configMap.put("username", "testprovider1@apollo.com");
         configMap.put("password", "Opensaber@123");
-        String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/x509-private-key.pem";
+        String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/test-keys/private-key.pem";
         String certificate = IOUtils.toString(new URL(keyUrl), StandardCharsets.UTF_8);
         configMap.put("encryptionPrivateKey", certificate);
         configMap.put("signingPrivateKey",  certificate);
