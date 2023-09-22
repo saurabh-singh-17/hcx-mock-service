@@ -139,23 +139,17 @@ public class GenerateOutgoingRequest {
             Map<String, Object> payloadMap = beneficiaryService.getPayloadMap((String) requestBody.get("request_id"));
             Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
             String correlationId = (String) payloadMap.getOrDefault("correlation_id", "");
+            System.out.println("----------correlation ID --------------" + correlationId);
             Patient patient1 = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
             String mobile = patient1.getTelecom().get(0).getValue();
-            System.out.println("sending otp to the mobile number : " + mobile);
+            System.out.println("mobile number of beneficiary: " + mobile);
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMapForPayor());
+            System.out.println("private key of the payor user  ----------------"  + hcxIntegrator.getPrivateKey());
             CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
             Patient patient = OnActionFhirExamples.patientExample();
             patient.getTelecom().add(new ContactPoint().setValue(mobile).setSystem(ContactPoint.ContactPointSystem.PHONE));
-            List<DomainResource> domList = List.of(patient);
-            Bundle bundleTest = new Bundle();
-            try {
-                bundleTest = HCXFHIRUtils.resourceToBundle(communicationRequest, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CommunicationRequest.html", hcxIntegrator);
-                System.out.println("Resource To Bundle generated successfully\n" + parser.encodeResourceToString(bundleTest));
-            } catch (Exception e) {
-                System.out.println("Error message " + e.getMessage());
-            }
             Map<String, Object> output = new HashMap<>();
-            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, "testprovider1.apollo@swasth-hcx-dev", "", correlationId, new HashMap<>(), output);
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, "testprovider1.apollo@swasth-hcx-dev", "", correlationId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated." + output);
             beneficiaryService.sendOTP(mobile, communicationContent);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
@@ -166,26 +160,19 @@ public class GenerateOutgoingRequest {
         }
     }
 
-    public ResponseEntity<Object> createCommunicationOnRequest(Map<String, Object> requestBody, Operations operations) {
-        Response response = new Response();
+    public ResponseEntity<Object> createCommunicationOnRequest(Map<String, Object> requestBody, Operations operations) throws ClientException {
+        String requestId = (String) requestBody.getOrDefault("request_id", "");
+        ResponseEntity<Object> responseEntity = beneficiaryService.verifyOTP(requestBody);
         try {
-            String requestId = (String) requestBody.getOrDefault("request_id", "");
-            String searchQuery = String.format("SELECT * FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
-            ResultSet resultSet = postgresService.executeQuery(searchQuery);
-            String fhirPayload = "";
-            String actionJwe = "";
-            while (resultSet.next()) {
-                fhirPayload = resultSet.getString("response_fhir");
-                actionJwe = resultSet.getString("raw_payload");
+            if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE request_id = '%s'", payorDataTable, "successful", requestId);
+                postgresService.execute(query);
+            } else {
+                throw new ClientException(Objects.requireNonNull(responseEntity.getBody()).toString());
             }
-            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
-            Map<String, Object> output = new HashMap<>();
-            hcxIntegrator.processOutgoingCallback(fhirPayload, operations, "", actionJwe, "response.complete", new HashMap<>(), output);
-            return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(responseEntity, HttpStatus.ACCEPTED);
         } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("error   " + e);
-            return exceptionHandler(response, e);
+            throw new ClientException(responseEntity.toString());
         }
     }
 

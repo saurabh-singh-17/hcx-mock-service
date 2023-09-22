@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.swasth.hcx.controllers.BaseController;
+import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.service.BeneficiaryService;
 import org.swasth.hcx.service.CloudStorageClient;
 import org.swasth.hcx.service.GenerateOutgoingRequest;
@@ -60,7 +61,7 @@ public class BeneficiaryController extends BaseController {
     }
 
     @PostMapping(CREATE_COMMUNICATION_ON_REQUEST)
-    public ResponseEntity<Object> createOnCommunication(@RequestBody Map<String, Object> requestBody) {
+    public ResponseEntity<Object> createOnCommunication(@RequestBody Map<String, Object> requestBody) throws ClientException {
         return outgoingRequest.createCommunicationOnRequest(requestBody, Operations.COMMUNICATION_REQUEST);
     }
 
