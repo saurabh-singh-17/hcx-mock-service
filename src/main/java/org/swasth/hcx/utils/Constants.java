@@ -39,7 +39,7 @@ public class Constants {
     public static final String HCX_ON_SEARCH = VERSION_PREFIX + "/hcx/on_search";
 
     //Communication APIs
-    public static final String COMMUNICATION_REQUEST = VERSION_PREFIX + "/communication/request";
+    public static final String COMMUNICATION_REQUEST = "/communication/request";
     public static final String COMMUNICATION_ONREQUEST = VERSION_PREFIX + "/communication/on_request";
 
     //Predetermination APIs
