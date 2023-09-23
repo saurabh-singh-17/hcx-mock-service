@@ -162,9 +162,7 @@ public class BaseController {
                 updateMobileNumber(request.getApiCallId());
             } else if (COMMUNICATION_ONREQUEST.equalsIgnoreCase(onApiAction)) {
                 HCXIntegrator hcxIntegrator1 = HCXIntegrator.getInstance(initializingConfigMap());
-                System.out.println("-------it is coming inside the process request ------------------");
                 boolean result = hcxIntegrator1.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_REQUEST, output);
-                System.out.println("----------------communication response ---------------------- ");
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
                 }

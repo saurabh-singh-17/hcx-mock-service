@@ -1,6 +1,5 @@
 package org.swasth.hcx.controllers.v1;
 
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import io.hcxprotocol.utils.Operations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +16,7 @@ import org.swasth.hcx.service.CloudStorageClient;
 import org.swasth.hcx.service.GenerateOutgoingRequest;
 import org.swasth.hcx.utils.Constants;
 
-import java.io.IOException;
-import java.sql.ResultSet;
-import java.util.HashMap;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -99,4 +96,18 @@ public class BeneficiaryController extends BaseController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/check/communication/request")
+    public ResponseEntity<Object> checkCommunicationRequest(@RequestParam String mobile) throws ClientException, SQLException {
+        if (mobile.isEmpty()) {
+            throw new ClientException("The mobile number cannot be empty");
+        }
+        boolean isCommunicationInitiated = beneficiaryService.checkCommunicationRequest(mobile);
+        if (isCommunicationInitiated) {
+            return ResponseEntity.ok("Communication is initiated");
+        } else {
+            return ResponseEntity.badRequest().body("Communication is not initiated");
+        }
+    }
+
 }

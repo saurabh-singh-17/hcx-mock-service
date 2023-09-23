@@ -199,4 +199,17 @@ public class BeneficiaryService {
         return responses;
     }
 
+    public boolean checkCommunicationRequest(String mobile) throws ClientException, SQLException {
+        String query = String.format("SELECT otp_verification FROM %s WHERE mobile = '%s'", payorDataTable, mobile);
+        ResultSet resultSet = postgresService.executeQuery(query);
+        String status;
+        if (resultSet.next()) {
+            status = resultSet.getString("otp_verification");
+            return status.equalsIgnoreCase("initiated");
+        } else {
+            return false;
+        }
+    }
+
+
 }

@@ -17,7 +17,6 @@ public class CommunicationController extends BaseController {
 
     @PostMapping(Constants.COMMUNICATION_REQUEST)
     public ResponseEntity<Object> communicationRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
-        System.out.println("----------------communication request API ---------------------- ");
         return processRequest(requestBody, Constants.COMMUNICATION_REQUEST, Constants.COMMUNICATION_ONREQUEST, kafkaTopic);
     }
 
