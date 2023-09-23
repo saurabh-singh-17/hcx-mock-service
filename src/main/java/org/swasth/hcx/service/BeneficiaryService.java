@@ -199,8 +199,8 @@ public class BeneficiaryService {
         return responses;
     }
 
-    public boolean checkCommunicationRequest(String mobile) throws ClientException, SQLException {
-        String query = String.format("SELECT otp_verification FROM %s WHERE mobile = '%s'", payorDataTable, mobile);
+    public boolean checkCommunicationRequest(String requestId) throws ClientException, SQLException {
+        String query = String.format("SELECT otp_verification FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
         ResultSet resultSet = postgresService.executeQuery(query);
         String status;
         if (resultSet.next()) {

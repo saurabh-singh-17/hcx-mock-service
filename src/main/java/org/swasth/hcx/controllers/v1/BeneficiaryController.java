@@ -98,11 +98,11 @@ public class BeneficiaryController extends BaseController {
     }
 
     @GetMapping("/check/communication/request")
-    public ResponseEntity<Object> checkCommunicationRequest(@RequestParam String mobile) throws ClientException, SQLException {
-        if (mobile.isEmpty()) {
+    public ResponseEntity<Object> checkCommunicationRequest(@RequestParam String requestId) throws ClientException, SQLException {
+        if (requestId.isEmpty()) {
             throw new ClientException("The mobile number cannot be empty");
         }
-        boolean isCommunicationInitiated = beneficiaryService.checkCommunicationRequest(mobile);
+        boolean isCommunicationInitiated = beneficiaryService.checkCommunicationRequest(requestId);
         if (isCommunicationInitiated) {
             return ResponseEntity.ok("Communication is initiated");
         } else {
