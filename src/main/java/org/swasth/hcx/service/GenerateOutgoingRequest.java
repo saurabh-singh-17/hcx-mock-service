@@ -25,6 +25,7 @@ import org.swasth.hcx.fhirexamples.OnActionFhirExamples;
 import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.utils.HCXFHIRUtils;
 import org.swasth.hcx.utils.HttpUtils;
+import org.swasth.hcx.utils.JSONUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -104,7 +105,7 @@ public class GenerateOutgoingRequest {
             claim.setTotal(new Money().setCurrency("INR").setValue(Long.parseLong(billAmount)));
             // adding supporting documents (Bill/invoice or prescription)
             if (requestBody.containsKey("supportingDocuments")) {
-                List<Map<String, Object>> supportingDocuments = (List<Map<String, Object>>) requestBody.get("supportingDocuments");
+                ArrayList<Map<String, Object>> supportingDocuments = JSONUtils.convert(requestBody.get("supportingDocuments"), ArrayList.class);
                 for (Map<String, Object> document : supportingDocuments) {
                     String documentType = (String) document.get("documentType");
                     List<String> urls = (List<String>) document.get("urls");
