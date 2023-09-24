@@ -2,7 +2,6 @@ package org.swasth.hcx.controllers;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
-import com.amazonaws.services.dynamodbv2.xspec.S;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
 import org.apache.commons.collections.MapUtils;

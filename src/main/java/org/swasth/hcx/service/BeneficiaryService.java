@@ -130,9 +130,9 @@ public class BeneficiaryService {
     }
 
 
-    public ResponseEntity<Object> getRequestListFromDatabase(Map<String, Object> requestBody) throws Exception {
-        String mobile = (String) requestBody.getOrDefault("mobile", "");
-        String countQuery = String.format("SELECT COUNT(*) AS count FROM %s WHERE mobile = '%s'", payorDataTable, mobile);
+    public ResponseEntity<Object> getRequestListFromDatabase(Map<String,Object> requestBody) throws Exception {
+        String mobile = (String) requestBody.getOrDefault("mobile","");
+        String countQuery = String.format("SELECT COUNT(*) AS count FROM %s WHERE mobile = '%s' AND action = 'coverageeligibility'", payorDataTable, mobile);
         ResultSet resultSet = postgresService.executeQuery(countQuery);
         Map<String, Object> resp = new HashMap<>();
         int count;
@@ -142,35 +142,53 @@ public class BeneficiaryService {
             System.out.println("Total count of the requests : " + count);
         }
         List<Map<String, Object>> entries = new ArrayList<>();
-        String searchQuery = String.format("SELECT * FROM %s WHERE mobile = '%s' ORDER BY created_on DESC", payorDataTable, mobile);
+        String searchQuery = String.format("SELECT * FROM %s WHERE mobile = '%s' AND action = 'coverageeligibility' ORDER BY created_on DESC", payorDataTable, mobile);
         ResultSet searchResultSet = postgresService.executeQuery(searchQuery);
         while (searchResultSet.next()) {
             Map<String, Object> responseMap = new HashMap<>();
             String fhirPayload = searchResultSet.getString("request_fhir");
-            responseMap.put("type", getType(searchResultSet.getString("action")));
             responseMap.put("status", searchResultSet.getString("status"));
-            responseMap.put("claimID", searchResultSet.getString("request_id"));
+            responseMap.put("apiCallId", searchResultSet.getString("request_id"));
             responseMap.put("claimType", "OPD");
             responseMap.put("date", searchResultSet.getString("created_on"));
             responseMap.put("insurance_id", getInsuranceId(fhirPayload));
             responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
             responseMap.put("sender_code", searchResultSet.getString("sender_code"));
             responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
-            if (!searchResultSet.getString("action").equalsIgnoreCase("coverageeligibility")) {
-                responseMap.put("billAmount", getAmount(fhirPayload));
-                responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
-            }
+            responseMap.put("workflow_id", searchResultSet.getString("workflow_id"));
             entries.add(responseMap);
         }
         resp.put("entries", entries);
         return new ResponseEntity<>(resp, HttpStatus.OK);
     }
 
+    public ResponseEntity<Object> getDataFromWorkflowId(Map<String, Object> requestBody) throws ClientException, SQLException {
+        String workflowId = (String) requestBody.getOrDefault("workflow_id", "");
+        List<Map<String, Object>> entries = new ArrayList<>();
+        Map<String, Object> resp = new HashMap<>();
+        String searchQuery = String.format("SELECT * FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') ORDER BY created_on DESC", payorDataTable, workflowId);
+        ResultSet searchResultSet = postgresService.executeQuery(searchQuery);
+        while (searchResultSet.next()) {
+            Map<String, Object> responseMap = new HashMap<>();
+            String fhirPayload = searchResultSet.getString("request_fhir");
+            responseMap.put("type", getType(searchResultSet.getString("action")));
+            responseMap.put("status", searchResultSet.getString("status"));
+            responseMap.put("apiCallId", searchResultSet.getString("request_id"));
+            responseMap.put("claimType", "OPD");
+            responseMap.put("date", searchResultSet.getString("created_on"));
+            responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
+            responseMap.put("sender_code", searchResultSet.getString("sender_code"));
+            responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
+            responseMap.put("billAmount", getAmount(fhirPayload));
+            responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
+            entries.add(responseMap);
+        }
+        resp.put("entries", entries);
+        return new ResponseEntity<>(resp, HttpStatus.OK);
+    }
 
     private String getType(String action) {
-        if ("coverageeligibility".equalsIgnoreCase(action)) {
-            return "coverageEligibility";
-        } else if ("claim".equalsIgnoreCase(action)) {
+        if ("claim".equalsIgnoreCase(action)) {
             return "claim";
         } else {
             return "preauth"; // You can add more handling as needed
