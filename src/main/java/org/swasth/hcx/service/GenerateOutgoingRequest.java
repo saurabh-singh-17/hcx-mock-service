@@ -136,7 +136,13 @@ public class GenerateOutgoingRequest {
                 System.out.println("Error message " + e.getMessage());
             }
             Map<String, Object> output = new HashMap<>();
-            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, mockRecipientCode, "", "", new HashMap<>(), output);
+            String workflowId = "";
+            if(!requestBody.containsKey("workflow_id")) {
+               workflowId = UUID.randomUUID().toString();
+            } else {
+                workflowId = (String) requestBody.getOrDefault("workfflow_id","");
+            }
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, mockRecipientCode, "", "", workflowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated.");
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
