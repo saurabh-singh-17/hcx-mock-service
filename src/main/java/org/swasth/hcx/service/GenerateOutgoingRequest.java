@@ -137,10 +137,10 @@ public class GenerateOutgoingRequest {
             }
             Map<String, Object> output = new HashMap<>();
             String workflowId = "";
-            if(!requestBody.containsKey("workflow_id")) {
+            if(!requestBody.containsKey("workflowId")) {
                workflowId = UUID.randomUUID().toString();
             } else {
-                workflowId = (String) requestBody.getOrDefault("workfflow_id","");
+                workflowId = (String) requestBody.getOrDefault("workflowId","");
             }
             hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, mockRecipientCode, "", "", workflowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated.");
