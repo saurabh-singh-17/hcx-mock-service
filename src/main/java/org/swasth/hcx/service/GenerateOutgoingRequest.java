@@ -98,6 +98,7 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createClaimRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
+            System.out.println("-----request body -----------------" + requestBody);
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             Claim claim = OnActionFhirExamples.claimExample();
@@ -109,6 +110,7 @@ public class GenerateOutgoingRequest {
                 for (Map<String, Object> document : supportingDocuments) {
                     String documentType = (String) document.get("documentType");
                     List<String> urls = (List<String>) document.get("urls");
+                    System.out.println("----------url's ---------------" + urls);
                     if (urls != null && !urls.isEmpty()) {
                         for (String url : urls) {
                             claim.addSupportingInfo(new Claim.SupportingInformationComponent().setSequence(1).setCategory(new CodeableConcept(new Coding().setCode("POI").setSystem("http://hcxprotocol.io/codes/claim-supporting-info-categories").setDisplay("proof of identity"))).setValue(new Attachment().setUrl(url)));
