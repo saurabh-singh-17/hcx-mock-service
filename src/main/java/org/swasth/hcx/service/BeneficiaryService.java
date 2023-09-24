@@ -155,7 +155,9 @@ public class BeneficiaryService {
             responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
             responseMap.put("sender_code", searchResultSet.getString("sender_code"));
             responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
-            responseMap.put("billAmount",getAmount(searchResultSet.getString("request_fhir")));
+            if(!searchResultSet.getString("action").equalsIgnoreCase("coverageeligibility")) {
+                responseMap.put("billAmount", getAmount(searchResultSet.getString("request_fhir")));
+            }
 //            responseMap.put("supportingDocuments", )
             entries.add(responseMap);
         }
