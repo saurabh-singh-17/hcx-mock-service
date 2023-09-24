@@ -101,10 +101,20 @@ public class GenerateOutgoingRequest {
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             Claim claim = OnActionFhirExamples.claimExample();
+            claim.setTotal(new Money().setCurrency("INR").setValue((Integer) requestBody.getOrDefault("billAmount", 0)));
             // adding supporting documents (Bill/invoice or prescription)
-            List<String> supportingDocuments = (List<String>) requestBody.getOrDefault("supportingDocuments", new ArrayList<>());
-            for(String file :  supportingDocuments){
-                claim.addSupportingInfo(new Claim.SupportingInformationComponent().setSequence(1).setCategory(new CodeableConcept(new Coding().setCode("POI").setSystem("http://hcxprotocol.io/codes/claim-supporting-info-categories").setDisplay("proof of identity"))).setValue(new StringType(file)));
+            if (requestBody.containsKey("supportingDocuments")) {
+                Map<String, List<String>> supportingDocuments = (Map<String, List<String>>) requestBody.getOrDefault("supportingDocuments","");
+                if (!supportingDocuments.isEmpty()) {
+                    for (Map.Entry<String, List<String>> entry : supportingDocuments.entrySet()) {
+                        List<String> urls = entry.getValue();
+                        if (urls != null && !urls.isEmpty()) {
+                            for (String url : urls) {
+                                claim.addSupportingInfo(new Claim.SupportingInformationComponent().setSequence(1).setCategory(new CodeableConcept(new Coding().setCode("POI").setSystem("http://hcxprotocol.io/codes/claim-supporting-info-categories").setDisplay("proof of identity"))).setValue(new Attachment().setUrl(url)));
+                            }
+                        }
+                    }
+                }
             }
             Practitioner practitioner = OnActionFhirExamples.practitionerExample();
             Organization hospital = OnActionFhirExamples.providerOrganizationExample();

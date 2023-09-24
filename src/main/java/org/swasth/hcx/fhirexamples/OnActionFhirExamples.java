@@ -176,7 +176,7 @@ public class OnActionFhirExamples {
         claim.getProcedure().add(new Claim.ProcedureComponent().setSequence(2).setProcedure(new CodeableConcept(new Coding().setCode("PROC2").setCode("SampleCOde2").setSystem("https://irdai.gov.in/package-code"))));
 
         //total cost
-        claim.setTotal(new Money().setCurrency("INR").setValue(146000.0));
+//        claim.setTotal(new Money().setCurrency("INR").setValue(146000.0));
         return claim;
     }
 
