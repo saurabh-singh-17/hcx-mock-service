@@ -59,7 +59,7 @@ public class GenerateOutgoingRequest {
     @Value("${beneficiary.recipient-code}")
     private String mockRecipientCode;
 
-  public ResponseEntity<Object> createCoverageEligibilityRequest(Map<String, Object> requestBody, Operations operations) {
+    public ResponseEntity<Object> createCoverageEligibilityRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
@@ -67,18 +67,19 @@ public class GenerateOutgoingRequest {
             CoverageEligibilityRequest ce = OnActionFhirExamples.coverageEligibilityRequestExample();
             Practitioner practitioner = OnActionFhirExamples.practitionerExample();
             Organization hospital = OnActionFhirExamples.providerOrganizationExample();
-            hospital.setName((String) requestBody.getOrDefault("providerName",""));
+            hospital.setName((String) requestBody.getOrDefault("providerName", ""));
             Patient patient = OnActionFhirExamples.patientExample();
-            patient.getTelecom().add(new ContactPoint().setValue((String) requestBody.getOrDefault("mobile","")).setSystem(ContactPoint.ContactPointSystem.PHONE));        String date_string = "26-09-1960";
-            patient.getName().add(new HumanName().setText((String) requestBody.getOrDefault("patientName","")));
+            patient.getTelecom().add(new ContactPoint().setValue((String) requestBody.getOrDefault("mobile", "")).setSystem(ContactPoint.ContactPointSystem.PHONE));
+            String date_string = "26-09-1960";
+            patient.getName().add(new HumanName().setText((String) requestBody.getOrDefault("patientName", "")));
             Organization insurerOrganization = OnActionFhirExamples.insurerOrganizationExample();
-            insurerOrganization.setName((String) requestBody.getOrDefault("payor",""));
+            insurerOrganization.setName((String) requestBody.getOrDefault("payor", ""));
             Coverage coverage = OnActionFhirExamples.coverageExample();
-            coverage.setSubscriberId((String) requestBody.getOrDefault("insuranceId",""));
+            coverage.setSubscriberId((String) requestBody.getOrDefault("insuranceId", ""));
             List<DomainResource> domList = List.of(hospital, insurerOrganization, patient, coverage, practitioner);
             Bundle bundleTest = new Bundle();
             try {
-                bundleTest = HCXFHIRUtils.resourceToBundle(ce, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityRequestBundle.html",hcxIntegrator);
+                bundleTest = HCXFHIRUtils.resourceToBundle(ce, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityRequestBundle.html", hcxIntegrator);
                 System.out.println("reosurceToBundle Coverage Eligibility Request \n" + parser.encodeResourceToString(bundleTest));
             } catch (Exception e) {
                 System.out.println("Error message " + e.getMessage());
@@ -101,17 +102,20 @@ public class GenerateOutgoingRequest {
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             Claim claim = OnActionFhirExamples.claimExample();
             // adding supporting documents (Bill/invoice or prescription)
-            claim.addSupportingInfo(new Claim.SupportingInformationComponent().setSequence(1).setCategory(new CodeableConcept(new Coding().setCode("POI").setSystem("http://hcxprotocol.io/codes/claim-supporting-info-categories").setDisplay("proof of identity"))).setValue(new StringType((String) requestBody.getOrDefault("url",""))));
+            List<String> supportingDocuments = (List<String>) requestBody.getOrDefault("supportingDocuments", new ArrayList<>());
+            for(String file :  supportingDocuments){
+                claim.addSupportingInfo(new Claim.SupportingInformationComponent().setSequence(1).setCategory(new CodeableConcept(new Coding().setCode("POI").setSystem("http://hcxprotocol.io/codes/claim-supporting-info-categories").setDisplay("proof of identity"))).setValue(new StringType(file)));
+            }
             Practitioner practitioner = OnActionFhirExamples.practitionerExample();
             Organization hospital = OnActionFhirExamples.providerOrganizationExample();
-            hospital.setName((String) requestBody.getOrDefault("providerName",""));
+            hospital.setName((String) requestBody.getOrDefault("providerName", ""));
             Patient patient = OnActionFhirExamples.patientExample();
-            patient.getTelecom().add(new ContactPoint().setValue((String) requestBody.getOrDefault("mobile","") ).setSystem(ContactPoint.ContactPointSystem.PHONE));
-            patient.getName().add(new HumanName().setText((String) requestBody.getOrDefault("patientName","")));
+            patient.getTelecom().add(new ContactPoint().setValue((String) requestBody.getOrDefault("mobile", "")).setSystem(ContactPoint.ContactPointSystem.PHONE));
+            patient.getName().add(new HumanName().setText((String) requestBody.getOrDefault("patientName", "")));
             Organization insurerOrganization = OnActionFhirExamples.insurerOrganizationExample();
-            insurerOrganization.setName((String) requestBody.getOrDefault("payor",""));
+            insurerOrganization.setName((String) requestBody.getOrDefault("payor", ""));
             Coverage coverage = OnActionFhirExamples.coverageExample();
-            coverage.setSubscriberId((String) requestBody.getOrDefault("insuranceId",""));
+            coverage.setSubscriberId((String) requestBody.getOrDefault("insuranceId", ""));
             List<DomainResource> domList = List.of(hospital, insurerOrganization, patient, coverage, practitioner);
             Bundle bundleTest = new Bundle();
             try {
@@ -139,12 +143,10 @@ public class GenerateOutgoingRequest {
             Map<String, Object> payloadMap = beneficiaryService.getPayloadMap((String) requestBody.get("request_id"));
             Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
             String correlationId = (String) payloadMap.getOrDefault("correlation_id", "");
-            System.out.println("----------correlation ID --------------" + correlationId);
             Patient patient1 = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
             String mobile = patient1.getTelecom().get(0).getValue();
             System.out.println("mobile number of beneficiary: " + mobile);
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMapForPayor());
-            System.out.println("private key of the payor user  ----------------"  + hcxIntegrator.getPrivateKey());
             CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
             Patient patient = OnActionFhirExamples.patientExample();
             patient.getTelecom().add(new ContactPoint().setValue(mobile).setSystem(ContactPoint.ContactPointSystem.PHONE));
@@ -186,7 +188,7 @@ public class GenerateOutgoingRequest {
         String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/test-keys/private-key.pem";
         String certificate = IOUtils.toString(new URL(keyUrl), StandardCharsets.UTF_8);
         configMap.put("encryptionPrivateKey", certificate);
-        configMap.put("signingPrivateKey",  certificate);
+        configMap.put("signingPrivateKey", certificate);
         return configMap;
     }
 
@@ -223,7 +225,7 @@ public class GenerateOutgoingRequest {
         String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/test-keys/private-key.pem";
         String certificate = IOUtils.toString(new URL(keyUrl), StandardCharsets.UTF_8);
         configMap.put("encryptionPrivateKey", certificate);
-        configMap.put("signingPrivateKey",  certificate);
+        configMap.put("signingPrivateKey", certificate);
         return configMap;
     }
 
