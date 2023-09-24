@@ -3,7 +3,9 @@ package org.swasth.hcx.service;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Claim;
 import org.hl7.fhir.r4.model.Coverage;
+import org.hl7.fhir.r4.model.Money;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -153,6 +155,8 @@ public class BeneficiaryService {
             responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
             responseMap.put("sender_code", searchResultSet.getString("sender_code"));
             responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
+            responseMap.put("billAmount",getAmount(searchResultSet.getString("request_fhir")));
+//            responseMap.put("supportingDocuments", )
             entries.add(responseMap);
         }
         resp.put("entries", entries);
@@ -177,6 +181,18 @@ public class BeneficiaryService {
         Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
         return coverage.getSubscriberId();
     }
+
+    public String getAmount(String fhirPayload) {
+        IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+        return claim.getTotal().getValue().toString();
+    }
+
+//    public void getSupportingDocuments(String fhirPayload) {
+//        IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+//        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+//    }
 
     public List<Map<String, Object>> getDocumentUrls(List<MultipartFile> files, String mobile) throws ClientException, SQLException, IOException {
         String query = String.format("SELECT bsp_reference_id FROM %s WHERE mobile = '%s'", beneficiaryTable, mobile);

@@ -70,7 +70,6 @@ public class GenerateOutgoingRequest {
             hospital.setName((String) requestBody.getOrDefault("providerName", ""));
             Patient patient = OnActionFhirExamples.patientExample();
             patient.getTelecom().add(new ContactPoint().setValue((String) requestBody.getOrDefault("mobile", "")).setSystem(ContactPoint.ContactPointSystem.PHONE));
-            String date_string = "26-09-1960";
             patient.getName().add(new HumanName().setText((String) requestBody.getOrDefault("patientName", "")));
             Organization insurerOrganization = OnActionFhirExamples.insurerOrganizationExample();
             insurerOrganization.setName((String) requestBody.getOrDefault("payor", ""));
@@ -101,7 +100,8 @@ public class GenerateOutgoingRequest {
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             Claim claim = OnActionFhirExamples.claimExample();
-            claim.setTotal(new Money().setCurrency("INR").setValue((Integer) requestBody.getOrDefault("billAmount", 0)));
+            String billAmount = (String) requestBody.getOrDefault("billAmount",0);
+            claim.setTotal(new Money().setCurrency("INR").setValue(Long.parseLong(billAmount)));
             // adding supporting documents (Bill/invoice or prescription)
             if (requestBody.containsKey("supportingDocuments")) {
                 Map<String, List<String>> supportingDocuments = (Map<String, List<String>>) requestBody.getOrDefault("supportingDocuments","");
