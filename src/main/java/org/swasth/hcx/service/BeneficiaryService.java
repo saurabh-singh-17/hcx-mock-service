@@ -146,19 +146,20 @@ public class BeneficiaryService {
         ResultSet searchResultSet = postgresService.executeQuery(searchQuery);
         while (searchResultSet.next()) {
             Map<String, Object> responseMap = new HashMap<>();
+            String fhirPayload = searchResultSet.getString("request_fhir");
             responseMap.put("type", getType(searchResultSet.getString("action")));
             responseMap.put("status", searchResultSet.getString("status"));
             responseMap.put("claimID", searchResultSet.getString("request_id"));
             responseMap.put("claimType", "OPD");
             responseMap.put("date", searchResultSet.getString("created_on"));
-            responseMap.put("insurance_id", getInsuranceId(searchResultSet.getString("request_fhir")));
+            responseMap.put("insurance_id", getInsuranceId(fhirPayload));
             responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
             responseMap.put("sender_code", searchResultSet.getString("sender_code"));
             responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
-            if(!searchResultSet.getString("action").equalsIgnoreCase("coverageeligibility")) {
-                responseMap.put("billAmount", getAmount(searchResultSet.getString("request_fhir")));
+            if (!searchResultSet.getString("action").equalsIgnoreCase("coverageeligibility")) {
+                responseMap.put("billAmount", getAmount(fhirPayload));
+                responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
             }
-//            responseMap.put("supportingDocuments", )
             entries.add(responseMap);
         }
         resp.put("entries", entries);
@@ -191,10 +192,20 @@ public class BeneficiaryService {
         return claim.getTotal().getValue().toString();
     }
 
-//    public void getSupportingDocuments(String fhirPayload) {
-//        IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
-//        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-//    }
+    public List<String> getSupportingDocuments(String fhirPayload) {
+        IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+        List<String> documentUrls = new ArrayList<>();
+        for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
+            if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
+                String url = supportingInfo.getValueAttachment().getUrl();
+                documentUrls.add(url);
+            }
+        }
+        return documentUrls;
+    }
+
 
     public List<Map<String, Object>> getDocumentUrls(List<MultipartFile> files, String mobile) throws ClientException, SQLException, IOException {
         String query = String.format("SELECT bsp_reference_id FROM %s WHERE mobile = '%s'", beneficiaryTable, mobile);

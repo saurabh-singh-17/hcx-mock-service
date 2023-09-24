@@ -100,18 +100,17 @@ public class GenerateOutgoingRequest {
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             Claim claim = OnActionFhirExamples.claimExample();
-            String billAmount = (String) requestBody.getOrDefault("billAmount",0);
+            String billAmount = (String) requestBody.getOrDefault("billAmount", 0);
             claim.setTotal(new Money().setCurrency("INR").setValue(Long.parseLong(billAmount)));
             // adding supporting documents (Bill/invoice or prescription)
             if (requestBody.containsKey("supportingDocuments")) {
-                Map<String, List<String>> supportingDocuments = (Map<String, List<String>>) requestBody.getOrDefault("supportingDocuments","");
-                if (!supportingDocuments.isEmpty()) {
-                    for (Map.Entry<String, List<String>> entry : supportingDocuments.entrySet()) {
-                        List<String> urls = entry.getValue();
-                        if (urls != null && !urls.isEmpty()) {
-                            for (String url : urls) {
-                                claim.addSupportingInfo(new Claim.SupportingInformationComponent().setSequence(1).setCategory(new CodeableConcept(new Coding().setCode("POI").setSystem("http://hcxprotocol.io/codes/claim-supporting-info-categories").setDisplay("proof of identity"))).setValue(new Attachment().setUrl(url)));
-                            }
+                List<Map<String, Object>> supportingDocuments = (List<Map<String, Object>>) requestBody.get("supportingDocuments");
+                for (Map<String, Object> document : supportingDocuments) {
+                    String documentType = (String) document.get("documentType");
+                    List<String> urls = (List<String>) document.get("urls");
+                    if (urls != null && !urls.isEmpty()) {
+                        for (String url : urls) {
+                            claim.addSupportingInfo(new Claim.SupportingInformationComponent().setSequence(1).setCategory(new CodeableConcept(new Coding().setCode("POI").setSystem("http://hcxprotocol.io/codes/claim-supporting-info-categories").setDisplay("proof of identity"))).setValue(new Attachment().setUrl(url)));
                         }
                     }
                 }
