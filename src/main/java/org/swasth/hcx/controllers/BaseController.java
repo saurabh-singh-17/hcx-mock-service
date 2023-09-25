@@ -171,7 +171,8 @@ public class BaseController {
                 }
                 System.out.println("output map after decryption communication" + output);
                 System.out.println("decryption successful");
-                String query = String.format("UPDATE %s SET otp_verification = 'initiated' WHERE correlation_id = '%s'", table, request.getCorrelationId());
+                String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE correlation_id ='%s'", table, "initiated", request.getCorrelationId());
+                System.out.println("----------query -----------" + query);
                     postgresService.execute(query);
                 }
             }

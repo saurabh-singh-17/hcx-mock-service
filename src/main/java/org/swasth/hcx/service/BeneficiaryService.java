@@ -258,6 +258,7 @@ public class BeneficiaryService {
         String status;
         if (resultSet.next()) {
             status = resultSet.getString("otp_verification");
+            System.out.println("------------- status ---------------" + status);
             return status.equalsIgnoreCase("initiated");
         } else {
             return false;
