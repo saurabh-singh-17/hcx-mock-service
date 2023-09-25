@@ -163,6 +163,7 @@ public class BaseController {
                 updateMobileNumber(request.getApiCallId());
             } else if (COMMUNICATION_ONREQUEST.equalsIgnoreCase(onApiAction)) {
                 System.out.println("------------- communication on request--------------------");
+                System.out.println("-----------------" + request.getCorrelationId());
                 HCXIntegrator hcxIntegrator1 = HCXIntegrator.getInstance(initializingConfigMap());
                 boolean result = hcxIntegrator1.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_REQUEST, output);
                 if (!result) {
@@ -170,18 +171,20 @@ public class BaseController {
                 }
                 System.out.println("output map after decryption communication" + output);
                 System.out.println("decryption successful");
-                String selectQuery = String.format("SELECT * from %s WHERE request_id = '%s'", table, request.getApiCallId());
+                String selectQuery = String.format("SELECT * from %s WHERE correlation_id = '%s'", table, request.getCorrelationId());
                 ResultSet resultSet =  postgresService.executeQuery(selectQuery);
                 String otpVerification = "";
                 while(resultSet.next()){
                     otpVerification = resultSet.getString("otp_verification");
                 }
+                System.out.println("------------correlation_id Id ----------------" + request.getCorrelationId());
                 System.out.println("----------otp verification--------------" + otpVerification);
                 if(otpVerification.equalsIgnoreCase("successful")){
-                    String query1 = String.format("UPDATE %s SET bank_details = '%s' WHERE request_id = '%s'", table, "initiated", request.getApiCallId());
+                    String query1 = String.format("UPDATE %s SET bank_details = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
                     postgresService.execute(query1);
                 } else {
-                    String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE request_id = '%s'", table, "initiated", request.getApiCallId());
+                    System.out.println();
+                    String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
                     postgresService.execute(query);
                 }
             }
