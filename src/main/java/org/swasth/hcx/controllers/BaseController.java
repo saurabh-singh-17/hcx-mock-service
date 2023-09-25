@@ -162,6 +162,7 @@ public class BaseController {
                 sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
                 updateMobileNumber(request.getApiCallId());
             } else if (COMMUNICATION_ONREQUEST.equalsIgnoreCase(onApiAction)) {
+                System.out.println("------------- communication on request--------------------");
                 HCXIntegrator hcxIntegrator1 = HCXIntegrator.getInstance(initializingConfigMap());
                 boolean result = hcxIntegrator1.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_REQUEST, output);
                 if (!result) {
@@ -175,6 +176,7 @@ public class BaseController {
                 while(resultSet.next()){
                     otpVerification = resultSet.getString("otp_verification");
                 }
+                System.out.println("----------otp verification--------------" + otpVerification);
                 if(otpVerification.equalsIgnoreCase("successful")){
                     String query1 = String.format("UPDATE %s SET bank_details = '%s' WHERE request_id = '%s'", table, "initiated", request.getApiCallId());
                     postgresService.execute(query1);
