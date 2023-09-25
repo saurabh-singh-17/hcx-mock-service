@@ -194,8 +194,12 @@ public class GenerateOutgoingRequest {
         if (StringUtils.equalsIgnoreCase((String) requestBody.get("type"), "otp")) {
             ResponseEntity<Object> responseEntity = beneficiaryService.verifyOTP(requestBody);
             System.out.println("----------------- response code ---------" + responseEntity.getStatusCode());
+            System.out.println(responseEntity.getStatusCode() == HttpStatus.OK);
+            System.out.println(responseEntity.getStatusCode().is2xxSuccessful());
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                System.out.println("========== it is going inside");
                 String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE request_id = '%s'", payorDataTable, "successful", requestId);
+                System.out.println("---------query -----------" + query);
                 postgresService.execute(query);
             } else {
                 throw new ClientException(Objects.requireNonNull(responseEntity.getBody()).toString());
