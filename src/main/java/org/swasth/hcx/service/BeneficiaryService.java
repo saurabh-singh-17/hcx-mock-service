@@ -126,6 +126,7 @@ public class BeneficiaryService {
         Map<String, Object> payloadMap = new HashMap<>();
         payloadMap.put("request_fhir", resultSet.getString("request_fhir"));
         payloadMap.put("correlation_id", resultSet.getString("correlation_id"));
+        payloadMap.put("workflow_id", resultSet.getString("workflow_id"));
         return payloadMap;
     }
 

@@ -155,9 +155,10 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createCommunicationRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
-            validateMap((String) requestBody.get("request_id"), requestBody);
+            String requestId = (String) requestBody.get("request_id");
+            validateMap(requestId, requestBody);
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
-            Map<String, Object> payloadMap = beneficiaryService.getPayloadMap((String) requestBody.get("request_id"));
+            Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestId);
             Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
             String correlationId = (String) payloadMap.getOrDefault("correlation_id", "");
             Patient patient1 = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
@@ -176,7 +177,8 @@ public class GenerateOutgoingRequest {
                 System.out.println("The otp has been sent for the beneficiary mobile to verify cliam.");
             }
             Map<String, Object> output = new HashMap<>();
-            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, "testprovider1.apollo@swasth-hcx-dev", "", correlationId, new HashMap<>(), output);
+            String workflowId = (String) payloadMap.getOrDefault("workflow_id","");
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, "testprovider1.apollo@swasth-hcx-dev", "", workflowId, correlationId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated." + output);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
