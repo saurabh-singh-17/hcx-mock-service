@@ -169,17 +169,18 @@ public class BaseController {
                 }
                 System.out.println("output map after decryption communication" + output);
                 System.out.println("decryption successful");
-                String selectQuery = String.format("SELECT * from %s WHERE correlation_id = '%s'", table, request.getCorrelationId());
+                String selectQuery = String.format("SELECT * from %s WHERE request_id = '%s'", table, request.getApiCallId());
                 ResultSet resultSet =  postgresService.executeQuery(selectQuery);
                 String otpVerification = "";
                 while(resultSet.next()){
                     otpVerification = resultSet.getString("otp_verification");
                 }
-                String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
-                postgresService.execute(query);
                 if(otpVerification.equalsIgnoreCase("successful")){
-                    String query1 = String.format("UPDATE %s SET bank_details = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
+                    String query1 = String.format("UPDATE %s SET bank_details = '%s' WHERE request_id = '%s'", table, "initiated", request.getApiCallId());
                     postgresService.execute(query1);
+                } else {
+                    String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE request_id = '%s'", table, "initiated", request.getApiCallId());
+                    postgresService.execute(query);
                 }
             }
         }

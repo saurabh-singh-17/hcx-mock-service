@@ -104,7 +104,7 @@ public class BeneficiaryController extends BaseController {
     @GetMapping("/check/communication/request")
     public ResponseEntity<Object> checkCommunicationRequest(@RequestParam String requestId) throws ClientException, SQLException {
         if (requestId.isEmpty()) {
-            throw new ClientException("The mobile number cannot be empty");
+            throw new ClientException("Request ID number cannot be empty");
         }
         boolean isCommunicationInitiated = beneficiaryService.checkCommunicationRequest(requestId);
         if (isCommunicationInitiated) {

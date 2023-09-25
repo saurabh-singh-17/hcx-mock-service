@@ -151,6 +151,7 @@ public class BeneficiaryService {
             if (searchResultSet.getString("action").equalsIgnoreCase("claim")) {
                 responseMap.put("type", "claim");
                 responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
+                responseMap.put("billAmount", getAmount(fhirPayload));
             }
             responseMap.put("status", searchResultSet.getString("status"));
             responseMap.put("apiCallId", searchResultSet.getString("request_id"));
