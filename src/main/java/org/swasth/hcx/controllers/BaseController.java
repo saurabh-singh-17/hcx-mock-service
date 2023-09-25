@@ -175,10 +175,12 @@ public class BaseController {
                 while (resultSet.next()) {
                     otpVerification = resultSet.getString("otp_verification");
                 }
+                System.out.println("----------------otp verification -----------"+ otpVerification);
                 if (StringUtils.equalsIgnoreCase(otpVerification, "successful")) {
                     String query1 = String.format("UPDATE %s SET bank_details = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
                     postgresService.execute(query1);
-                } else {
+                } else if (StringUtils.equalsIgnoreCase(otpVerification, "Pending")) {
+                    System.out.println("-----------coming inside ----------pending ------------");
                     String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE correlation_id ='%s'", table, "initiated", request.getCorrelationId());
                     postgresService.execute(query);
                 }

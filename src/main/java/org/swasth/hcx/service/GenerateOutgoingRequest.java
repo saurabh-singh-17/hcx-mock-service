@@ -156,6 +156,7 @@ public class GenerateOutgoingRequest {
         Response response = new Response();
         try {
             String requestId = (String) requestBody.get("request_id");
+            System.out.println("---------requesr_id -------------"+ requestId);
             validateMap(requestId, requestBody);
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestId);
@@ -178,6 +179,7 @@ public class GenerateOutgoingRequest {
             }
             Map<String, Object> output = new HashMap<>();
             String workflowId = (String) payloadMap.getOrDefault("workflow_id","");
+            System.out.println("-----------correlation id ----------------"+ correlationId);
             hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, "testprovider1.apollo@swasth-hcx-dev", "", correlationId, workflowId , new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated." + output);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
