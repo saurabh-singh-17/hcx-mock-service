@@ -2,6 +2,7 @@ package org.swasth.hcx.controllers;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import com.amazonaws.services.dynamodbv2.xspec.S;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
 import org.apache.commons.collections.MapUtils;
@@ -31,6 +32,7 @@ import org.swasth.hcx.utils.OnActionCall;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -167,8 +169,18 @@ public class BaseController {
                 }
                 System.out.println("output map after decryption communication" + output);
                 System.out.println("decryption successful");
+                String selectQuery = String.format("SELECT * from %s WHERE correlation_id = '%s'", table, request.getCorrelationId());
+                ResultSet resultSet =  postgresService.executeQuery(selectQuery);
+                String otpVerification = "";
+                while(resultSet.next()){
+                    otpVerification = resultSet.getString("otp_verification");
+                }
                 String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
                 postgresService.execute(query);
+                if(otpVerification.equalsIgnoreCase("successful")){
+                    String query1 = String.format("UPDATE %s SET bank_details = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
+                    postgresService.execute(query1);
+                }
             }
         }
     }
