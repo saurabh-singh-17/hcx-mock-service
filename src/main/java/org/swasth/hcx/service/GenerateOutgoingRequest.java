@@ -167,10 +167,17 @@ public class GenerateOutgoingRequest {
             CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
             Patient patient = OnActionFhirExamples.patientExample();
             patient.getTelecom().add(new ContactPoint().setValue(mobile).setSystem(ContactPoint.ContactPointSystem.PHONE));
+            if(requestBody.getOrDefault("type", "").equals("bank_details")){
+                communicationRequest.getPayload().add(new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please provide the bank details for claim to be complete.")));
+                System.out.println("The Communication request has been sent successfully bank details.");
+            } else if (requestBody.getOrDefault("type","").equals("otp")){
+                communicationRequest.getPayload().add(new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please verify the OTP sent to your mobile number to proceed.")));
+                beneficiaryService.sendOTP(mobile, communicationContent);
+                System.out.println("The otp has been sent for the beneficiary mobile to verify cliam.");
+            }
             Map<String, Object> output = new HashMap<>();
             hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, "testprovider1.apollo@swasth-hcx-dev", "", correlationId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated." + output);
-            beneficiaryService.sendOTP(mobile, communicationContent);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();
@@ -179,19 +186,32 @@ public class GenerateOutgoingRequest {
         }
     }
 
-    public ResponseEntity<Object> createCommunicationOnRequest(Map<String, Object> requestBody, Operations operations) throws ClientException {
+    public ResponseEntity<Object> createCommunicationOnRequest(Map<String, Object> requestBody) throws ClientException {
         String requestId = (String) requestBody.getOrDefault("request_id", "");
-        ResponseEntity<Object> responseEntity = beneficiaryService.verifyOTP(requestBody);
-        try {
-            if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE request_id = '%s'", payorDataTable, "successful", requestId);
-                postgresService.execute(query);
-            } else {
-                throw new ClientException(Objects.requireNonNull(responseEntity.getBody()).toString());
+        if (requestBody.getOrDefault("type", "").equals("otp")) {
+            ResponseEntity<Object> responseEntity = beneficiaryService.verifyOTP(requestBody);
+            try {
+                if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                    String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE request_id = '%s'", payorDataTable, "successful", requestId);
+                    postgresService.execute(query);
+                } else {
+                    throw new ClientException(Objects.requireNonNull(responseEntity.getBody()).toString());
+                }
+                return new ResponseEntity<>(responseEntity, HttpStatus.ACCEPTED);
+            } catch (Exception e) {
+                throw new ClientException(responseEntity.toString());
             }
-            return new ResponseEntity<>(responseEntity, HttpStatus.ACCEPTED);
-        } catch (Exception e) {
-            throw new ClientException(responseEntity.toString());
+        } else {
+            try {
+                String accountNumber = (String) requestBody.getOrDefault("account_number", "");
+                String ifscCode = (String) requestBody.getOrDefault("ifsc_code", "");
+                String query = String.format("UPDATE %s SET account_number ='%s',ifsc_code = '%s' WHERE request_id = '%s'", payorDataTable, accountNumber, ifscCode, requestId);
+                postgresService.execute(query);
+                System.out.println("The bank details updated successfully to the request id " + requestId);
+                return new ResponseEntity<>(HttpStatus.ACCEPTED);
+            } catch (Exception e) {
+                throw new ClientException("Unable update the account number and ifsc code");
+            }
         }
     }
 

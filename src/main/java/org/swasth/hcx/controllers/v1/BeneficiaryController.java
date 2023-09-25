@@ -59,7 +59,7 @@ public class BeneficiaryController extends BaseController {
 
     @PostMapping(CREATE_COMMUNICATION_ON_REQUEST)
     public ResponseEntity<Object> createOnCommunication(@RequestBody Map<String, Object> requestBody) throws ClientException {
-        return outgoingRequest.createCommunicationOnRequest(requestBody, Operations.COMMUNICATION_REQUEST);
+        return outgoingRequest.createCommunicationOnRequest(requestBody);
     }
 
     @PostMapping(BSP_REQUEST_LIST)
