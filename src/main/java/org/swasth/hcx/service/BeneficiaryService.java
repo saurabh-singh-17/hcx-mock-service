@@ -259,7 +259,7 @@ public class BeneficiaryService {
         ResultSet resultSet = postgresService.executeQuery(query);
         String status;
         if (resultSet.next()) {
-            status = resultSet.getString("otp_verification");
+            status = resultSet.getString(type);
             return status.equalsIgnoreCase("initiated");
         } else {
             return false;
