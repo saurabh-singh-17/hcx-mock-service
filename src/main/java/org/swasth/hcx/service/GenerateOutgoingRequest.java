@@ -156,13 +156,11 @@ public class GenerateOutgoingRequest {
         Response response = new Response();
         try {
             String requestId = (String) requestBody.get("request_id");
-            System.out.println("------------request id--------------" + requestId);
             validateMap(requestId, requestBody);
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestId);
             Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
             String correlationId = (String) payloadMap.getOrDefault("correlation_id", "");
-            System.out.println("---------correlation Id -------------" + correlationId);
             Patient patient1 = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
             String mobile = patient1.getTelecom().get(0).getValue();
             System.out.println("mobile number of beneficiary: " + mobile);
@@ -192,31 +190,26 @@ public class GenerateOutgoingRequest {
 
     public ResponseEntity<Object> createCommunicationOnRequest(Map<String, Object> requestBody) throws ClientException {
         String requestId = (String) requestBody.getOrDefault("request_id", "");
-        if (requestBody.getOrDefault("type", "").equals("otp")) {
+        System.out.println("=======request body -------------" + requestBody);
+        if (StringUtils.equalsIgnoreCase((String) requestBody.get("type"), "otp")) {
             ResponseEntity<Object> responseEntity = beneficiaryService.verifyOTP(requestBody);
-            try {
-                if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                    String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE request_id = '%s'", payorDataTable, "successful", requestId);
-                    postgresService.execute(query);
-                } else {
-                    throw new ClientException(Objects.requireNonNull(responseEntity.getBody()).toString());
-                }
-                return new ResponseEntity<>(responseEntity, HttpStatus.ACCEPTED);
-            } catch (Exception e) {
-                throw new ClientException(responseEntity.toString());
-            }
-        } else {
-            try {
-                String accountNumber = (String) requestBody.getOrDefault("account_number", "");
-                String ifscCode = (String) requestBody.getOrDefault("ifsc_code", "");
-                String query = String.format("UPDATE %s SET account_number ='%s',ifsc_code = '%s' WHERE request_id = '%s'", payorDataTable, accountNumber, ifscCode, requestId);
+            System.out.println("----------------- response code ---------" + responseEntity.getStatusCode());
+            if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE request_id = '%s'", payorDataTable, "successful", requestId);
                 postgresService.execute(query);
-                System.out.println("The bank details updated successfully to the request id " + requestId);
-                return new ResponseEntity<>(HttpStatus.ACCEPTED);
-            } catch (Exception e) {
-                throw new ClientException("Unable update the account number and ifsc code");
+            } else {
+                throw new ClientException(Objects.requireNonNull(responseEntity.getBody()).toString());
             }
+            return responseEntity;
+        } else if(StringUtils.equalsIgnoreCase((String) requestBody.get("type"), "bank_details")){
+            String accountNumber = (String) requestBody.getOrDefault("account_number", "");
+            String ifscCode = (String) requestBody.getOrDefault("ifsc_code", "");
+            String query = String.format("UPDATE %s SET account_number ='%s',ifsc_code = '%s' WHERE request_id = '%s'", payorDataTable, accountNumber, ifscCode, requestId);
+            postgresService.execute(query);
+            System.out.println("The bank details updated successfully to the request id " + requestId);
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
         }
+        return ResponseEntity.badRequest().body("------------unable to update to the database -----------");
     }
 
 

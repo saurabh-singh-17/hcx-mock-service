@@ -162,8 +162,6 @@ public class BaseController {
                 sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
                 updateMobileNumber(request.getApiCallId());
             } else if (COMMUNICATION_ONREQUEST.equalsIgnoreCase(onApiAction)) {
-                System.out.println("------------- communication on request--------------------");
-                System.out.println("-----------------" + request.getCorrelationId());
                 HCXIntegrator hcxIntegrator1 = HCXIntegrator.getInstance(initializingConfigMap());
                 boolean result = hcxIntegrator1.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_REQUEST, output);
                 if (!result) {
@@ -171,11 +169,21 @@ public class BaseController {
                 }
                 System.out.println("output map after decryption communication" + output);
                 System.out.println("decryption successful");
-                String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE correlation_id ='%s'", table, "initiated", request.getCorrelationId());
-                System.out.println("----------query -----------" + query);
+                String selectQuery = String.format("SELECT otp_verification from %s WHERE correlation_id = '%s'", table, request.getCorrelationId());
+                ResultSet resultSet = postgresService.executeQuery(selectQuery);
+                String otpVerification = "";
+                while (resultSet.next()) {
+                    otpVerification = resultSet.getString("otp_verification");
+                }
+                if (StringUtils.equalsIgnoreCase(otpVerification, "successful")) {
+                    String query1 = String.format("UPDATE %s SET bank_details = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
+                    postgresService.execute(query1);
+                } else {
+                    String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE correlation_id ='%s'", table, "initiated", request.getCorrelationId());
                     postgresService.execute(query);
                 }
             }
+        }
     }
 
     private void sendResponse(String apiAction, String respfhir, String reqFhir, Operations operation, String actionJwe, String onActionStatus, Map<String, Object> output) throws Exception {
