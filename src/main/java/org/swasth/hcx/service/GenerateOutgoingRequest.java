@@ -190,16 +190,12 @@ public class GenerateOutgoingRequest {
 
     public ResponseEntity<Object> createCommunicationOnRequest(Map<String, Object> requestBody) throws ClientException {
         String requestId = (String) requestBody.getOrDefault("request_id", "");
-        System.out.println("=======request body -------------" + requestBody);
         if (StringUtils.equalsIgnoreCase((String) requestBody.get("type"), "otp")) {
             ResponseEntity<Object> responseEntity = beneficiaryService.verifyOTP(requestBody);
-            System.out.println("----------------- response code ---------" + responseEntity.getStatusCode());
             System.out.println(responseEntity.getStatusCode() == HttpStatus.OK);
             System.out.println(responseEntity.getStatusCode().is2xxSuccessful());
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                System.out.println("========== it is going inside");
                 String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE request_id = '%s'", payorDataTable, "successful", requestId);
-                System.out.println("---------query -----------" + query);
                 postgresService.execute(query);
             } else {
                 throw new ClientException(Objects.requireNonNull(responseEntity.getBody()).toString());
@@ -213,7 +209,7 @@ public class GenerateOutgoingRequest {
             System.out.println("The bank details updated successfully to the request id " + requestId);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         }
-        return ResponseEntity.badRequest().body("------------unable to update to the database -----------");
+        return ResponseEntity.badRequest().body("Unable to update the details to database");
     }
 
 

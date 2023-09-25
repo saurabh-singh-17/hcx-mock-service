@@ -252,13 +252,14 @@ public class BeneficiaryService {
         return responses;
     }
 
-    public boolean checkCommunicationRequest(String requestId) throws ClientException, SQLException {
-        String query = String.format("SELECT otp_verification FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
+    public boolean checkCommunicationRequest(Map<String,Object> requestBody) throws ClientException, SQLException {
+        String requestId = (String) requestBody.get("request_id");
+        String type = (String) requestBody.get("type");
+        String query = String.format("SELECT %s FROM %s WHERE request_id = '%s'", type, payorDataTable, requestId);
         ResultSet resultSet = postgresService.executeQuery(query);
         String status;
         if (resultSet.next()) {
             status = resultSet.getString("otp_verification");
-            System.out.println("------------- status ---------------" + status);
             return status.equalsIgnoreCase("initiated");
         } else {
             return false;
