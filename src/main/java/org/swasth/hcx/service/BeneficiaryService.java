@@ -148,7 +148,7 @@ public class BeneficiaryService {
         while (searchResultSet.next()) {
             Map<String, Object> responseMap = new HashMap<>();
             String fhirPayload = searchResultSet.getString("request_fhir");
-            if (searchResultSet.getString("status").equalsIgnoreCase("claim")) {
+            if (searchResultSet.getString("action").equalsIgnoreCase("claim")) {
                 responseMap.put("type", "claim");
                 responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
             }
