@@ -188,7 +188,6 @@ public class BaseController {
                     postgresService.execute(query);
                 }
             }
-        }
     }
 
     private void sendResponse(String apiAction, String respfhir, String reqFhir, Operations operation, String actionJwe, String onActionStatus, Map<String, Object> output) throws Exception {
