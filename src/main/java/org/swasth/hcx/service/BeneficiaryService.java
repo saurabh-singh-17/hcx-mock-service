@@ -142,11 +142,15 @@ public class BeneficiaryService {
             System.out.println("Total count of the requests : " + count);
         }
         List<Map<String, Object>> entries = new ArrayList<>();
-        String searchQuery = String.format("SELECT * FROM %s WHERE mobile = '%s' AND action = 'coverageeligibility' ORDER BY created_on DESC", payorDataTable, mobile);
+        String searchQuery = String.format("SELECT * FROM %s WHERE mobile = '%s' AND (action = 'coverageeligibility' OR action = 'claim') ORDER BY created_on DESC", payorDataTable, mobile);
         ResultSet searchResultSet = postgresService.executeQuery(searchQuery);
         while (searchResultSet.next()) {
             Map<String, Object> responseMap = new HashMap<>();
             String fhirPayload = searchResultSet.getString("request_fhir");
+            if (searchResultSet.getString("status").equalsIgnoreCase("claim")) {
+                responseMap.put("type", "claim");
+                responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
+            }
             responseMap.put("status", searchResultSet.getString("status"));
             responseMap.put("apiCallId", searchResultSet.getString("request_id"));
             responseMap.put("claimType", "OPD");
