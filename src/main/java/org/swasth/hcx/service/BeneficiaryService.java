@@ -185,7 +185,7 @@ public class BeneficiaryService {
         for (String key : groupedEntries.keySet()) {
             Map<String, Object> entry = new HashMap<>();
             entry.put("workflow_id", key);
-            entry.put("entries", groupedEntries.get(key));
+            entry.put("data", groupedEntries.get(key));
             entries.add(entry);
         }
 
