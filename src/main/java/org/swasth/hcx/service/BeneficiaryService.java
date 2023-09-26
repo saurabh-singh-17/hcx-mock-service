@@ -133,7 +133,7 @@ public class BeneficiaryService {
 
     public ResponseEntity<Object> getRequestListFromDatabase(Map<String, Object> requestBody) throws Exception {
         String mobile = (String) requestBody.getOrDefault("mobile", "");
-        String countQuery = String.format("SELECT COUNT(*) AS count FROM %s WHERE mobile = '%s' AND action = 'coverageeligibility'", payorDataTable, mobile);
+        String countQuery = String.format("SELECT COUNT(*) AS count FROM %s WHERE mobile = '%s'", payorDataTable, mobile);
         ResultSet resultSet = postgresService.executeQuery(countQuery);
         Map<String, Object> resp = new HashMap<>();
         int count;
@@ -147,7 +147,7 @@ public class BeneficiaryService {
         ResultSet searchResultSet = postgresService.executeQuery(searchQuery);
         while (searchResultSet.next()) {
             String workflowId = searchResultSet.getString("workflow_id");
-            // Create a response map for each entry
+            System.out.println("--------------workflow id -------------" + workflowId);
             Map<String, Object> responseMap = new HashMap<>();
             String fhirPayload = searchResultSet.getString("request_fhir");
             if (searchResultSet.getString("action").equalsIgnoreCase("claim")) {
@@ -176,6 +176,7 @@ public class BeneficiaryService {
         resp.put("entries", entries);
         return new ResponseEntity<>(resp, HttpStatus.OK);
     }
+
 
     public ResponseEntity<Object> getDataFromWorkflowId(Map<String, Object> requestBody) throws ClientException, SQLException {
         String workflowId = (String) requestBody.getOrDefault("workflow_id", "");
