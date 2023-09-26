@@ -133,7 +133,7 @@ public class BeneficiaryService {
 
     public ResponseEntity<Object> getRequestListFromDatabase(Map<String, Object> requestBody) throws Exception {
         String mobile = (String) requestBody.getOrDefault("mobile", "");
-        String countQuery = String.format("SELECT COUNT(*) AS count FROM %s WHERE mobile = '%s'", payorDataTable, mobile);
+        String countQuery = String.format("SELECT COUNT(*) AS count FROM %s WHERE mobile = '%s' AND action = 'coverageeligibility'", payorDataTable, mobile);
         ResultSet resultSet = postgresService.executeQuery(countQuery);
         Map<String, Object> resp = new HashMap<>();
         int count;
@@ -142,18 +142,25 @@ public class BeneficiaryService {
             resp.put("count", count);
             System.out.println("Total count of the requests: " + count);
         }
+
+        // Create a map to store entries grouped by workflow ID
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
+
         String searchQuery = String.format("SELECT * FROM %s WHERE mobile = '%s' ORDER BY created_on DESC", payorDataTable, mobile);
         ResultSet searchResultSet = postgresService.executeQuery(searchQuery);
+
         while (searchResultSet.next()) {
             String workflowId = searchResultSet.getString("workflow_id");
-            System.out.println("--------------workflow id -------------" + workflowId);
+
+            // Create a response map for each entry
             Map<String, Object> responseMap = new HashMap<>();
             String fhirPayload = searchResultSet.getString("request_fhir");
+
             if (searchResultSet.getString("action").equalsIgnoreCase("claim")) {
                 responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
                 responseMap.put("billAmount", getAmount(fhirPayload));
             }
+
             responseMap.put("type", searchResultSet.getString("action"));
             responseMap.put("status", searchResultSet.getString("status"));
             responseMap.put("apiCallId", searchResultSet.getString("request_id"));
@@ -164,18 +171,29 @@ public class BeneficiaryService {
             responseMap.put("sender_code", searchResultSet.getString("sender_code"));
             responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
             responseMap.put("workflow_id", workflowId);
+
+            // Check if the workflow ID already exists in the map
             if (!groupedEntries.containsKey(workflowId)) {
                 groupedEntries.put(workflowId, new ArrayList<>());
             }
+
+            // Add the entry to the list for the current workflow ID
             groupedEntries.get(workflowId).add(responseMap);
         }
+
         List<Map<String, Object>> entries = new ArrayList<>();
-        for (List<Map<String, Object>> workflowEntries : groupedEntries.values()) {
-            entries.addAll(workflowEntries);
+        for (String key : groupedEntries.keySet()) {
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("workflow_id", key);
+            entry.put("entries", groupedEntries.get(key));
+            entries.add(entry);
         }
+
         resp.put("entries", entries);
         return new ResponseEntity<>(resp, HttpStatus.OK);
     }
+
+
 
 
     public ResponseEntity<Object> getDataFromWorkflowId(Map<String, Object> requestBody) throws ClientException, SQLException {
