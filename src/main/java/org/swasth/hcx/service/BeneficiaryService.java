@@ -131,8 +131,8 @@ public class BeneficiaryService {
     }
 
 
-    public ResponseEntity<Object> getRequestListFromDatabase(Map<String,Object> requestBody) throws Exception {
-        String mobile = (String) requestBody.getOrDefault("mobile","");
+    public ResponseEntity<Object> getRequestListFromDatabase(Map<String, Object> requestBody) throws Exception {
+        String mobile = (String) requestBody.getOrDefault("mobile", "");
         String countQuery = String.format("SELECT COUNT(*) AS count FROM %s WHERE mobile = '%s' AND action = 'coverageeligibility'", payorDataTable, mobile);
         ResultSet resultSet = postgresService.executeQuery(countQuery);
         Map<String, Object> resp = new HashMap<>();
@@ -140,19 +140,21 @@ public class BeneficiaryService {
         if (resultSet.next()) {
             count = resultSet.getInt("count");
             resp.put("count", count);
-            System.out.println("Total count of the requests : " + count);
+            System.out.println("Total count of the requests: " + count);
         }
-        List<Map<String, Object>> entries = new ArrayList<>();
-        String searchQuery = String.format("SELECT * FROM %s WHERE mobile = '%s' AND (action = 'coverageeligibility' OR action = 'claim') ORDER BY created_on DESC", payorDataTable, mobile);
+        Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
+        String searchQuery = String.format("SELECT * FROM %s WHERE mobile = '%s' ORDER BY created_on DESC", payorDataTable, mobile);
         ResultSet searchResultSet = postgresService.executeQuery(searchQuery);
         while (searchResultSet.next()) {
+            String workflowId = searchResultSet.getString("workflow_id");
+            // Create a response map for each entry
             Map<String, Object> responseMap = new HashMap<>();
             String fhirPayload = searchResultSet.getString("request_fhir");
             if (searchResultSet.getString("action").equalsIgnoreCase("claim")) {
-                responseMap.put("type", "claim");
                 responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
                 responseMap.put("billAmount", getAmount(fhirPayload));
             }
+            responseMap.put("type", searchResultSet.getString("action"));
             responseMap.put("status", searchResultSet.getString("status"));
             responseMap.put("apiCallId", searchResultSet.getString("request_id"));
             responseMap.put("claimType", "OPD");
@@ -161,8 +163,15 @@ public class BeneficiaryService {
             responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
             responseMap.put("sender_code", searchResultSet.getString("sender_code"));
             responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
-            responseMap.put("workflow_id", searchResultSet.getString("workflow_id"));
-            entries.add(responseMap);
+            responseMap.put("workflow_id", workflowId);
+            if (!groupedEntries.containsKey(workflowId)) {
+                groupedEntries.put(workflowId, new ArrayList<>());
+            }
+            groupedEntries.get(workflowId).add(responseMap);
+        }
+        List<Map<String, Object>> entries = new ArrayList<>();
+        for (List<Map<String, Object>> workflowEntries : groupedEntries.values()) {
+            entries.addAll(workflowEntries);
         }
         resp.put("entries", entries);
         return new ResponseEntity<>(resp, HttpStatus.OK);
