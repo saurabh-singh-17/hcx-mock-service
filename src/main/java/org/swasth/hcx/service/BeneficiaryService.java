@@ -194,7 +194,7 @@ public class BeneficiaryService {
         String workflowId = (String) requestBody.getOrDefault("workflow_id", "");
         List<Map<String, Object>> entries = new ArrayList<>();
         Map<String, Object> resp = new HashMap<>();
-        String searchQuery = String.format("SELECT * FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') ORDER BY created_on DESC", payorDataTable, workflowId);
+        String searchQuery = String.format("SELECT * FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth')", payorDataTable, workflowId);
         ResultSet searchResultSet = postgresService.executeQuery(searchQuery);
         while (searchResultSet.next()) {
             Map<String, Object> responseMap = new HashMap<>();
