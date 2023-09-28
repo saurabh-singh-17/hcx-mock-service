@@ -202,6 +202,7 @@ public class BaseController {
             Request req = new Request(requestBody, onApiAction);
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             if (COVERAGE_ELIGIBILITY_ONCHECK.equalsIgnoreCase(onApiAction)) {
+
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_ON_CHECK, output);
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
@@ -215,7 +216,6 @@ public class BaseController {
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityResponseBundle.html", CoverageEligibilityRequest.class, new Bundle.BundleEntryComponent().setFullUrl(covRes.getResourceType() + "/" + covRes.getId().toString().replace("#", "")).setResource(covRes));
                 System.out.println("bundle reply " + p.encodeResourceToString(bundle));
                 //sending the on action call
-                onActionCall.sendOnAction(request.getRecipientCode(),(String) output.get("fhirPayload") , Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
                 System.out.println("----------Output for onaction --------" + outputOfOnAction);
             }
         }

@@ -26,6 +26,7 @@ public class CoverageEligibilityController extends BaseController {
 
     @RequestMapping(value = "/on_check", method = RequestMethod.POST)
     public ResponseEntity<Object> onCheckCoverageEligibility(@RequestBody Map<String, Object> requestBody) throws Exception {
+        System.out.println("-------- coverage eligibility on check");
         return processRequestIncoming(requestBody, Constants.COVERAGE_ELIGIBILITY_ONCHECK);
     }
 }
