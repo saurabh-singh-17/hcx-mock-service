@@ -115,7 +115,7 @@ public class BaseController {
             Bundle bundle = new Bundle();
             Request req = new Request(requestBody, apiAction);
             HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(req.getRecipientCode());
-            if (COVERAGE_ELIGIBILITY_ONCHECK.equalsIgnoreCase(onApiAction)) {
+            if (COVERAGE_ELIGIBILITY_CHECK.equalsIgnoreCase(onApiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK, output);
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
@@ -186,6 +186,41 @@ public class BaseController {
         }
     }
 
+    public void processAndValidateRequest(String onApiAction, String metadataTopic, Request request, Map<String, Object> requestBody, String apiAction) throws Exception {
+        IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+        String mid = UUID.randomUUID().toString();
+        String serviceMode = env.getProperty(SERVICE_MODE);
+        System.out.println("\n" + "Mode: " + serviceMode + " :: mid: " + mid + " :: Event: " + onApiAction);
+        if (StringUtils.equalsIgnoreCase(serviceMode, GATEWAY)) {
+            Map<String, String> pay = new HashMap<>();
+            System.out.println("payload received " + requestBody);
+            pay.put("payload", String.valueOf(requestBody.get("payload")));
+            Map<String, Object> output = new HashMap<>();
+            Map<String, Object> outputOfOnAction = new HashMap<>();
+            System.out.println("create the oncheck payload");
+            Bundle bundle = new Bundle();
+            Request req = new Request(requestBody, apiAction);
+            HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(req.getRecipientCode());
+            if (COVERAGE_ELIGIBILITY_ONCHECK.equalsIgnoreCase(onApiAction)) {
+                boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_ON_CHECK, output);
+                if (!result) {
+                    System.out.println("Error while processing incoming request: " + output);
+                }
+                System.out.println("output map after decryption  coverageEligibility" + output.get("fhirPayload"));
+                System.out.println("decryption successful");
+                //processing the decrypted incoming bundle
+                bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
+                CoverageEligibilityResponse covRes = OnActionFhirExamples.coverageEligibilityResponseExample();
+                covRes.setPatient(new Reference("Patient/RVH1003"));
+                replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityResponseBundle.html", CoverageEligibilityRequest.class, new Bundle.BundleEntryComponent().setFullUrl(covRes.getResourceType() + "/" + covRes.getId().toString().replace("#", "")).setResource(covRes));
+                System.out.println("bundle reply " + p.encodeResourceToString(bundle));
+                //sending the onaction call
+                onActionCall.sendOnAction(request.getRecipientCode(),(String) output.get("fhirPayload") , Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+                updateMobileNumber(request.getApiCallId());
+            }
+        }
+    }
+
     private void sendResponse(String apiAction, String respfhir, String reqFhir, Operations operation, String actionJwe, String onActionStatus, Map<String, Object> output) throws Exception {
         Request request = new Request(Collections.singletonMap("payload", actionJwe), apiAction);
         if (autoResponse || StringUtils.equalsIgnoreCase(request.getRecipientCode(), env.getProperty("mock_payer.participant_code"))) {
@@ -202,6 +237,20 @@ public class BaseController {
             //notificationService.notify(request,onApiAction.split("/")[2],"Request received");
             setResponseParams(request, response);
             processAndValidate(onApiAction, kafkaTopic, request, requestBody, apiAction);
+            System.out.println("http respond sent");
+            return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("error   " + e);
+            return exceptionHandler(response, e);
+        }
+    }
+    public ResponseEntity<Object> processRequestIncoming(Map<String, Object> requestBody, String apiAction, String onApiAction, String kafkaTopic) {
+        Response response = new Response();
+        try {
+            Request request = new Request(requestBody, apiAction);
+            setResponseParams(request, response);
+            processAndValidateRequest(onApiAction, kafkaTopic, request, requestBody, apiAction);
             System.out.println("http respond sent");
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
