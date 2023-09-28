@@ -131,7 +131,7 @@ public class BaseController {
                 //sending the onaction call
                 sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
                 updateMobileNumber(request.getApiCallId());
-            } else if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
+            } else if (CLAIM_SUBMIT.equalsIgnoreCase(onApiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT, output);
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
@@ -186,7 +186,7 @@ public class BaseController {
         }
     }
 
-    public void processAndValidateRequest(String onApiAction, Request request, Map<String, Object> requestBody) throws Exception {
+    public void processValidateOnChecks(String onApiAction, Request request, Map<String, Object> requestBody) throws Exception {
         IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         String mid = UUID.randomUUID().toString();
         String serviceMode = env.getProperty(SERVICE_MODE);
@@ -213,6 +213,32 @@ public class BaseController {
                 covRes.setPatient(new Reference("Patient/RVH1003"));
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityResponseBundle.html", CoverageEligibilityRequest.class, new Bundle.BundleEntryComponent().setFullUrl(covRes.getResourceType() + "/" + covRes.getId().toString().replace("#", "")).setResource(covRes));
                 System.out.println("bundle reply " + p.encodeResourceToString(bundle));
+            }else if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)){
+                boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.CLAIM_ON_SUBMIT, output);
+                if (!result) {
+                    System.out.println("Error while processing incoming request: " + output);
+                }
+                System.out.println("output map after decryption claim " + output);
+                System.out.println("decryption successful");
+                //processing the decrypted incoming bundle
+                bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
+                ClaimResponse claimRes = OnActionFhirExamples.claimResponseExample();
+                claimRes.setPatient(new Reference("Patient/RVH1003"));
+                replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#", "")).setResource(claimRes));
+                System.out.println("bundle reply " + p.encodeResourceToString(bundle));
+            }else if (PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)){
+                boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.PRE_AUTH_ON_SUBMIT, output);
+                if (!result) {
+                    System.out.println("Error while processing incoming request: " + output);
+                }
+                System.out.println("output map after decryption preauth " + output);
+                System.out.println("decryption successful");
+                //processing the decrypted incoming bundle
+                bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
+                ClaimResponse preAuthRes = OnActionFhirExamples.claimResponseExample();
+                preAuthRes.setPatient(new Reference("Patient/RVH1003"));
+                preAuthRes.setUse(ClaimResponse.Use.PREAUTHORIZATION);
+                replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(preAuthRes.getResourceType() + "/" + preAuthRes.getId().toString().replace("#", "")).setResource(preAuthRes));
             }
         }
     }
@@ -241,12 +267,12 @@ public class BaseController {
             return exceptionHandler(response, e);
         }
     }
-    public ResponseEntity<Object> processRequestIncoming(Map<String, Object> requestBody, String onApiAction) {
+    public ResponseEntity<Object> processIncomingRequest(Map<String, Object> requestBody, String onApiAction) {
         Response response = new Response();
         try {
             Request request = new Request(requestBody, onApiAction);
             setResponseParams(request, response);
-            processAndValidateRequest(onApiAction, request, requestBody);
+            processValidateOnChecks(onApiAction, request, requestBody);
             System.out.println("http respond sent");
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
