@@ -216,6 +216,7 @@ public class BaseController {
                 System.out.println("bundle reply " + p.encodeResourceToString(bundle));
                 //sending the on action call
                 onActionCall.sendOnAction(request.getRecipientCode(),(String) output.get("fhirPayload") , Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+                System.out.println("----------Output for onaction --------" + outputOfOnAction);
             }
         }
     }
