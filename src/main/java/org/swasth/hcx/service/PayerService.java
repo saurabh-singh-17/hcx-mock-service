@@ -44,7 +44,7 @@ public class PayerService {
         actionMap.put("/v0.7/coverageeligibility/check", "coverageeligibility");
         actionMap.put("/v0.7/preauth/submit", "preauth");
         actionMap.put("/v0.7/claim/submit", "claim");
-        actionMap.put("/v0.7/communication/request", "communication");
+        actionMap.put("/communication/request", "communication");
         return actionMap.get(action);
     }
 }
