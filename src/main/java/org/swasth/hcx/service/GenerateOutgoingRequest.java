@@ -189,7 +189,6 @@ public class GenerateOutgoingRequest {
     }
 
     public ResponseEntity<Object> createCommunicationOnRequest(Map<String, Object> requestBody) throws Exception {
-        System.out.println("----------it came here --------------");
         String requestId = (String) requestBody.getOrDefault("request_id", "");
         if (StringUtils.equalsIgnoreCase((String) requestBody.get("type"), "otp")) {
             ResponseEntity<Object> responseEntity = beneficiaryService.verifyOTP(requestBody);
@@ -214,7 +213,6 @@ public class GenerateOutgoingRequest {
     }
 
     public void processOutgoingCallbackCommunication(String type, String requestId , String otpCode, String accountNumber,String ifscCode) throws Exception {
-        System.out.println("-------------it came inside process outgoing call back ---------------");
         Communication communication;
         List<DomainResource> domList = new ArrayList<>();
         HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
@@ -246,7 +244,6 @@ public class GenerateOutgoingRequest {
         while (resultSet1.next()){
             rawPayload = resultSet1.getString("raw_payload");
         }
-        System.out.println("----------rawpayload ========" + rawPayload);
         Map<String, Object> outputMap = new HashMap<>();
         hcxIntegrator.processOutgoingCallback(parser.encodeResourceToString(bundleTest), Operations.COMMUNICATION_ON_REQUEST, "", rawPayload, "response.complete", new HashMap<>(), outputMap);
     }
