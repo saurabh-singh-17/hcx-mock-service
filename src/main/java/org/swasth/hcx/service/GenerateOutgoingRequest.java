@@ -234,17 +234,17 @@ public class GenerateOutgoingRequest {
         } catch (Exception e) {
             System.out.println("Error message " + e.getMessage());
         }
-        String combinedQuery = String.format("SELECT p1.raw_payload " +
-                        "FROM %s p1 " +
-                        "JOIN %s p2 ON p1.correlation_id = p2.correlation_id " +
-                        "WHERE p2.request_id = '%s' " +
-                        "AND p2.action = 'communication'",
-                payorDataTable, payorDataTable, requestId);
-        System.out.println("-------combined query ------------" + combinedQuery);
-        ResultSet resultSet = postgresService.executeQuery(combinedQuery);
+        String searchCorrelationIdQuery =  String.format("SELECT correlation_id FROM %s WHERE request_id = '%s'",payorDataTable, requestId);
+        ResultSet resultSet = postgresService.executeQuery(searchCorrelationIdQuery);
+        String correlationId = "";
+        while (resultSet.next()){
+            correlationId = resultSet.getString("correlation_id");
+        }
+        String searchActionJweQuery = String.format("SELECT raw_payload from %s where correlation_id = '%s' AND action = 'communication'", payorDataTable, correlationId);
+        ResultSet resultSet1 = postgresService.executeQuery(searchActionJweQuery);
         String rawPayload = "";
-        while (resultSet.next()) {
-            rawPayload = resultSet.getString("raw_payload");
+        while (resultSet1.next()){
+            rawPayload = resultSet1.getString("raw_payload");
         }
         System.out.println("----------rawpayload ========" + rawPayload);
         Map<String, Object> outputMap = new HashMap<>();
