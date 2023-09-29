@@ -103,7 +103,6 @@ public class BeneficiaryController extends BaseController {
 
     @PostMapping("/check/communication/request")
     public ResponseEntity<Object> checkCommunicationRequest(@RequestBody Map<String,Object> requestBody) throws ClientException, SQLException {
-        System.out.println("-------------- request body ------------------" + requestBody);
         if (requestBody.isEmpty()) {
             throw new ClientException("Request body cannot be empty");
         }
