@@ -156,7 +156,6 @@ public class GenerateOutgoingRequest {
         Response response = new Response();
         try {
             String requestId = (String) requestBody.get("request_id");
-            System.out.println("---------requesr_id -------------"+ requestId);
             validateMap(requestId, requestBody);
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestId);
@@ -179,7 +178,6 @@ public class GenerateOutgoingRequest {
             }
             Map<String, Object> output = new HashMap<>();
             String workflowId = (String) payloadMap.getOrDefault("workflow_id","");
-            System.out.println("-----------correlation id ----------------"+ correlationId);
             hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, "testprovider1.apollo@swasth-hcx-dev", "", correlationId, workflowId , new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated." + output);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
@@ -190,15 +188,15 @@ public class GenerateOutgoingRequest {
         }
     }
 
-    public ResponseEntity<Object> createCommunicationOnRequest(Map<String, Object> requestBody) throws ClientException {
+    public ResponseEntity<Object> createCommunicationOnRequest(Map<String, Object> requestBody) throws Exception {
+        System.out.println("----------it came here --------------");
         String requestId = (String) requestBody.getOrDefault("request_id", "");
         if (StringUtils.equalsIgnoreCase((String) requestBody.get("type"), "otp")) {
             ResponseEntity<Object> responseEntity = beneficiaryService.verifyOTP(requestBody);
-            System.out.println(responseEntity.getStatusCode() == HttpStatus.OK);
-            System.out.println(responseEntity.getStatusCode().is2xxSuccessful());
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE request_id = '%s'", payorDataTable, "successful", requestId);
                 postgresService.execute(query);
+                processOutgoingCallbackCommunication("otp", requestId, (String) requestBody.get("otp_code"), "", "");
             } else {
                 throw new ClientException(Objects.requireNonNull(responseEntity.getBody()).toString());
             }
@@ -209,11 +207,49 @@ public class GenerateOutgoingRequest {
             String query = String.format("UPDATE %s SET account_number ='%s',ifsc_code = '%s' WHERE request_id = '%s'", payorDataTable, accountNumber, ifscCode, requestId);
             postgresService.execute(query);
             System.out.println("The bank details updated successfully to the request id " + requestId);
+            processOutgoingCallbackCommunication("bank_details", requestId, "", accountNumber, ifscCode);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         }
         return ResponseEntity.badRequest().body("Unable to update the details to database");
     }
 
+    public void processOutgoingCallbackCommunication(String type, String requestId , String otpCode, String accountNumber,String ifscCode) throws Exception {
+        System.out.println("-------------it came inside process outgoing call back ---------------");
+        Communication communication;
+        List<DomainResource> domList = new ArrayList<>();
+        HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
+        if (type.equalsIgnoreCase("otp")) {
+            communication = OnActionFhirExamples.communication();
+            communication.getPayload().add(new Communication.CommunicationPayloadComponent().setContent(new StringType().setValue(otpCode)));
+        } else {
+            communication = OnActionFhirExamples.communication();
+            communication.getPayload().add(new Communication.CommunicationPayloadComponent().setContent(new StringType().setValue(accountNumber)));
+            communication.getPayload().add(new Communication.CommunicationPayloadComponent().setContent(new StringType().setValue(ifscCode)));
+        }
+        IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+        Bundle bundleTest = new Bundle();
+        try {
+            bundleTest = HCXFHIRUtils.resourceToBundle(communication, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CommunicationBundle.html",hcxIntegrator);
+            System.out.println("resource To Bundle communication Request\n" + parser.encodeResourceToString(bundleTest));
+        } catch (Exception e) {
+            System.out.println("Error message " + e.getMessage());
+        }
+        String combinedQuery = String.format("SELECT p1.raw_payload " +
+                        "FROM %s p1 " +
+                        "JOIN %s p2 ON p1.correlation_id = p2.correlation_id " +
+                        "WHERE p2.request_id = '%s' " +
+                        "AND p2.action = 'communication'",
+                payorDataTable, payorDataTable, requestId);
+        System.out.println("-------combined query ------------" + combinedQuery);
+        ResultSet resultSet = postgresService.executeQuery(combinedQuery);
+        String rawPayload = "";
+        while (resultSet.next()) {
+            rawPayload = resultSet.getString("raw_payload");
+        }
+        System.out.println("----------rawpayload ========" + rawPayload);
+        Map<String, Object> outputMap = new HashMap<>();
+        hcxIntegrator.processOutgoingCallback(parser.encodeResourceToString(bundleTest), Operations.COMMUNICATION_ON_REQUEST, "", rawPayload, "response.complete", new HashMap<>(), outputMap);
+    }
 
     public Map<String, Object> initializingConfigMap() throws IOException {
         Map<String, Object> configMap = new HashMap<>();

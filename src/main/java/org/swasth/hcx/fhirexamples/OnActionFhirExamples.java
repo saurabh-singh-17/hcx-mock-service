@@ -222,6 +222,22 @@ public class OnActionFhirExamples {
         comm.getIdentifier().add(new Identifier().setSystem("http://www.providerco.com/communication").setValue("12345"));
         comm.setStatus(Communication.CommunicationStatus.COMPLETED);
         comm.getPayload().add(new Communication.CommunicationPayloadComponent().setContent(new Attachment().setContentType("application/pdf").setData("abcd".getBytes()).setTitle("accident_notes.pdf").setCreation(new Date())));
+        comm.getPayload().add(new Communication.CommunicationPayloadComponent().setContent(new StringType().setValue("account number")));
+        comm.getPayload().add(new Communication.CommunicationPayloadComponent().setContent(new StringType().setValue("IFSC122333")));
+        return comm;
+    }
+
+
+    public static Communication communication(){
+        Communication comm =  new Communication();
+        comm.setId(UUID.randomUUID().toString());
+        Meta meta = new Meta();
+        meta.getProfile().add(new CanonicalType("https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Communication.html"));
+        meta.setLastUpdated(new Date());
+        comm.setMeta(meta);
+        comm.getIdentifier().add(new Identifier().setSystem("http://www.providerco.com/communication").setValue("12345"));
+        comm.setStatus(Communication.CommunicationStatus.COMPLETED);
+        comm.getPayload().add(new Communication.CommunicationPayloadComponent().setContent(new Attachment().setContentType("application/pdf").setData("abcd".getBytes()).setTitle("accident_notes.pdf").setCreation(new Date())));
         return comm;
     }
 

@@ -58,7 +58,7 @@ public class BeneficiaryController extends BaseController {
     }
 
     @PostMapping(CREATE_COMMUNICATION_ON_REQUEST)
-    public ResponseEntity<Object> createOnCommunication(@RequestBody Map<String, Object> requestBody) throws ClientException {
+    public ResponseEntity<Object> createOnCommunication(@RequestBody Map<String, Object> requestBody) throws Exception {
         return outgoingRequest.createCommunicationOnRequest(requestBody);
     }
 

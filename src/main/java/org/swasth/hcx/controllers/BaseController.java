@@ -161,7 +161,7 @@ public class BaseController {
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(preAuthRes.getResourceType() + "/" + preAuthRes.getId().toString().replace("#", "")).setResource(preAuthRes));
                 sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
                 updateMobileNumber(request.getApiCallId());
-            } else if (COMMUNICATION_ONREQUEST.equalsIgnoreCase(onApiAction)) {
+            } else if (COMMUNICATION_REQUEST.equalsIgnoreCase(apiAction)) {
                 HCXIntegrator hcxIntegrator1 = HCXIntegrator.getInstance(initializingConfigMap());
                 boolean result = hcxIntegrator1.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_REQUEST, output);
                 if (!result) {
@@ -182,6 +182,7 @@ public class BaseController {
                     String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE correlation_id ='%s'", table, "initiated", request.getCorrelationId());
                     postgresService.execute(query);
                 }
+                sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
             }
         }
     }
