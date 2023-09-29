@@ -27,6 +27,8 @@ public class PayerService {
     private PostgresService postgres;
 
     public void process(Request request, String reqFhirObj, String respFhirObj) throws ClientException, JsonProcessingException {
+        System.out.println("---------request get api action ------------" + request.getAction());
+        System.out.println("--------------get from get entiry -------------" + getEntity(request.getAction()));
         Map<String,Object> info = new HashMap<>();
         if(!request.getAction().contains("coverageeligibility")) {
             info.put("medical", Collections.singletonMap("status", PENDING));
