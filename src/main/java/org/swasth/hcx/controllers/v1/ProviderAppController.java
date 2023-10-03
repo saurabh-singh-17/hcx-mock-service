@@ -31,14 +31,13 @@ public class ProviderAppController {
             throw new ClientException("Work flow id cannot be empty");
         }
         List<String> supportingDocumentsUrls = (List<String>) requestBody.getOrDefault("supporting_documents_url", "");
-        String supportingDocuments = "{" + String.join(",", supportingDocumentsUrls) + "}";
         String insertQuery = String.format("INSERT INTO %s (workflow_id, treatment_type, " +
                         "service_type, symptoms, supporting_documents_url) VALUES ('%s', '%s', '%s', '%s', ARRAY[%s]::varchar[])",
                 consultationInfoTable, workflowId,
                 requestBody.getOrDefault("treatment_type", ""),
                 requestBody.getOrDefault("service_type", ""),
                 requestBody.getOrDefault("symptoms", ""),
-                supportingDocuments);
+                supportingDocumentsUrls);
         System.out.println("================== insert query ---------" + insertQuery);
         try {
             postgres.execute(insertQuery);
