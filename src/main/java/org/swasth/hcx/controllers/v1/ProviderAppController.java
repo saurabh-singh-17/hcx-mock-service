@@ -51,8 +51,8 @@ public class ProviderAppController {
         }
     }
 
-    @GetMapping("/consultation/workflow_id")
-    public ResponseEntity<Object> getConsultationInfo(@RequestParam("workflow_id") String workflowId) {
+    @GetMapping("/consultation/{workflow_id}")
+    public ResponseEntity<Object> getConsultationInfo(@PathVariable String workflowId) {
         try {
             Map<String, Object> consultationInfo = getConsultationInfoByWorkflowId(workflowId);
             if (consultationInfo != null) {
@@ -68,7 +68,6 @@ public class ProviderAppController {
 
     public Map<String, Object> getConsultationInfoByWorkflowId(String workflowId) throws ClientException, SQLException {
         String searchQuery = String.format("SELECT * FROM %s WHERE workflow_id = '%s'", consultationInfoTable, workflowId);
-        System.out.println("search query ----------------------" +  searchQuery);
         ResultSet resultSet = postgres.executeQuery(searchQuery);
         Map<String, Object> consultationInfo = new HashMap<>();
         if (resultSet.next()) {
