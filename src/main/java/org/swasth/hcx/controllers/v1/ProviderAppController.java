@@ -13,6 +13,7 @@ import org.swasth.hcx.utils.Constants;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController()
 @RequestMapping(Constants.VERSION_PREFIX)
@@ -30,14 +31,16 @@ public class ProviderAppController {
         if (!requestBody.containsKey("workflow_id") && workflowId.isEmpty()) {
             throw new ClientException("Work flow id cannot be empty");
         }
-        List<String> supportingDocumentsUrls = (List<String>) requestBody.getOrDefault("supporting_documents_url", "");
-        String insertQuery = String.format("INSERT INTO %s (workflow_id, treatment_type, " +
-                        "service_type, symptoms, supporting_documents_url) VALUES ('%s', '%s', '%s', '%s', ARRAY[%s]::varchar[])",
+        List<String> supportingDocumentsUrls = (List<String>) requestBody.getOrDefault("supporting_documents_url", new ArrayList<>());
+        String supportingDocuments = supportingDocumentsUrls.stream()
+                .map(document -> "'" + document + "'")
+                .collect(Collectors.joining(","));        String insertQuery = String.format("INSERT INTO %s (workflow_id, treatment_type, " +
+                        "service_type, symptoms, supporting_documents_url) VALUES ('%s', '%s', '%s', '%s', ARRAY[%s])",
                 consultationInfoTable, workflowId,
                 requestBody.getOrDefault("treatment_type", ""),
                 requestBody.getOrDefault("service_type", ""),
                 requestBody.getOrDefault("symptoms", ""),
-                supportingDocumentsUrls);
+                supportingDocuments);
         System.out.println("================== insert query ---------" + insertQuery);
         try {
             postgres.execute(insertQuery);
