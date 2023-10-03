@@ -27,7 +27,7 @@ public class ProviderAppController {
     @PostMapping("/consultation/add")
     public ResponseEntity<String> addConsultationInfo(@RequestBody Map<String, Object> requestBody) throws ClientException {
         String workflowId = (String) requestBody.getOrDefault("workflow_id", "");
-        if (!requestBody.containsKey("workflow_id") && workflowId.toString().isEmpty()) {
+        if (!requestBody.containsKey("workflow_id") && workflowId.isEmpty()) {
             throw new ClientException("Work flow id cannot be empty");
         }
         List<String> supportingDocumentsUrls = (List<String>) requestBody.getOrDefault("supporting_documents_url", "");
