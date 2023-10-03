@@ -52,9 +52,9 @@ public class ProviderAppController {
     }
 
     @GetMapping("/consultation/workflow_id")
-    public ResponseEntity<Object> getConsultationInfo(@RequestParam("workflow_id") UUID workflowId) {
+    public ResponseEntity<Object> getConsultationInfo(@RequestParam("workflow_id") String workflowId) {
         try {
-            Map<String, Object> consultationInfo = getConsultationInfoByWorkflowId(workflowId.toString());
+            Map<String, Object> consultationInfo = getConsultationInfoByWorkflowId(workflowId);
             if (consultationInfo != null) {
                 return ResponseEntity.ok(consultationInfo);
             } else {
