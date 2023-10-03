@@ -64,6 +64,8 @@ public class BaseController {
 
     private String baseURL;
 
+    @Autowired
+    private PostgresService postgres;
     @Value("${autoresponse}")
     private Boolean autoResponse;
 
@@ -192,8 +194,11 @@ public class BaseController {
             onActionCall.sendOnAction(request.getRecipientCode(), respfhir, operation, actionJwe, onActionStatus, output);
         } else {
             payerService.process(request, reqFhir, respfhir);
-            if(request.getAction().equalsIgnoreCase("/v0.7/coverageeligibility/check") && request.getSenderCode().equalsIgnoreCase("testprovider1.apollo@swasth-hcx-dev")){
+            if (request.getAction().equalsIgnoreCase("/v0.7/coverageeligibility/check") && request.getSenderCode().equalsIgnoreCase("testprovider1.apollo@swasth-hcx-dev")) {
                 onActionCall.sendOnAction(request.getRecipientCode(), respfhir, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
+                String updateQuery = String.format("UPDATE %s SET status='%s',updated_on=%d WHERE request_id='%s' RETURNING %s,%s",
+                        table, "Approved", System.currentTimeMillis(), request.getApiCallId(), "raw_payload", "response_fhir");
+                postgres.execute(updateQuery);
             }
         }
     }
