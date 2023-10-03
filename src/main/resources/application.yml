@@ -29,6 +29,7 @@ postgres:
    payerData: ${payer_data_table:payersystem_data}
    mockParticipant: ${mock_participant_table:mock_participant}
    beneficiary: ${beneficiary_table:beneficiary_verification}
+   consultation-info : ${consultation_info_table:consultation_info}
 
 #hcx headers
 protocol:

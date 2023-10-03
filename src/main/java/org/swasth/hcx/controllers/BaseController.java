@@ -2,7 +2,6 @@ package org.swasth.hcx.controllers;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
-import com.amazonaws.services.dynamodbv2.xspec.S;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
 import org.apache.commons.collections.MapUtils;
@@ -193,6 +192,9 @@ public class BaseController {
             onActionCall.sendOnAction(request.getRecipientCode(), respfhir, operation, actionJwe, onActionStatus, output);
         } else {
             payerService.process(request, reqFhir, respfhir);
+            if(request.getAction().equalsIgnoreCase("/v0.7/coverageeligibility/check") && request.getSenderCode().equalsIgnoreCase("testprovider1.apollo@swasth-hcx-dev")){
+                onActionCall.sendOnAction(request.getRecipientCode(), respfhir, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
+            }
         }
     }
 
