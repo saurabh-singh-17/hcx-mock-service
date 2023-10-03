@@ -52,7 +52,7 @@ public class ProviderAppController {
     }
 
     @GetMapping("/consultation/{workflow_id}")
-    public ResponseEntity<Object> getConsultationInfo(@PathVariable String workflowId) {
+    public ResponseEntity<Object> getConsultationInfo(@PathVariable("workflow_id")  String workflowId) {
         try {
             Map<String, Object> consultationInfo = getConsultationInfoByWorkflowId(workflowId);
             if (consultationInfo != null) {
