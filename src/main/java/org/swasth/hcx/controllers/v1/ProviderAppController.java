@@ -26,15 +26,15 @@ public class ProviderAppController {
 
     @PostMapping("/consultation/add")
     public ResponseEntity<String> addConsultationInfo(@RequestBody Map<String, Object> requestBody) throws ClientException {
-        UUID workflowId = (UUID) requestBody.getOrDefault("workflow_id", "");
+        String workflowId = (String) requestBody.getOrDefault("workflow_id", "");
         if (!requestBody.containsKey("workflow_id") && workflowId.toString().isEmpty()) {
             throw new ClientException("Work flow id cannot be empty");
         }
         List<String> supportingDocumentsUrls = (List<String>) requestBody.getOrDefault("supporting_documents_url", "");
         String supportingDocuments = "{" + String.join(",", supportingDocumentsUrls) + "}";
         String insertQuery = String.format("INSERT INTO %s (workflow_id, treatment_type, " +
-                        "service_type, symptoms, supporting_documents_url) VALUES (%s::uuid, '%s', '%s', '%s', ARRAY[%s]::varchar[])",
-                consultationInfoTable, workflowId.toString(),
+                        "service_type, symptoms, supporting_documents_url) VALUES ('%s', '%s', '%s', '%s', ARRAY[%s]::varchar[])",
+                consultationInfoTable, workflowId,
                 requestBody.getOrDefault("treatment_type", ""),
                 requestBody.getOrDefault("service_type", ""),
                 requestBody.getOrDefault("symptoms", ""),
@@ -65,7 +65,7 @@ public class ProviderAppController {
     }
 
     public Map<String, Object> getConsultationInfoByWorkflowId(String workflowId) throws ClientException, SQLException {
-        String searchQuery = String.format("SELECT * FROM %s WHERE workflow_id = %s::uuid", consultationInfoTable, workflowId);
+        String searchQuery = String.format("SELECT * FROM %s WHERE workflow_id = '%s'", consultationInfoTable, workflowId);
         System.out.println("search query ----------------------" +  searchQuery);
         ResultSet resultSet = postgres.executeQuery(searchQuery);
         Map<String, Object> consultationInfo = new HashMap<>();
