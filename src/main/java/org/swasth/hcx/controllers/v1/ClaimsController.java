@@ -22,7 +22,7 @@ public class ClaimsController extends BaseController {
 
     @RequestMapping(value = "/on_submit", method = RequestMethod.POST)
     public ResponseEntity<Object> claimOnSubmit(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return processIncomingRequest(requestBody, Constants.CLAIM_ONSUBMIT);
+        return processRequest(requestBody, Constants.CLAIM_ONSUBMIT,Constants.CLAIM_ONSUBMIT, kafkaTopic);
     }
 
 }

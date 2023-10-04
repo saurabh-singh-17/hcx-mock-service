@@ -22,7 +22,7 @@ public class PreAuthController extends BaseController {
 
     @RequestMapping(value = "/on_submit", method = RequestMethod.POST)
     public ResponseEntity<Object> preAuthOnSubmit(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return processIncomingRequest(requestBody, Constants.PRE_AUTH_ONSUBMIT);
+        return processRequest(requestBody, Constants.PRE_AUTH_ONSUBMIT,Constants.PRE_AUTH_ONSUBMIT, kafkaTopic);
     }
 
 }
