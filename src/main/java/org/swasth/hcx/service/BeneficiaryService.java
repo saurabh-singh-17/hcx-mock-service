@@ -133,19 +133,8 @@ public class BeneficiaryService {
 
     public ResponseEntity<Object> getRequestListFromDatabase(Map<String, Object> requestBody) throws Exception {
         String mobile = (String) requestBody.getOrDefault("mobile", "");
-//        String countQuery = String.format("SELECT COUNT(*) AS count FROM %s WHERE mobile = '%s' AND action = 'coverageeligibility'", payorDataTable, mobile);
-//        ResultSet resultSet = postgresService.executeQuery(countQuery);
         Map<String, Object> resp = new HashMap<>();
-//        int count;
-//        if (resultSet.next()) {
-//            count = resultSet.getInt("count");
-//            resp.put("count", count);
-//            System.out.println("Total count of the requests: " + count);
-//        }
-
-        // Create a map to store entries grouped by workflow ID
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-
         String searchQuery = String.format("SELECT * FROM %s WHERE mobile = '%s' ORDER BY created_on DESC", payorDataTable, mobile);
         ResultSet searchResultSet = postgresService.executeQuery(searchQuery);
 
@@ -154,12 +143,13 @@ public class BeneficiaryService {
             // Create a response map for each entry
             Map<String, Object> responseMap = new HashMap<>();
             String fhirPayload = searchResultSet.getString("request_fhir");
-
             if (searchResultSet.getString("action").equalsIgnoreCase("claim")) {
                 responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
                 responseMap.put("billAmount", getAmount(fhirPayload));
             }
-
+            if(searchResultSet.getString("action").equalsIgnoreCase("preauth")){
+                responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
+            }
             responseMap.put("type", searchResultSet.getString("action"));
             responseMap.put("status", searchResultSet.getString("status"));
             responseMap.put("apiCallId", searchResultSet.getString("request_id"));
