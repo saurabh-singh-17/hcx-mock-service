@@ -156,11 +156,13 @@ public class GenerateOutgoingRequest {
         Response response = new Response();
         try {
             String requestId = (String) requestBody.get("request_id");
+            System.out.println("-------------------requestId --------------------" + requestId);
             validateMap(requestId, requestBody);
             IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestId);
             Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
             String correlationId = (String) payloadMap.getOrDefault("correlation_id", "");
+            System.out.println("------------correlation ID -------------" + correlationId);
             Patient patient1 = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
             String mobile = patient1.getTelecom().get(0).getValue();
             System.out.println("mobile number of beneficiary: " + mobile);
