@@ -167,30 +167,23 @@ public class BaseController {
                 boolean result = hcxIntegrator1.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_REQUEST, output);
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
-                } else {
-                    System.out.println("output map after decryption communication" + output);
-                    System.out.println("decryption successful");
-                    String selectQuery = String.format("SELECT otp_verification, bank_details from %s WHERE correlation_id = '%s' AND action = 'claim'", table, request.getCorrelationId());
-                    ResultSet resultSet = postgresService.executeQuery(selectQuery);
-                    String otpVerification = "";
-                    String bankDetails = "";
-                    while (resultSet.next()) {
-                        otpVerification = resultSet.getString("otp_verification");
-                        bankDetails = resultSet.getString("bank_details");
-                    }
-                    if (StringUtils.equalsIgnoreCase(otpVerification, "successful")) {
-                        if (StringUtils.equalsIgnoreCase(bankDetails, "initiated")) {
-                            System.out.println("Bank details already initiated.");
-                        } else {
-                            String updateQuery = String.format("UPDATE %s SET bank_details = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
-                            postgresService.execute(updateQuery);
-                            System.out.println("Bank details initiated successfully.");
-                        }
-                    } else {
-                        System.out.println("OTP verification is not successful. Cannot initiate bank details.");
-                    }
-                    sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
                 }
+                System.out.println("output map after decryption communication" + output);
+                System.out.println("decryption successful");
+                String selectQuery = String.format("SELECT otp_verification from %s WHERE action = 'claim' AND correlation_id = '%s'", table, request.getCorrelationId());
+                ResultSet resultSet = postgresService.executeQuery(selectQuery);
+                String otpVerification = "";
+                while (resultSet.next()) {
+                    otpVerification = resultSet.getString("otp_verification");
+                }
+                if (StringUtils.equalsIgnoreCase(otpVerification, "successful")) {
+                    String query1 = String.format("UPDATE %s SET bank_details = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
+                    postgresService.execute(query1);
+                } else if (StringUtils.equalsIgnoreCase(otpVerification, "Pending")) {
+                    String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE correlation_id ='%s'", table, "initiated", request.getCorrelationId());
+                    postgresService.execute(query);
+                }
+                sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
             }
         }
     }
