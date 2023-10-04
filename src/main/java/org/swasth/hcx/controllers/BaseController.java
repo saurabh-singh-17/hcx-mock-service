@@ -132,7 +132,7 @@ public class BaseController {
                 //sending the onaction call
                 sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
                 updateMobileNumber(request.getApiCallId());
-            } else if (CLAIM_SUBMIT.equalsIgnoreCase(onApiAction)) {
+            } else if (CLAIM_SUBMIT.equalsIgnoreCase(apiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT, output);
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
@@ -147,7 +147,7 @@ public class BaseController {
                 System.out.println("bundle reply " + p.encodeResourceToString(bundle));
                 sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
                 updateMobileNumber(request.getApiCallId());
-            } else if (PRE_AUTH_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
+            } else if (PRE_AUTH_SUBMIT.equalsIgnoreCase(apiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT, output);
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
