@@ -137,18 +137,14 @@ public class BeneficiaryService {
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
         String searchQuery = String.format("SELECT * FROM %s WHERE mobile = '%s' ORDER BY created_on DESC", payorDataTable, mobile);
         ResultSet searchResultSet = postgresService.executeQuery(searchQuery);
-
         while (searchResultSet.next()) {
             String workflowId = searchResultSet.getString("workflow_id");
             // Create a response map for each entry
             Map<String, Object> responseMap = new HashMap<>();
             String fhirPayload = searchResultSet.getString("request_fhir");
-            if (searchResultSet.getString("action").equalsIgnoreCase("claim")) {
+            if (searchResultSet.getString("action").equalsIgnoreCase("claim") || searchResultSet.getString("action").equalsIgnoreCase("preauth")) {
                 responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
                 responseMap.put("billAmount", getAmount(fhirPayload));
-            }
-            if(searchResultSet.getString("action").equalsIgnoreCase("preauth")){
-                responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
             }
             responseMap.put("type", searchResultSet.getString("action"));
             responseMap.put("status", searchResultSet.getString("status"));
@@ -178,6 +174,45 @@ public class BeneficiaryService {
     }
 
 
+    public ResponseEntity<Object> getRequestListFromSenderCode(Map<String, Object> requestBody) throws Exception {
+        String senderCode = (String) requestBody.getOrDefault("sender_code", "");
+        Map<String, Object> resp = new HashMap<>();
+        Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
+        String searchQuery = String.format("SELECT * FROM %s WHERE sender_code = '%s' ORDER BY created_on DESC", payorDataTable, senderCode);
+        ResultSet searchResultSet = postgresService.executeQuery(searchQuery);
+        while (searchResultSet.next()) {
+            String workflowId = searchResultSet.getString("workflow_id");
+            Map<String, Object> responseMap = new HashMap<>();
+            String fhirPayload = searchResultSet.getString("request_fhir");
+            if (searchResultSet.getString("action").equalsIgnoreCase("claim") || searchResultSet.getString("action").equalsIgnoreCase("preauth")) {
+                responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
+                responseMap.put("billAmount", getAmount(fhirPayload));
+            }
+            responseMap.put("type", searchResultSet.getString("action"));
+            responseMap.put("status", searchResultSet.getString("status"));
+            responseMap.put("apiCallId", searchResultSet.getString("request_id"));
+            responseMap.put("claimType", "OPD");
+            responseMap.put("date", searchResultSet.getString("created_on"));
+            responseMap.put("insurance_id", getInsuranceId(fhirPayload));
+            responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
+            responseMap.put("sender_code", searchResultSet.getString("sender_code"));
+            responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
+            responseMap.put("workflow_id", workflowId);
+            if (!groupedEntries.containsKey(workflowId)) {
+                groupedEntries.put(workflowId, new ArrayList<>());
+            }
+            groupedEntries.get(workflowId).add(responseMap);
+        }
+        List<Map<String, Object>> entries = new ArrayList<>();
+        for (String key : groupedEntries.keySet()) {
+            Map<String, Object> entry = new HashMap<>();
+            entry.put(key, groupedEntries.get(key));
+            entries.add(entry);
+        }
+        resp.put("entries", entries);
+        resp.put("count", entries.size());
+        return new ResponseEntity<>(resp, HttpStatus.OK);
+    }
 
 
     public ResponseEntity<Object> getDataFromWorkflowId(Map<String, Object> requestBody) throws ClientException, SQLException {

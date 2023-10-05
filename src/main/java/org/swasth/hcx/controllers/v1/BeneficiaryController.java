@@ -63,11 +63,13 @@ public class BeneficiaryController extends BaseController {
     }
 
     @PostMapping(BSP_REQUEST_LIST)
-    public ResponseEntity<Object> requestList(@RequestBody Map<String,Object>  requestBody) throws Exception {
-        if(requestBody.containsKey("mobile")){
-          return beneficiaryService.getRequestListFromDatabase(requestBody);
-        } else {
+    public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody) throws Exception {
+        if (requestBody.containsKey("mobile")) {
+            return beneficiaryService.getRequestListFromDatabase(requestBody);
+        } else if (requestBody.containsKey("workflow_id")) {
             return beneficiaryService.getDataFromWorkflowId(requestBody);
+        } else {
+            return beneficiaryService.getRequestListFromSenderCode(requestBody);
         }
     }
 
