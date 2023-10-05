@@ -199,6 +199,7 @@ public class BeneficiaryService {
             responseMap.put("sender_code", searchResultSet.getString("sender_code"));
             responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
             responseMap.put("workflow_id", workflowId);
+            responseMap.put("mobile", searchResultSet.getString("mobile"));
             if (!groupedEntries.containsKey(workflowId)) {
                 groupedEntries.put(workflowId, new ArrayList<>());
             }
