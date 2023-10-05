@@ -176,6 +176,7 @@ public class BeneficiaryService {
 
     public ResponseEntity<Object> getRequestListFromSenderCode(Map<String, Object> requestBody) throws Exception {
         String senderCode = (String) requestBody.getOrDefault("sender_code", "");
+        System.out.println("-----------------sender code ------------" + senderCode);
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
         String searchQuery = String.format("SELECT * FROM %s WHERE sender_code = '%s' ORDER BY created_on DESC", payorDataTable, senderCode);

@@ -1,6 +1,7 @@
 package org.swasth.hcx.controllers.v1;
 
 import io.hcxprotocol.utils.Operations;
+import kong.unirest.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,13 +64,20 @@ public class BeneficiaryController extends BaseController {
     }
 
     @PostMapping(BSP_REQUEST_LIST)
-    public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody) throws Exception {
-        if (requestBody.containsKey("mobile")) {
-            return beneficiaryService.getRequestListFromDatabase(requestBody);
-        } else if (requestBody.containsKey("workflow_id")) {
-            return beneficiaryService.getDataFromWorkflowId(requestBody);
-        } else {
-            return beneficiaryService.getRequestListFromSenderCode(requestBody);
+    public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody) {
+        try {
+            if (requestBody.containsKey("mobile")) {
+                return beneficiaryService.getRequestListFromDatabase(requestBody);
+            } else if (requestBody.containsKey("workflow_id")) {
+                return beneficiaryService.getDataFromWorkflowId(requestBody);
+            } else if (requestBody.containsKey("sender_code")) {
+                return beneficiaryService.getRequestListFromSenderCode(requestBody);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request body");
+            }
+        } catch (Exception ex) {
+            // Handle other exceptions
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal Server Error: " + ex.getMessage());
         }
     }
 
