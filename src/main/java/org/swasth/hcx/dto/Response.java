@@ -21,11 +21,19 @@ public class Response {
     private ResponseError error;
     private Map<String, Object> result;
 
+    public String getWorkflowId() {
+        return workflowId;
+    }
+
+    public void setWorkflowId(String workflowId) {
+        this.workflowId = workflowId;
+    }
+
+    private String workflowId;
     public Response() {}
 
-    public Response(String correlationId, String apiCallId) {
-        this.correlationId = correlationId;
-        this.apiCallId = apiCallId;
+    public Response(String workflowId) {
+        this.workflowId = workflowId;
     }
 
     public Response(String key, Object val) {

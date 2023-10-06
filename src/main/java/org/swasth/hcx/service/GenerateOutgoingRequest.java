@@ -88,7 +88,8 @@ public class GenerateOutgoingRequest {
             String workFlowId = UUID.randomUUID().toString();
             hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, mockRecipientCode, "", "", workFlowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated.");
-            return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+            Response response1 = new Response(workFlowId);
+            return new ResponseEntity<>(response1, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("error   " + e);
