@@ -74,13 +74,7 @@ public class ProviderAppController {
             consultationInfo.put("treatment_type", resultSet.getString("treatment_type"));
             consultationInfo.put("service_type", resultSet.getString("service_type"));
             consultationInfo.put("symptoms", resultSet.getString("symptoms"));
-            String supportingDocumentsUrl = resultSet.getString("supporting_documents_url");
-            List<String> supportingDocumentsList = new ArrayList<>();
-            if (supportingDocumentsUrl != null && !supportingDocumentsUrl.isEmpty()) {
-                String[] documentsArray = supportingDocumentsUrl.split(",");
-                supportingDocumentsList.addAll(Arrays.asList(documentsArray));
-            }
-            consultationInfo.put("supporting_documents_url", supportingDocumentsList);
+            consultationInfo.put("supporting_documents_url", resultSet.getString("supporting_documents_url"));
             consultationInfo.put("workflow_id", workflowId);
         } else {
             throw new ClientException("The Record does not exit for workflow id  : " + workflowId);
