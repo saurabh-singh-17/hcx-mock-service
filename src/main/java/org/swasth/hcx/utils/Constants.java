@@ -25,6 +25,7 @@ public class Constants {
     public static final String PRE_AUTH_ONSUBMIT = VERSION_PREFIX + "/preauth/on_submit";
     public static final String CLAIM_SUBMIT = VERSION_PREFIX + "/claim/submit";
     public static final String CLAIM_ONSUBMIT = VERSION_PREFIX + "/claim/on_submit";
+    public static final String CONSULTATION_ADD = "/consultation/add";
 
     //Payment Notice APIs
     public static final String PAYMENT_NOTICE_REQUEST = VERSION_PREFIX + "/paymentnotice/request";

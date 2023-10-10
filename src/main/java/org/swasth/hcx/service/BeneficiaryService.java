@@ -280,23 +280,28 @@ public class BeneficiaryService {
 
 
     public List<Map<String, Object>> getDocumentUrls(List<MultipartFile> files, String mobile) throws ClientException, SQLException, IOException {
+        if (isRateLimited()) {
+            throw new ClientException("Rate limit exceeded. Please try again later.");
+        }
         String query = String.format("SELECT bsp_reference_id FROM %s WHERE mobile = '%s'", beneficiaryTable, mobile);
-        ResultSet resultSet = postgresService.executeQuery(query);
         String beneficiaryReferenceId = "";
-        while (resultSet.next()) {
-            beneficiaryReferenceId = resultSet.getString("bsp_reference_id");
+        try (ResultSet resultSet = postgresService.executeQuery(query)) {
+            while (resultSet.next()) {
+                beneficiaryReferenceId = resultSet.getString("bsp_reference_id");
+            }
         }
         List<Map<String, Object>> responses = new ArrayList<>();
         for (MultipartFile file : files) {
             String fileName = file.getOriginalFilename();
-            cloudStorageClient.putObject(beneficiaryReferenceId, bucketName);
-            String pathToFile = "beneficiary-app" + "/" + beneficiaryReferenceId + "/" + fileName;
+            String pathToFile = String.format("beneficiary-app/%s/%s", beneficiaryReferenceId, fileName);
             cloudStorageClient.putObject(bucketName, pathToFile, file);
             Map<String, Object> response = new HashMap<>();
             response.put("url", cloudStorageClient.getUrl(bucketName, pathToFile).toString());
             response.put("reference_id", beneficiaryReferenceId);
             responses.add(response);
         }
+        lastOTPSendTime = System.currentTimeMillis();
+        otpSentThisMinute++;
         return responses;
     }
 

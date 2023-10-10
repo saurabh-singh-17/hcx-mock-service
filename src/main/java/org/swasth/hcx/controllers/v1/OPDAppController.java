@@ -15,9 +15,11 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.swasth.hcx.utils.Constants.CONSULTATION_ADD;
+
 @RestController()
 @RequestMapping(Constants.VERSION_PREFIX)
-public class ProviderAppController {
+public class OPDAppController {
 
     @Value("${postgres.table.consultation-info}")
     private String consultationInfoTable;
@@ -25,7 +27,7 @@ public class ProviderAppController {
     @Autowired
     private PostgresService postgres;
 
-    @PostMapping("/consultation/add")
+    @PostMapping(CONSULTATION_ADD)
     public ResponseEntity<String> addConsultationInfo(@RequestBody Map<String, Object> requestBody) throws ClientException {
         String workflowId = (String) requestBody.getOrDefault("workflow_id", "");
         if (!requestBody.containsKey("workflow_id") && workflowId.isEmpty()) {
