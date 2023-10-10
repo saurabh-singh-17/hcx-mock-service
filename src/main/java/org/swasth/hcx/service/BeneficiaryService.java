@@ -156,6 +156,7 @@ public class BeneficiaryService {
             responseMap.put("sender_code", searchResultSet.getString("sender_code"));
             responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
             responseMap.put("workflow_id", workflowId);
+            responseMap.put("mobile",searchResultSet.getString("mobile"));
             if (!groupedEntries.containsKey(workflowId)) {
                 groupedEntries.put(workflowId, new ArrayList<>());
             }
@@ -201,6 +202,7 @@ public class BeneficiaryService {
             responseMap.put("sender_code", searchResultSet.getString("sender_code"));
             responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
             responseMap.put("workflow_id", workflowId);
+            responseMap.put("mobile",searchResultSet.getString("mobile"));
             groupedEntries.get(workflowId).add(responseMap);
             if (groupedEntries.size() >= 10) {
                 break;
@@ -235,6 +237,7 @@ public class BeneficiaryService {
             responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
             responseMap.put("billAmount", getAmount(fhirPayload));
             responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
+            responseMap.put("mobile",searchResultSet.getString("mobile"));
             entries.add(responseMap);
         }
         resp.put("entries", entries);
