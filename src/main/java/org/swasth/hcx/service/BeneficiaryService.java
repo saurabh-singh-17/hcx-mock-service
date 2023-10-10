@@ -178,10 +178,13 @@ public class BeneficiaryService {
         String senderCode = (String) requestBody.getOrDefault("sender_code", "");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT * FROM %s WHERE sender_code = '%s' ORDER BY created_on DESC LIMIT 10", payorDataTable, senderCode);
+        String searchQuery = String.format("SELECT * FROM %s WHERE sender_code = '%s' ORDER BY created_on DESC", payorDataTable, senderCode);
         ResultSet searchResultSet = postgresService.executeQuery(searchQuery);
         while (searchResultSet.next()) {
             String workflowId = searchResultSet.getString("workflow_id");
+            if (!groupedEntries.containsKey(workflowId)) {
+                groupedEntries.put(workflowId, new ArrayList<>());
+            }
             Map<String, Object> responseMap = new HashMap<>();
             String fhirPayload = searchResultSet.getString("request_fhir");
             if (searchResultSet.getString("action").equalsIgnoreCase("claim") || searchResultSet.getString("action").equalsIgnoreCase("preauth")) {
@@ -198,11 +201,10 @@ public class BeneficiaryService {
             responseMap.put("sender_code", searchResultSet.getString("sender_code"));
             responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
             responseMap.put("workflow_id", workflowId);
-            responseMap.put("mobile", searchResultSet.getString("mobile"));
-            if (!groupedEntries.containsKey(workflowId)) {
-                groupedEntries.put(workflowId, new ArrayList<>());
-            }
             groupedEntries.get(workflowId).add(responseMap);
+            if (groupedEntries.size() >= 10) {
+                break;
+            }
         }
         List<Map<String, Object>> entries = new ArrayList<>();
         for (String key : groupedEntries.keySet()) {
@@ -214,8 +216,6 @@ public class BeneficiaryService {
         resp.put("count", entries.size());
         return new ResponseEntity<>(resp, HttpStatus.OK);
     }
-
-
     public ResponseEntity<Object> getDataFromWorkflowId(Map<String, Object> requestBody) throws ClientException, SQLException {
         String workflowId = (String) requestBody.getOrDefault("workflow_id", "");
         List<Map<String, Object>> entries = new ArrayList<>();
