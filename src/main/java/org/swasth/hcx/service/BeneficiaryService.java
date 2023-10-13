@@ -136,7 +136,7 @@ public class BeneficiaryService {
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
         String searchQuery = String.format("SELECT  workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE mobile = '%s' ORDER BY created_on DESC", payorDataTable, mobile);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
-            while (searchResultSet.next()) {
+            while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
                 if (!groupedEntries.containsKey(workflowId)) {
                     groupedEntries.put(workflowId, new ArrayList<>());
@@ -186,7 +186,7 @@ public class BeneficiaryService {
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
         String searchQuery = String.format("SELECT workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE sender_code = '%s' ORDER BY created_on DESC", payorDataTable, senderCode);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
-            while (searchResultSet.next()) {
+            while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
                 if (!groupedEntries.containsKey(workflowId)) {
                     groupedEntries.put(workflowId, new ArrayList<>());
@@ -236,7 +236,7 @@ public class BeneficiaryService {
         Map<String, Object> resp = new HashMap<>();
         String searchQuery = String.format("SELECT request_fhir,action,status,created_on,correlation_id,request_id,sender_code,recipient_code,mobile FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') ORDER BY created_on ASC", payorDataTable, workflowId);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
-            while (searchResultSet.next()) {
+            while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 Map<String, Object> responseMap = new HashMap<>();
                 String fhirPayload = searchResultSet.getString("request_fhir");
                 responseMap.put("type", getType(searchResultSet.getString("action")));
