@@ -134,7 +134,7 @@ public class BeneficiaryService {
         String mobile = (String) requestBody.getOrDefault("mobile", "");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE mobile = '%s' ORDER BY created_on DESC, workflow_id DESC LIMIT 10", payorDataTable, mobile);
+        String searchQuery = String.format("SELECT DISTINCT workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE mobile = '%s' ORDER BY created_on DESC, workflow_id DESC LIMIT 10", payorDataTable, mobile);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
@@ -184,7 +184,7 @@ public class BeneficiaryService {
         String senderCode = (String) requestBody.getOrDefault("sender_code", "");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE sender_code = '%s' ORDER BY created_on DESC, workflow_id DESC LIMIT 10", payorDataTable, senderCode);
+        String searchQuery = String.format("SELECT DISTINCT workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE sender_code = '%s' ORDER BY created_on DESC, workflow_id DESC LIMIT 10", payorDataTable, senderCode);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
