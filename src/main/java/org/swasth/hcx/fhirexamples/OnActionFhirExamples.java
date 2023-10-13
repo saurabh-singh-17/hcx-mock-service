@@ -153,8 +153,6 @@ public class OnActionFhirExamples {
         claim.getDiagnosis().add(new Claim.DiagnosisComponent().addType(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/ex-diagnosistype").setCode("admitting").setDisplay("Admitting Diagnosis"))).setSequence(1).setDiagnosis(new CodeableConcept(new Coding().setSystem("http://irdai.com").setCode("E906184").setDisplay("SINGLE INCISION LAPAROSCOPIC APPENDECTOMY")).setText("SINGLE INCISION LAPAROSCOPIC APPENDECTOMY")));
         claim.getDiagnosis().add(new Claim.DiagnosisComponent().addType(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/ex-diagnosistype").setCode("admitting").setDisplay("Admitting Diagnosis"))).setSequence(2).setDiagnosis(new Reference("Condition/1234")));
         //adding procedure items to the claims component
-        // To check type is OPD
-        claim.setSubType(new CodeableConcept(new Coding().setSystem("https://staging-hcx.swasth.app/hapi-fhir/fhir/CodeSystem/hcx-claim-sub-types").setCode("OPD")));
         //admission fees
         claim.getItem().add(new org.hl7.fhir.r4.model.Claim.ItemComponent().setSequence(1).setProductOrService(new CodeableConcept(new Coding().setCode("E101021").setSystem("https://irdai.gov.in/package-code").setDisplay("Twin Sharing Ac"))).setUnitPrice(new Money().setValue(100000).setCurrency("INR")));
         //tests

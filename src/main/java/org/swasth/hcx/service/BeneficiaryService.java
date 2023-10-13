@@ -2,10 +2,7 @@ package org.swasth.hcx.service;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
-import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.Claim;
-import org.hl7.fhir.r4.model.Coverage;
-import org.hl7.fhir.r4.model.Money;
+import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -41,6 +38,8 @@ public class BeneficiaryService {
     private int otpExpiry;
     @Value("${otp.send-per-minute}")
     private int otpSendPerMinute;
+
+    private IParser parser;
     long lastOTPSendTime = 0;
     int otpSentThisMinute = 0;
 
@@ -135,7 +134,7 @@ public class BeneficiaryService {
         String mobile = (String) requestBody.getOrDefault("mobile", "");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT * FROM %s WHERE mobile = '%s' ORDER BY created_on DESC", payorDataTable, mobile);
+        String searchQuery = String.format("SELECT workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE mobile = '%s' ORDER BY created_on DESC", payorDataTable, mobile);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
@@ -144,11 +143,12 @@ public class BeneficiaryService {
                 }
                 Map<String, Object> responseMap = new HashMap<>();
                 String fhirPayload = searchResultSet.getString("request_fhir");
-                if (searchResultSet.getString("action").equalsIgnoreCase("claim") || searchResultSet.getString("action").equalsIgnoreCase("preauth")) {
+                String actionType = searchResultSet.getString("action");
+                if (actionType.equalsIgnoreCase("claim") || actionType.equalsIgnoreCase("preauth")) {
                     responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
                     responseMap.put("billAmount", getAmount(fhirPayload));
                 }
-                responseMap.put("type", searchResultSet.getString("action"));
+                responseMap.put("type", actionType);
                 responseMap.put("status", searchResultSet.getString("status"));
                 responseMap.put("apiCallId", searchResultSet.getString("request_id"));
                 responseMap.put("claimType", "OPD");
@@ -159,6 +159,7 @@ public class BeneficiaryService {
                 responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
                 responseMap.put("workflow_id", workflowId);
                 responseMap.put("mobile", searchResultSet.getString("mobile"));
+                responseMap.put("patientName", getPatientName(fhirPayload));
                 groupedEntries.get(workflowId).add(responseMap);
                 if (groupedEntries.size() >= 10) {
                     break;
@@ -183,7 +184,7 @@ public class BeneficiaryService {
         String senderCode = (String) requestBody.getOrDefault("sender_code", "");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT * FROM %s WHERE sender_code = '%s' ORDER BY created_on DESC", payorDataTable, senderCode);
+        String searchQuery = String.format("SELECT workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE sender_code = '%s' ORDER BY created_on DESC", payorDataTable, senderCode);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
@@ -192,11 +193,12 @@ public class BeneficiaryService {
                 }
                 Map<String, Object> responseMap = new HashMap<>();
                 String fhirPayload = searchResultSet.getString("request_fhir");
-                if (searchResultSet.getString("action").equalsIgnoreCase("claim") || searchResultSet.getString("action").equalsIgnoreCase("preauth")) {
+                String actionType = searchResultSet.getString("action");
+                if (actionType.equalsIgnoreCase("claim") || actionType.equalsIgnoreCase("preauth")) {
                     responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
                     responseMap.put("billAmount", getAmount(fhirPayload));
                 }
-                responseMap.put("type", searchResultSet.getString("action"));
+                responseMap.put("type", actionType);
                 responseMap.put("status", searchResultSet.getString("status"));
                 responseMap.put("apiCallId", searchResultSet.getString("request_id"));
                 responseMap.put("claimType", "OPD");
@@ -207,6 +209,7 @@ public class BeneficiaryService {
                 responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
                 responseMap.put("workflow_id", workflowId);
                 responseMap.put("mobile", searchResultSet.getString("mobile"));
+                responseMap.put("patientName", getPatientName(fhirPayload));
                 groupedEntries.get(workflowId).add(responseMap);
                 if (groupedEntries.size() >= 10) {
                     break;
@@ -231,7 +234,7 @@ public class BeneficiaryService {
         String workflowId = (String) requestBody.getOrDefault("workflow_id", "");
         List<Map<String, Object>> entries = new ArrayList<>();
         Map<String, Object> resp = new HashMap<>();
-        String searchQuery = String.format("SELECT * FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') ORDER BY created_on ASC", payorDataTable, workflowId);
+        String searchQuery = String.format("SELECT request_fhir,action,status,created_on,correlation_id,request_id,sender_code,recipient_code,mobile FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') ORDER BY created_on ASC", payorDataTable, workflowId);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (searchResultSet.next()) {
                 Map<String, Object> responseMap = new HashMap<>();
@@ -247,6 +250,7 @@ public class BeneficiaryService {
                 responseMap.put("billAmount", getAmount(fhirPayload));
                 responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
                 responseMap.put("mobile", searchResultSet.getString("mobile"));
+                responseMap.put("patientName", getPatientName(fhirPayload));
                 entries.add(responseMap);
             }
             resp.put("entries", entries);
@@ -267,21 +271,27 @@ public class BeneficiaryService {
 
 
     public String getInsuranceId(String fhirPayload) {
-        IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+        parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
         return coverage.getSubscriberId();
     }
 
+    public String getPatientName(String fhirPayload){
+        parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
+        return patient.getName().get(0).getNameAsSingleString();
+    }
     public String getAmount(String fhirPayload) {
-        IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+        parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
         return claim.getTotal().getValue().toString();
     }
 
     public List<String> getSupportingDocuments(String fhirPayload) {
-        IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+        parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
         List<String> documentUrls = new ArrayList<>();
