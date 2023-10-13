@@ -252,10 +252,6 @@ public class BaseController {
         Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestID);
         Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
         Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
-        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-        String subType = claim.getSubType().getText();
-        System.out.println("-------------------------------------------");
-        System.out.println(subType);
         String mobile = patient.getTelecom().get(0).getValue();
         String query = String.format("UPDATE %s SET mobile = '%s' WHERE request_id ='%s'", table, mobile, requestID);
         postgresService.execute(query);
