@@ -281,7 +281,9 @@ public class BeneficiaryService {
         parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
-        return patient.getName().get(0).getNameAsSingleString();
+        String name = patient.getName().get(0).getTextElement().getValue();
+        System.out.println("--------name -----------" + name);
+        return name;
     }
     public String getAmount(String fhirPayload) {
         parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
