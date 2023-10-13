@@ -59,12 +59,11 @@ public class GenerateOutgoingRequest {
     private String password;
     @Value("${beneficiary.recipient-code}")
     private String mockRecipientCode;
-
+    IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
     public ResponseEntity<Object> createCoverageEligibilityRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
-            IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             CoverageEligibilityRequest ce = OnActionFhirExamples.coverageEligibilityRequestExample();
             Practitioner practitioner = OnActionFhirExamples.practitionerExample();
             Organization hospital = OnActionFhirExamples.providerOrganizationExample();
@@ -101,7 +100,6 @@ public class GenerateOutgoingRequest {
         Response response = new Response();
         try {
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
-            IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             Claim claim = OnActionFhirExamples.claimExample();
             String billAmount = (String) requestBody.getOrDefault("billAmount", 0);
             claim.setTotal(new Money().setCurrency("INR").setValue(Long.parseLong(billAmount)));
@@ -160,7 +158,6 @@ public class GenerateOutgoingRequest {
         try {
             String requestId = (String) requestBody.get("request_id");
             validateMap(requestId, requestBody);
-            IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
             Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestId);
             Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
             String correlationId = (String) payloadMap.getOrDefault("correlation_id", "");
