@@ -76,6 +76,8 @@ public class BaseController {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseController.class);
 
+    IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+
     protected Response errorResponse(Response response, ErrorCodes code, java.lang.Exception e) {
         ResponseError error = new ResponseError(code, e.getMessage(), e.getCause());
         response.setError(error);
@@ -102,7 +104,6 @@ public class BaseController {
     }
 
     protected void processAndValidate(String onApiAction, String metadataTopic, Request request, Map<String, Object> requestBody, String apiAction) throws Exception {
-        IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         String mid = UUID.randomUUID().toString();
         String serviceMode = env.getProperty(SERVICE_MODE);
         System.out.println("\n" + "Mode: " + serviceMode + " :: mid: " + mid + " :: Event: " + onApiAction);
@@ -124,13 +125,13 @@ public class BaseController {
                 System.out.println("output map after decryption  coverageEligibility" + output.get("fhirPayload"));
                 System.out.println("decryption successful");
                 //processing the decrypted incoming bundle
-                bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
+                bundle = parser.parseResource(Bundle.class, (String) output.get("fhirPayload"));
                 CoverageEligibilityResponse covRes = OnActionFhirExamples.coverageEligibilityResponseExample();
                 covRes.setPatient(new Reference("Patient/RVH1003"));
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityResponseBundle.html", CoverageEligibilityRequest.class, new Bundle.BundleEntryComponent().setFullUrl(covRes.getResourceType() + "/" + covRes.getId().toString().replace("#", "")).setResource(covRes));
-                System.out.println("bundle reply " + p.encodeResourceToString(bundle));
+                System.out.println("bundle reply " + parser.encodeResourceToString(bundle));
                 //sending the onaction call
-                sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+                sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
                 updateMobileNumber(request.getApiCallId());
             } else if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT, output);
@@ -140,12 +141,12 @@ public class BaseController {
                 System.out.println("output map after decryption claim " + output);
                 System.out.println("decryption successful");
                 //processing the decrypted incoming bundle
-                bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
+                bundle = parser.parseResource(Bundle.class, (String) output.get("fhirPayload"));
                 ClaimResponse claimRes = OnActionFhirExamples.claimResponseExample();
                 claimRes.setPatient(new Reference("Patient/RVH1003"));
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#", "")).setResource(claimRes));
-                System.out.println("bundle reply " + p.encodeResourceToString(bundle));
-                sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+                System.out.println("bundle reply " + parser.encodeResourceToString(bundle));
+                sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
                 updateMobileNumber(request.getApiCallId());
             } else if (PRE_AUTH_SUBMIT.equalsIgnoreCase(apiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT, output);
@@ -155,12 +156,12 @@ public class BaseController {
                 System.out.println("output map after decryption preauth " + output);
                 System.out.println("decryption successful");
                 //processing the decrypted incoming bundle
-                bundle = p.parseResource(Bundle.class, (String) output.get("fhirPayload"));
+                bundle = parser.parseResource(Bundle.class, (String) output.get("fhirPayload"));
                 ClaimResponse preAuthRes = OnActionFhirExamples.claimResponseExample();
                 preAuthRes.setPatient(new Reference("Patient/RVH1003"));
                 preAuthRes.setUse(ClaimResponse.Use.PREAUTHORIZATION);
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(preAuthRes.getResourceType() + "/" + preAuthRes.getId().toString().replace("#", "")).setResource(preAuthRes));
-                sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+                sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
                 updateMobileNumber(request.getApiCallId());
             } else if (COMMUNICATION_REQUEST.equalsIgnoreCase(apiAction)) {
                 HCXIntegrator hcxIntegrator1 = HCXIntegrator.getInstance(initializingConfigMap());
@@ -183,7 +184,7 @@ public class BaseController {
                     String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE correlation_id ='%s'", table, "initiated", request.getCorrelationId());
                     postgresService.execute(query);
                 }
-                sendResponse(apiAction, p.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+                sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
             }
         }
     }
@@ -248,10 +249,13 @@ public class BaseController {
     }
 
     public void updateMobileNumber(String requestID) throws SQLException, ClientException {
-        IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestID);
         Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
         Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
+        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+        String subType = claim.getSubType().getText();
+        System.out.println("-------------------------------------------");
+        System.out.println(subType);
         String mobile = patient.getTelecom().get(0).getValue();
         String query = String.format("UPDATE %s SET mobile = '%s' WHERE request_id ='%s'", table, mobile, requestID);
         postgresService.execute(query);
