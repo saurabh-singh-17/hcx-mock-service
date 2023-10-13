@@ -134,7 +134,7 @@ public class BeneficiaryService {
         String mobile = (String) requestBody.getOrDefault("mobile", "");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE mobile = '%s' ORDER BY created_on DESC", payorDataTable, mobile);
+        String searchQuery = String.format("SELECT workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE mobile = '%s' ORDER BY created_on DESC, workflow_id DESC LIMIT 10", payorDataTable, mobile);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
@@ -184,7 +184,7 @@ public class BeneficiaryService {
         String senderCode = (String) requestBody.getOrDefault("sender_code", "");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE sender_code = '%s' ORDER BY created_on DESC", payorDataTable, senderCode);
+        String searchQuery = String.format("SELECT workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE sender_code = '%s' ORDER BY created_on DESC, workflow_id DESC LIMIT 10", payorDataTable, senderCode);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
@@ -234,7 +234,7 @@ public class BeneficiaryService {
         String workflowId = (String) requestBody.getOrDefault("workflow_id", "");
         List<Map<String, Object>> entries = new ArrayList<>();
         Map<String, Object> resp = new HashMap<>();
-        String searchQuery = String.format("SELECT request_fhir,action,status,created_on,correlation_id,request_id,sender_code,recipient_code,mobile FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') ORDER BY created_on ASC", payorDataTable, workflowId);
+        String searchQuery = String.format("SELECT request_fhir,action,status,created_on,correlation_id,request_id,sender_code,recipient_code,mobile FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') ORDER BY created_on ASC,workflow_id ASC LIMIT 10", payorDataTable, workflowId);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (searchResultSet.next()) {
                 Map<String, Object> responseMap = new HashMap<>();
@@ -281,9 +281,7 @@ public class BeneficiaryService {
         parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
-        String name = patient.getName().get(0).getTextElement().getValue();
-        System.out.println("--------name -----------" + name);
-        return name;
+        return patient.getName().get(0).getTextElement().getValue();
     }
     public String getAmount(String fhirPayload) {
         parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
