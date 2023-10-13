@@ -39,7 +39,7 @@ public class BeneficiaryService {
     @Value("${otp.send-per-minute}")
     private int otpSendPerMinute;
 
-    private IParser parser;
+    private IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
     long lastOTPSendTime = 0;
     int otpSentThisMinute = 0;
 
@@ -271,27 +271,23 @@ public class BeneficiaryService {
 
 
     public String getInsuranceId(String fhirPayload) {
-        parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
         return coverage.getSubscriberId();
     }
 
     public String getPatientName(String fhirPayload){
-        parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
         return patient.getName().get(0).getTextElement().getValue();
     }
     public String getAmount(String fhirPayload) {
-        parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
         return claim.getTotal().getValue().toString();
     }
 
     public List<String> getSupportingDocuments(String fhirPayload) {
-        parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
         List<String> documentUrls = new ArrayList<>();
