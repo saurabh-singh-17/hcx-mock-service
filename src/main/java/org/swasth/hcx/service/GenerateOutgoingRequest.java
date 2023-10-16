@@ -69,8 +69,7 @@ public class GenerateOutgoingRequest {
             System.out.println("requestBody" + requestBody);
             String app = (String) requestBody.get("app");
             System.out.println("---app--------" + app);
-            ce.setText(new Narrative().setDiv(new XhtmlDocument().setValue(app)));
-            Practitioner practitioner = OnActionFhirExamples.practitionerExample();
+            ce.setText(new Narrative().setDiv(new XhtmlDocument().setValue(app)).setStatus(Narrative.NarrativeStatus.valueOf("generated")));            Practitioner practitioner = OnActionFhirExamples.practitionerExample();
             Organization hospital = OnActionFhirExamples.providerOrganizationExample();
             hospital.setName((String) requestBody.getOrDefault("providerName", ""));
             Patient patient = OnActionFhirExamples.patientExample();
