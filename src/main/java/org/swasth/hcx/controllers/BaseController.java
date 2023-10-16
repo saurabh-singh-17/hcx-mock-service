@@ -265,7 +265,7 @@ public class BaseController {
             return ce.getText().getDiv().allText();
         } else if (apiAction.equalsIgnoreCase("/v0.7/claim/submit") || apiAction.equalsIgnoreCase("/v0.7/preauth/submit")) {
             Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-            String subType = claim.getSubType().getText();
+            String subType = claim.getSubType().getCoding().get(0).getCode();
             return subType.equalsIgnoreCase("OPD") ? "BSP" : "OPD";
         }
         return "";
