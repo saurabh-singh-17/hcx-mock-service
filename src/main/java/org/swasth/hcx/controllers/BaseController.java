@@ -132,7 +132,7 @@ public class BaseController {
                 System.out.println("bundle reply " + parser.encodeResourceToString(bundle));
                 //sending the onaction call
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
-                updateMobileNumber(request.getApiCallId());
+                updateMobileNumber(request.getApiCallId(), apiAction);
             } else if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT, output);
                 if (!result) {
@@ -147,7 +147,7 @@ public class BaseController {
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#", "")).setResource(claimRes));
                 System.out.println("bundle reply " + parser.encodeResourceToString(bundle));
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
-                updateMobileNumber(request.getApiCallId());
+                updateMobileNumber(request.getApiCallId(), apiAction);
             } else if (PRE_AUTH_SUBMIT.equalsIgnoreCase(apiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT, output);
                 if (!result) {
@@ -162,7 +162,7 @@ public class BaseController {
                 preAuthRes.setUse(ClaimResponse.Use.PREAUTHORIZATION);
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(preAuthRes.getResourceType() + "/" + preAuthRes.getId().toString().replace("#", "")).setResource(preAuthRes));
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
-                updateMobileNumber(request.getApiCallId());
+                updateMobileNumber(request.getApiCallId(), apiAction);
             } else if (COMMUNICATION_REQUEST.equalsIgnoreCase(apiAction)) {
                 HCXIntegrator hcxIntegrator1 = HCXIntegrator.getInstance(initializingConfigMap());
                 boolean result = hcxIntegrator1.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_REQUEST, output);
@@ -248,14 +248,29 @@ public class BaseController {
             throw new ClientException("Missing required field " + field);
     }
 
-    public void updateMobileNumber(String requestID) throws SQLException, ClientException {
+    public void updateMobileNumber(String requestID, String apiAction) throws SQLException, ClientException {
         Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestID);
         Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
         Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
         String mobile = patient.getTelecom().get(0).getValue();
-        String query = String.format("UPDATE %s SET mobile = '%s' WHERE request_id ='%s'", table, mobile, requestID);
+        String app = getAppFromApiAction(apiAction, parsed);
+        System.out.println("-----------app -------" + app);
+        String query = String.format("UPDATE %s SET app = '%s', mobile = '%s' WHERE request_id ='%s'", table, app, mobile, requestID);
         postgresService.execute(query);
     }
+
+    private String getAppFromApiAction(String apiAction, Bundle parsed) {
+        if (apiAction.equalsIgnoreCase("/v0.7/coverageeligibility/check")) {
+            CoverageEligibilityRequest ce = parser.parseResource(CoverageEligibilityRequest.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+            return ce.getText().getDiv().allText();
+        } else if (apiAction.equalsIgnoreCase("/v0.7/claim/submit") || apiAction.equalsIgnoreCase("/v0.7/preauth/submit")) {
+            Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+            String subType = claim.getSubType().getText();
+            return subType.equalsIgnoreCase("OPD") ? "BSP" : "OPD";
+        }
+        return "";
+    }
+
 
     public Map<String, Object> initializingConfigMap() throws IOException {
         Map<String, Object> configMap = new HashMap<>();
