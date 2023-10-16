@@ -66,7 +66,10 @@ public class GenerateOutgoingRequest {
         try {
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             CoverageEligibilityRequest ce = OnActionFhirExamples.coverageEligibilityRequestExample();
-            ce.setText(new Narrative().setDiv(new XhtmlDocument().setValue((String) requestBody.getOrDefault("app",""))));
+            System.out.println("requestBody" + requestBody);
+            String app = (String) requestBody.get("app");
+            System.out.println("---app--------" + app);
+            ce.setText(new Narrative().setDiv(new XhtmlDocument().setValue(app)));
             Practitioner practitioner = OnActionFhirExamples.practitionerExample();
             Organization hospital = OnActionFhirExamples.providerOrganizationExample();
             hospital.setName((String) requestBody.getOrDefault("providerName", ""));
