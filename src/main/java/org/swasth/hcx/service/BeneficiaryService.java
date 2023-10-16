@@ -183,9 +183,10 @@ public class BeneficiaryService {
 
     public ResponseEntity<Object> getRequestListFromSenderCode(Map<String, Object> requestBody) throws Exception {
         String senderCode = (String) requestBody.getOrDefault("sender_code", "");
+        String app = (String) requestBody.getOrDefault("app","");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE sender_code = '%s' ORDER BY created_on DESC", payorDataTable, senderCode);
+        String searchQuery = String.format("SELECT workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE sender_code = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, senderCode, app);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
@@ -233,9 +234,10 @@ public class BeneficiaryService {
 
     public ResponseEntity<Object> getDataFromWorkflowId(Map<String, Object> requestBody) {
         String workflowId = (String) requestBody.getOrDefault("workflow_id", "");
+        String app = (String) requestBody.getOrDefault("app","");
         List<Map<String, Object>> entries = new ArrayList<>();
         Map<String, Object> resp = new HashMap<>();
-        String searchQuery = String.format("SELECT request_fhir,action,status,created_on,correlation_id,request_id,sender_code,recipient_code,mobile FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') ORDER BY created_on ASC", payorDataTable, workflowId);
+        String searchQuery = String.format("SELECT request_fhir,action,status,created_on,correlation_id,request_id,sender_code,recipient_code,mobile FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') AND app = '%s' ORDER BY created_on ASC", payorDataTable, workflowId, app);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 Map<String, Object> responseMap = new HashMap<>();

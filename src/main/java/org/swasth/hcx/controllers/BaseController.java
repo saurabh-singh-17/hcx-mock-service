@@ -254,7 +254,6 @@ public class BaseController {
         Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
         String mobile = patient.getTelecom().get(0).getValue();
         String app = getAppFromApiAction(apiAction, parsed);
-        System.out.println("-----------app -------" + app);
         String query = String.format("UPDATE %s SET app = '%s', mobile = '%s' WHERE request_id ='%s'", table, app, mobile, requestID);
         postgresService.execute(query);
     }
