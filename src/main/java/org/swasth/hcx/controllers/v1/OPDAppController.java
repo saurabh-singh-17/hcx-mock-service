@@ -33,20 +33,22 @@ public class OPDAppController {
         if (!requestBody.containsKey("workflow_id") && workflowId.isEmpty()) {
             throw new ClientException("Work flow id cannot be empty");
         }
-        String supportingDocuments = "ARRAY[]";
         List<String> supportingDocumentsUrls = (List<String>) requestBody.getOrDefault("supporting_documents_url", new ArrayList<>());
-        if(supportingDocumentsUrls != null && !supportingDocumentsUrls.isEmpty()) {
-             supportingDocuments = supportingDocumentsUrls.stream()
-                    .map(document -> "'" + document + "'")
-                    .collect(Collectors.joining(","));
+        String[] supportingDocumentsArray;
+        if (supportingDocumentsUrls != null && !supportingDocumentsUrls.isEmpty()) {
+            supportingDocumentsArray = supportingDocumentsUrls.stream()
+                    .map(String::trim)
+                    .toArray(String[]::new);
+        } else {
+            supportingDocumentsArray = new String[]{};
         }
         String insertQuery = String.format("INSERT INTO %s (workflow_id, treatment_type, " +
-                        "service_type, symptoms, supporting_documents_url) VALUES ('%s', '%s', '%s', '%s', ARRAY[%s])",
+                        "service_type, symptoms, supporting_documents_url) VALUES ('%s', '%s', '%s', '%s', ARRAY%s)",
                 consultationInfoTable, workflowId,
                 requestBody.getOrDefault("treatment_type", ""),
                 requestBody.getOrDefault("service_type", ""),
                 requestBody.getOrDefault("symptoms", ""),
-                supportingDocuments);
+                Arrays.toString(supportingDocumentsArray));
         try {
             postgres.execute(insertQuery);
             return ResponseEntity.ok("Insertion successful"); // Return a 200 OK response
