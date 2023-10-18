@@ -37,9 +37,10 @@ public class OPDAppController {
         if (requestBody.containsKey("supporting_documents_url")) {
             List<String> supportingDocumentsUrls = (List<String>) requestBody.get("supporting_documents_url");
             if (supportingDocumentsUrls != null && !supportingDocumentsUrls.isEmpty()) {
-                supportingDocuments = supportingDocumentsUrls.stream()
+                String arrayLiteral = supportingDocumentsUrls.stream()
                         .map(document -> "'" + document + "'")
-                        .collect(Collectors.joining(","));
+                        .collect(Collectors.joining(", ", "{", "}"));
+                supportingDocuments = arrayLiteral;
             }
         }
         String insertQuery = String.format("INSERT INTO %s (workflow_id, treatment_type, " +
