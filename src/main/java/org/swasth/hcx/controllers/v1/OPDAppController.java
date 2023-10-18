@@ -33,18 +33,15 @@ public class OPDAppController {
         if (!requestBody.containsKey("workflow_id") && workflowId.isEmpty()) {
             throw new ClientException("Work flow id cannot be empty");
         }
-        String supportingDocuments = "ARRAY[]"; // Default to empty array
-        if (requestBody.containsKey("supporting_documents_url")) {
-            List<String> supportingDocumentsUrls = (List<String>) requestBody.get("supporting_documents_url");
-            if (supportingDocumentsUrls != null && !supportingDocumentsUrls.isEmpty()) {
-                String arrayLiteral = supportingDocumentsUrls.stream()
-                        .map(document -> "'" + document + "'")
-                        .collect(Collectors.joining(", ", "{", "}"));
-                supportingDocuments = arrayLiteral;
-            }
+        String supportingDocuments = "ARRAY[]";
+        List<String> supportingDocumentsUrls = (List<String>) requestBody.getOrDefault("supporting_documents_url", new ArrayList<>());
+        if(supportingDocumentsUrls != null && !supportingDocumentsUrls.isEmpty()) {
+             supportingDocuments = supportingDocumentsUrls.stream()
+                    .map(document -> "'" + document + "'")
+                    .collect(Collectors.joining(","));
         }
         String insertQuery = String.format("INSERT INTO %s (workflow_id, treatment_type, " +
-                        "service_type, symptoms, supporting_documents_url) VALUES ('%s', '%s', '%s', '%s', %s::text[])",
+                        "service_type, symptoms, supporting_documents_url) VALUES ('%s', '%s', '%s', '%s', ARRAY[%s])",
                 consultationInfoTable, workflowId,
                 requestBody.getOrDefault("treatment_type", ""),
                 requestBody.getOrDefault("service_type", ""),
