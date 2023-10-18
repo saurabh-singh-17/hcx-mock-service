@@ -43,7 +43,7 @@ public class OPDAppController {
             }
         }
         String insertQuery = String.format("INSERT INTO %s (workflow_id, treatment_type, " +
-                        "service_type, symptoms, supporting_documents_url) VALUES ('%s', '%s', '%s', '%s', ARRAY[%s])",
+                        "service_type, symptoms, supporting_documents_url) VALUES ('%s', '%s', '%s', '%s', %s::text[])",
                 consultationInfoTable, workflowId,
                 requestBody.getOrDefault("treatment_type", ""),
                 requestBody.getOrDefault("service_type", ""),
