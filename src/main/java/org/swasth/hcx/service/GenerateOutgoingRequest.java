@@ -60,6 +60,12 @@ public class GenerateOutgoingRequest {
     private String password;
     @Value("${beneficiary.recipient-code}")
     private String mockRecipientCode;
+    @Value("${outgoing-request.participant-code}")
+    private String configParticipantCode;
+    @Value("${outgoing-request.username}")
+    private String configParticipantUsername;
+    @Value("${outgoing-request.password}")
+    private String configParticipantPassword;
     IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
     public ResponseEntity<Object> createCoverageEligibilityRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
@@ -292,9 +298,9 @@ public class GenerateOutgoingRequest {
     public Map<String, Object> initializingConfigMapForPayor() throws IOException {
         Map<String, Object> configMap = new HashMap<>();
         configMap.put("protocolBasePath", protocolBasePath);
-        configMap.put("participantCode", "wemeanhospital+mock_payor.yopmail@swasth-hcx-dev");
-        configMap.put("username", "wemeanhospital+mock_payor@yopmail.com");
-        configMap.put("password", "i6cA0R0EZHF3@");
+        configMap.put("participantCode", configParticipantCode);
+        configMap.put("username", configParticipantUsername);
+        configMap.put("password", configParticipantPassword);
         String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/test-keys/private-key.pem";
         String certificate = IOUtils.toString(new URL(keyUrl), StandardCharsets.UTF_8);
         configMap.put("encryptionPrivateKey", certificate);
