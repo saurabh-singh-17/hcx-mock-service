@@ -96,8 +96,8 @@ beneficiary:
     recipient-code: ${beneficiary-config_recipient_code:wemeanhospital+mock_payor.yopmail@swasth-hcx-dev}
 
 payor:
-  username: ${participant_username:wemeanhospital+mock_payor@yopmail.com}
-  password: ${participant_password:i6cA0R0EZHF3@}
+  username: ${payor_username:wemeanhospital+mock_payor@yopmail.com}
+  password: ${payor_password:i6cA0R0EZHF3@}
 
 aws-url:
   accessKey: ${url_accessKey:}
