@@ -21,9 +21,9 @@ import java.net.URL;
 @Service
 public class CloudStorageClient {
 
-    @Value("${certificates.accesskey}")
+    @Value("${aws-url.accessKey}")
     private String accessKey;
-    @Value("${certificates.secretKey}")
+    @Value("${aws-url.accessSecret}")
     private String secretKey;
 
     public AmazonS3 getClient() {

@@ -72,12 +72,12 @@ public class BaseController {
     @Value("${postgres.table.payerData}")
     private String table;
 
-    @Value("${base.participant-code}")
-    private String baseParticipantCode;
-    @Value("${base.username}")
-    private String baseParticipantUsername;
-    @Value("${base.password}")
-    private String baseParticipantPassword;
+    @Value("${beneficiary.participant-code}")
+    private String beneficiaryParticipantCode;
+    @Value("${beneficiary.username}")
+    private String beneficiaryUsername;
+    @Value("${beneficiary.password}")
+    private String beneficiaryPassword;
     @Autowired
     private PayerService payerService;
 
@@ -110,7 +110,7 @@ public class BaseController {
         }
     }
 
-    protected void processAndValidate(String onApiAction, String metadataTopic, Request request, Map<String, Object> requestBody, String apiAction) throws Exception {
+    protected void processAndValidate(String onApiAction, Request request, Map<String, Object> requestBody, String apiAction) throws Exception {
         String mid = UUID.randomUUID().toString();
         String serviceMode = env.getProperty(SERVICE_MODE);
         System.out.println("\n" + "Mode: " + serviceMode + " :: mid: " + mid + " :: Event: " + onApiAction);
@@ -124,7 +124,7 @@ public class BaseController {
             Bundle bundle = new Bundle();
             Request req = new Request(requestBody, apiAction);
             HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(req.getRecipientCode());
-            if (COVERAGE_ELIGIBILITY_ONCHECK.equalsIgnoreCase(onApiAction)) {
+            if (COVERAGE_ELIGIBILITY_CHECK.equalsIgnoreCase(apiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK, output);
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
@@ -140,7 +140,7 @@ public class BaseController {
                 //sending the onaction call
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
                 updateMobileNumber(request.getApiCallId(), apiAction);
-            } else if (CLAIM_ONSUBMIT.equalsIgnoreCase(onApiAction)) {
+            } else if (CLAIM_SUBMIT.equalsIgnoreCase(apiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT, output);
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
@@ -202,7 +202,7 @@ public class BaseController {
             onActionCall.sendOnAction(request.getRecipientCode(), respfhir, operation, actionJwe, onActionStatus, output);
         } else {
             payerService.process(request, reqFhir, respfhir);
-            if (request.getAction().equalsIgnoreCase("/v0.7/coverageeligibility/check") && request.getSenderCode().equalsIgnoreCase("testprovider1.apollo@swasth-hcx-dev")) {
+            if (request.getAction().equalsIgnoreCase("/v0.7/coverageeligibility/check") && request.getSenderCode().equalsIgnoreCase(beneficiaryParticipantCode)) {
                 onActionCall.sendOnAction(request.getRecipientCode(), respfhir, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
                 String updateQuery = String.format("UPDATE %s SET status='%s',updated_on=%d WHERE request_id='%s' RETURNING %s,%s",
                         table, "Approved", System.currentTimeMillis(), request.getApiCallId(), "raw_payload", "response_fhir");
@@ -215,9 +215,8 @@ public class BaseController {
         Response response = new Response();
         try {
             Request request = new Request(requestBody, apiAction);
-            //notificationService.notify(request,onApiAction.split("/")[2],"Request received");
             setResponseParams(request, response);
-            processAndValidate(onApiAction, kafkaTopic, request, requestBody, apiAction);
+            processAndValidate(onApiAction, request, requestBody, apiAction);
             System.out.println("http respond sent");
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
@@ -281,9 +280,9 @@ public class BaseController {
     public Map<String, Object> initializingConfigMap() throws IOException {
         Map<String, Object> configMap = new HashMap<>();
         configMap.put("protocolBasePath", "https://dev-hcx.swasth.app/api/v0.8");
-        configMap.put("participantCode", baseParticipantCode);
-        configMap.put("username", baseParticipantUsername);
-        configMap.put("password", baseParticipantPassword);
+        configMap.put("participantCode", beneficiaryParticipantCode);
+        configMap.put("username", beneficiaryUsername);
+        configMap.put("password", beneficiaryPassword);
         String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/test-keys/private-key.pem";
         String certificate = IOUtils.toString(new URL(keyUrl), StandardCharsets.UTF_8);
         configMap.put("encryptionPrivateKey", certificate);

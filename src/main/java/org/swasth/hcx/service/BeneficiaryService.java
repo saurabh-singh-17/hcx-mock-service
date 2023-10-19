@@ -20,24 +20,22 @@ import java.util.*;
 
 @Service
 public class BeneficiaryService {
-
     @Value("${postgres.table.payerData}")
     private String payorDataTable;
     @Autowired
     private PostgresService postgresService;
-
-    @Value("${certificates.bucketName}")
+    @Value("${aws-url.bucketName}")
     private String bucketName;
-    @Autowired
-    private CloudStorageClient cloudStorageClient;
-    @Autowired
-    private SMSService smsService;
     @Value("${postgres.table.beneficiary}")
     private String beneficiaryTable;
     @Value("${otp.expiry}")
     private int otpExpiry;
     @Value("${otp.send-per-minute}")
     private int otpSendPerMinute;
+    @Autowired
+    private CloudStorageClient cloudStorageClient;
+    @Autowired
+    private SMSService smsService;
 
     private IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
     long lastOTPSendTime = 0;

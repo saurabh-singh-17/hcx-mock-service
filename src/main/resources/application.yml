@@ -95,17 +95,11 @@ beneficiary:
     password: ${beneficiary_password:Opensaber@123}
     recipient-code: ${beneficiary-config_recipient_code:wemeanhospital+mock_payor.yopmail@swasth-hcx-dev}
 
-outgoing-request:
-  participant-code: ${participant_code:wemeanhospital+mock_payor.yopmail@swasth-hcx-dev}
+payor:
   username: ${participant_username:wemeanhospital+mock_payor@yopmail.com}
   password: ${participant_password:i6cA0R0EZHF3@}
 
-base:
-  participant-code: ${participant_code:testprovider1.apollo@swasth-hcx-dev}
-  username: ${participant_username:testprovider1@apollo.com}
-  password: ${participant_password:Opensaber@123}
-
-certificates:
-  accesskey : ${certificates_accessKey:}
-  secretKey : ${certificates_accessSecret:}
-  bucketName : ${certificates_bucketName:}
+aws-url:
+  accessKey: ${url_accessKey:}
+  accessSecret: ${url_accessSecret:}
+  bucketName: ${url_bucketName:}
