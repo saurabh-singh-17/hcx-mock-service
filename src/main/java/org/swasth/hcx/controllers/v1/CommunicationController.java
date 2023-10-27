@@ -9,18 +9,18 @@ import org.swasth.hcx.controllers.BaseController;
 import java.util.Map;
 
 @RestController()
-@RequestMapping(Constants.VERSION_PREFIX)
+@RequestMapping(value =  "/"+ "${hcx_application.api_version}"+ "/communication")
 public class CommunicationController extends BaseController {
 
     @Value("${kafka.topic.communication}")
     private String kafkaTopic;
 
-    @PostMapping(Constants.COMMUNICATION_REQUEST)
+    @RequestMapping(value = "/request", method = RequestMethod.POST)
     public ResponseEntity<Object> communicationRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
         return processRequest(requestBody, Constants.COMMUNICATION_REQUEST, Constants.COMMUNICATION_ONREQUEST, kafkaTopic);
     }
 
-    @RequestMapping(Constants.COMMUNICATION_ONREQUEST)
+    @RequestMapping(value = "/on_request", method = RequestMethod.POST)
     public ResponseEntity<Object> communicationOnRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
         System.out.println("-----------it is coming inside ----------");
         return processAndValidateRequest(requestBody, Constants.COMMUNICATION_REQUEST,Constants.COMMUNICATION_ONREQUEST, kafkaTopic);
