@@ -239,7 +239,6 @@ public class BaseController {
             Map<String, Object> outputOfOnAction = new HashMap<>();
             System.out.println("create the oncheck payload");
             Bundle bundle = new Bundle();
-            Request req = new Request(requestBody, apiAction);
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             if (COVERAGE_ELIGIBILITY_ONCHECK.equalsIgnoreCase(onApiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_ON_CHECK, output);
@@ -256,8 +255,9 @@ public class BaseController {
                 System.out.println("bundle reply " + parser.encodeResourceToString(bundle));
                 //sending the onaction call
 //                onActionCall.sendOnAction(request.getRecipientCode(),(String) output.get("fhirPayload") , Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
-            } else if(COMMUNICATION_REQUEST.equalsIgnoreCase(apiAction)){
-                boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_ON_REQUEST, output);
+            } else if (COMMUNICATION_ONREQUEST.equalsIgnoreCase(onApiAction)) {
+                HCXIntegrator hcxIntegrator1 = hcxIntegratorService.getHCXIntegrator(request.getRecipientCode());
+                boolean result = hcxIntegrator1.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_ON_REQUEST, output);
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
                 }
