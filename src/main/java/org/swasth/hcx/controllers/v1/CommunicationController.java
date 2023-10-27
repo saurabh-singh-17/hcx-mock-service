@@ -22,6 +22,7 @@ public class CommunicationController extends BaseController {
 
     @RequestMapping(Constants.COMMUNICATION_ONREQUEST)
     public ResponseEntity<Object> communicationOnRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
+        System.out.println("-----------it is coming inside ----------");
         return processAndValidateRequest(requestBody, Constants.COMMUNICATION_REQUEST,Constants.COMMUNICATION_ONREQUEST, kafkaTopic);
     }
 }
