@@ -256,6 +256,13 @@ public class BaseController {
                 System.out.println("bundle reply " + parser.encodeResourceToString(bundle));
                 //sending the onaction call
 //                onActionCall.sendOnAction(request.getRecipientCode(),(String) output.get("fhirPayload") , Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+            } else if(COMMUNICATION_REQUEST.equalsIgnoreCase(apiAction)){
+                boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_ON_REQUEST, output);
+                if (!result) {
+                    System.out.println("Error while processing incoming request: " + output);
+                }
+                System.out.println("output map after decryption communication" + output);
+                System.out.println("decryption successful");
             }
         }
     }

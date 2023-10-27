@@ -22,6 +22,6 @@ public class CommunicationController extends BaseController {
 
     @RequestMapping(value = "/on_request", method = RequestMethod.POST)
     public ResponseEntity<Object> communicationOnRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return processRequest(requestBody, Constants.COMMUNICATION_ONREQUEST,Constants.COMMUNICATION_ONREQUEST, kafkaTopic);
+        return processAndValidateRequest(requestBody, Constants.COMMUNICATION_REQUEST,Constants.COMMUNICATION_ONREQUEST, kafkaTopic);
     }
 }
