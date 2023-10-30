@@ -256,7 +256,6 @@ public class BaseController {
                 //sending the onaction call
 //                onActionCall.sendOnAction(request.getRecipientCode(),(String) output.get("fhirPayload") , Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
             } else if (COMMUNICATION_ONREQUEST.equalsIgnoreCase(onApiAction)) {
-                System.out.println("-------communication on request -------------");
                 HCXIntegrator hcxIntegrator1 = hcxIntegratorService.getHCXIntegrator(request.getRecipientCode());
                 boolean result = hcxIntegrator1.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_ON_REQUEST, output);
                 if (!result) {
