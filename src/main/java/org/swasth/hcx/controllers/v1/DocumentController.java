@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.*;
 import org.swasth.hcx.controllers.BaseController;
 import org.swasth.hcx.dto.Response;
 import org.swasth.hcx.service.PostgresService;
+import org.swasth.hcx.utils.JSONUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 public class DocumentController extends BaseController {
@@ -32,16 +32,11 @@ public class DocumentController extends BaseController {
             }
             String requestId = request.get(0).getOrDefault("request_id", "").toString();
             System.out.println("Request will be ---------" + request);
-            for (Map<String, Object> map : request) {
-                String payload = map.entrySet().stream()
-                        .map(entry -> String.format("\"%s\"='%s'", entry.getKey(), entry.getValue()))
-                        .collect(Collectors.joining(", ", "{", "}"));
-
-                String query = String.format("INSERT INTO %s (request_id, payload) VALUES ('%s', '%s');",
-                        documentAnalyseResponse, requestId, payload);
+            System.out.println(JSONUtils.serialize(request));
+            String query = String.format("INSERT INTO %s (request_id, payload) VALUES ('%s', '%s');",
+                    documentAnalyseResponse, requestId, JSONUtils.serialize(request));
                 System.out.println("---query -----" + query);
                 postgresService.execute(query);
-            }
             Map<String, Object> response = new HashMap<>();
             response.put("timestamp", System.currentTimeMillis());
             response.put("request_id", requestId);
