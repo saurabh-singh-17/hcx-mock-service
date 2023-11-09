@@ -30,6 +30,7 @@ postgres:
    mockParticipant: ${mock_participant_table:mock_participant}
    beneficiary: ${beneficiary_table:beneficiary_verification}
    consultation-info : ${consultation_info_table:consultation_info}
+   document-analysis-response : ${document_analysis_response:document_analysis_response}
 
 #hcx headers
 protocol:
