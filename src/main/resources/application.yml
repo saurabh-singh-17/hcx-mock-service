@@ -76,11 +76,6 @@ mock_payer:
   password: ${mock_payer_password:Opensaber@123}
   participant_code: ${mock_payer_participant_code:1-29482df3-e875-45ef-a4e9-592b6f565782}
 
-redis:
-  host: ${redis_host:localhost}
-  port: ${redis_port:6379}
-  expires: ${redis_expires:172800}
-
 aws:
   access-key: ${aws_accessKey:}
   access-secret: ${aws_accessSecret:}
