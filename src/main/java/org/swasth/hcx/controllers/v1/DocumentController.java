@@ -63,7 +63,6 @@ public class DocumentController extends BaseController {
         ResultSet resultSet = postgresService.executeQuery(searchQuery);
         ArrayList<Map<String, Object>> documentAnalyseResponse;
         if (resultSet.next()) {
-            System.out.println(resultSet.getString("payload"));
             String payloadString = resultSet.getString("payload");
             documentAnalyseResponse = JSONUtils.deserialize(payloadString, ArrayList.class);
         } else {
