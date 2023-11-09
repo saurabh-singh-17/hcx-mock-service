@@ -13,6 +13,7 @@ import org.swasth.hcx.service.PostgresService;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 public class DocumentController extends BaseController {
@@ -31,10 +32,17 @@ public class DocumentController extends BaseController {
             }
             String requestId = request.get(0).getOrDefault("request_id", "").toString();
             System.out.println("Request will be ---------" + request);
-            String query = String.format("INSERT INTO %s (request_id,payload) VALUES ('%s','%s');", documentAnalyseResponse, requestId, request);
-            System.out.println("--------query -----------" + query);
-            postgresService.execute(query);
-            Map<String,Object> response = new HashMap<>();
+            for (Map<String, Object> map : request) {
+                String payload = map.entrySet().stream()
+                        .map(entry -> String.format("\"%s\"='%s'", entry.getKey(), entry.getValue()))
+                        .collect(Collectors.joining(", ", "{", "}"));
+
+                String query = String.format("INSERT INTO %s (request_id, payload) VALUES ('%s', '%s');",
+                        documentAnalyseResponse, requestId, payload);
+                System.out.println("---query -----" + query);
+                postgresService.execute(query);
+            }
+            Map<String, Object> response = new HashMap<>();
             response.put("timestamp", System.currentTimeMillis());
             response.put("request_id", requestId);
             return new ResponseEntity<>(response, HttpStatus.OK);
