@@ -40,7 +40,9 @@ public class Response {
         this.result = new HashMap<>();
         this.put(key, val);
     }
-
+    public Response(long timestamp){
+        this.timestamp = timestamp;
+    }
     public Long getTimestamp() {
         return timestamp;
     }
