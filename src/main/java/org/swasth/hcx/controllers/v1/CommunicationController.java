@@ -2,10 +2,7 @@ package org.swasth.hcx.controllers.v1;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.controllers.BaseController;
 
@@ -25,6 +22,6 @@ public class CommunicationController extends BaseController {
 
     @RequestMapping(value = "/on_request", method = RequestMethod.POST)
     public ResponseEntity<Object> communicationOnRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return processRequest(requestBody, Constants.COMMUNICATION_ONREQUEST,Constants.COMMUNICATION_ONREQUEST, kafkaTopic);
+        return processAndValidateRequest(requestBody, Constants.COMMUNICATION_REQUEST,Constants.COMMUNICATION_ONREQUEST, kafkaTopic);
     }
 }
