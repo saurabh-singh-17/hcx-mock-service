@@ -31,11 +31,8 @@ public class DocumentController extends BaseController {
                 throw new ClientException("Request body is empty");
             }
             String requestId = request.get(0).getOrDefault("request_id", "").toString();
-            System.out.println("Request will be ---------" + request);
-            System.out.println(JSONUtils.serialize(request));
             String query = String.format("INSERT INTO %s (request_id, payload) VALUES ('%s', '%s');",
                     documentAnalyseResponse, requestId, JSONUtils.serialize(request));
-                System.out.println("---query -----" + query);
                 postgresService.execute(query);
             Map<String, Object> response = new HashMap<>();
             response.put("timestamp", System.currentTimeMillis());
@@ -61,12 +58,14 @@ public class DocumentController extends BaseController {
         }
     }
 
-    public ArrayList<Map<String, Object>> getInfoByRequestId(String requestId) throws org.swasth.hcx.exception.ClientException, SQLException {
+    public ArrayList<Map<String, Object>> getInfoByRequestId(String requestId) throws Exception {
         String searchQuery = String.format("SELECT * FROM %s WHERE request_id = '%s'", documentAnalyseResponse, requestId);
         ResultSet resultSet = postgresService.executeQuery(searchQuery);
         ArrayList<Map<String, Object>> documentAnalyseResponse;
         if (resultSet.next()) {
-            documentAnalyseResponse = resultSet.getObject("payload", ArrayList.class);
+            System.out.println(resultSet.getString("payload"));
+            String payloadString = resultSet.getString("payload");
+            documentAnalyseResponse = JSONUtils.deserialize(payloadString, ArrayList.class);
         } else {
             throw new org.swasth.hcx.exception.ClientException("The Record does not exit for request id  : " + requestId);
         }
