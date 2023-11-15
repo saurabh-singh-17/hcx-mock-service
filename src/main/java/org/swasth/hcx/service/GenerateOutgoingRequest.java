@@ -2,10 +2,8 @@ package org.swasth.hcx.service;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
-import com.amazonaws.services.dynamodbv2.xspec.S;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
-import kong.unirest.HttpResponse;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,20 +21,14 @@ import org.swasth.hcx.exception.ErrorCodes;
 import org.swasth.hcx.exception.ServerException;
 import org.swasth.hcx.exception.ServiceUnavailbleException;
 import org.swasth.hcx.fhirexamples.OnActionFhirExamples;
-import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.utils.HCXFHIRUtils;
-import org.swasth.hcx.utils.HttpUtils;
 import org.swasth.hcx.utils.JSONUtils;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.util.*;
-
-import static org.swasth.hcx.utils.Constants.CREATE_COMMUNICATION_REQUEST;
-import static org.swasth.hcx.utils.Constants.MOBILE;
 
 @Service
 public class GenerateOutgoingRequest {
