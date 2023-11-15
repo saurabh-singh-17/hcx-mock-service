@@ -178,7 +178,7 @@ public class GenerateOutgoingRequest {
             }
             Map<String, Object> output = new HashMap<>();
             String workflowId = (String) payloadMap.getOrDefault("workflow_id","");
-            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, mockRecipientCode, "", correlationId, workflowId , new HashMap<>(), output);
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, beneficiaryParticipantCode, "", correlationId, workflowId , new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated." + output);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
