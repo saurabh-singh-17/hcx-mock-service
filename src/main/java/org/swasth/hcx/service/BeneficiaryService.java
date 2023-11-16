@@ -175,7 +175,7 @@ public class BeneficiaryService {
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace(); // Log the exception for debugging
-            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(Map.of("error","Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -226,7 +226,7 @@ public class BeneficiaryService {
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace(); // Log the exception for debugging
-            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(Map.of("error","Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -258,7 +258,7 @@ public class BeneficiaryService {
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace(); // Log the exception for debugging
-            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(Map.of("error","Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
