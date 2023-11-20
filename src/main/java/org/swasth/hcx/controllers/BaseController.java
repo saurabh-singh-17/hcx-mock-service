@@ -128,6 +128,7 @@ public class BaseController {
             System.out.println("hcxintegrtor username -----------" + hcxIntegrator.getUsername());
             System.out.println("hcxintegrtor password -----------" + hcxIntegrator.getPassword());
             System.out.println("hcxintegrtor basepath-----------" + hcxIntegrator.getHCXProtocolBasePath());
+            System.out.println("private key ------------" + hcxIntegrator.getPrivateKey());
             if (COVERAGE_ELIGIBILITY_CHECK.equalsIgnoreCase(apiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK, output);
                 if (!result) {

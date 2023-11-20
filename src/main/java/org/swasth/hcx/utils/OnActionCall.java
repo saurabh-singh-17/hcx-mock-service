@@ -77,6 +77,11 @@ public class OnActionCall {
     @Async("asyncExecutor")
     public void sendOnAction(String recipientCode, String fhirPayload, Operations operation, String actionJwe, String onActionStatus, Map<String,Object> output) throws Exception{
         HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(recipientCode);
+        System.out.println("hcxintegrtor participant code-----------" + hcxIntegrator.getParticipantCode());
+        System.out.println("hcxintegrtor username -----------" + hcxIntegrator.getUsername());
+        System.out.println("hcxintegrtor password -----------" + hcxIntegrator.getPassword());
+        System.out.println("hcxintegrtor basepath-----------" + hcxIntegrator.getHCXProtocolBasePath());
+        System.out.println("private key ------------" + hcxIntegrator.getPrivateKey());
         hcxIntegrator.processOutgoingCallback(fhirPayload, operation,"", actionJwe,onActionStatus, new HashMap<>(), output);
         System.out.println("output of onaction" + output);
     }
