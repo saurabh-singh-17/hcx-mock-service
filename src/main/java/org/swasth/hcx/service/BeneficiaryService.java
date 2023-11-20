@@ -295,8 +295,8 @@ public class BeneficiaryService {
         for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
             if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
                 String url = supportingInfo.getValueAttachment().getUrl();
-                System.out.println("Document Type will be ");
-                System.out.println(supportingInfo.getCode().getCoding().get(0).getDisplay());
+                String documentType = supportingInfo.getCategory().getCoding().get(0).getDisplay();
+                System.out.println("-----document type -------------" + documentType);
                 documentUrls.add(url);
             }
         }

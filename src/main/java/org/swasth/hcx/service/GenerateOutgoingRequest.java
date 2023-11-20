@@ -114,7 +114,7 @@ public class GenerateOutgoingRequest {
                     List<String> urls = (List<String>) document.get("urls");
                     if (urls != null && !urls.isEmpty()) {
                         for (String url : urls) {
-                            claim.addSupportingInfo(new Claim.SupportingInformationComponent().setSequence(1).setCategory(new CodeableConcept(new Coding().setCode("MB").setSystem("http://hcxprotocol.io/codes/claim-supporting-info-categories").setDisplay(documentType))).setValue(new Attachment().setUrl(url)));
+                            claim.addSupportingInfo(new Claim.SupportingInformationComponent().setSequence(1).setCategory(new CodeableConcept(new Coding().setCode(documentType).setSystem("http://hcxprotocol.io/codes/claim-supporting-info-categories").setDisplay(documentType))).setValue(new Attachment().setUrl(url)));
                         }
                     }
                 }
