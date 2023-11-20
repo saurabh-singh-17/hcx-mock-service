@@ -124,6 +124,10 @@ public class BaseController {
             Bundle bundle = new Bundle();
             Request req = new Request(requestBody, apiAction);
             HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(req.getRecipientCode());
+            System.out.println("hcxintegrtor participant code-----------" + hcxIntegrator.getParticipantCode());
+            System.out.println("hcxintegrtor username -----------" + hcxIntegrator.getUsername());
+            System.out.println("hcxintegrtor password -----------" + hcxIntegrator.getPassword());
+            System.out.println("hcxintegrtor basepath-----------" + hcxIntegrator.getHCXProtocolBasePath());
             if (COVERAGE_ELIGIBILITY_CHECK.equalsIgnoreCase(apiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK, output);
                 if (!result) {

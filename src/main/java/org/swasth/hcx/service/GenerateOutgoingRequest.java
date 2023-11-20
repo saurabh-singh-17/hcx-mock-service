@@ -62,13 +62,8 @@ public class GenerateOutgoingRequest {
         Response response = new Response();
         try {
             String senderCode = (String) requestBody.getOrDefault("senderCode","");
+            String recipientCode = (String) requestBody.getOrDefault("recipientCode","");
             HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(senderCode);
-            System.out.println("----hcxIntegrator participant code ----------" + hcxIntegrator.getParticipantCode());
-            System.out.println("----hcxIntegrator username ----------" + hcxIntegrator.getUsername());
-            System.out.println("----hcxIntegrator password ----------" + hcxIntegrator.getPassword());
-            System.out.println("----hcxIntegrator protocolbasepath ----------" + hcxIntegrator.getHCXProtocolBasePath());
-
-//          HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             CoverageEligibilityRequest ce = OnActionFhirExamples.coverageEligibilityRequestExample();
             System.out.println("requestBody" + requestBody);
             String app = (String) requestBody.get("app");
@@ -90,10 +85,11 @@ public class GenerateOutgoingRequest {
                 System.out.println("reosurceToBundle Coverage Eligibility Request \n" + parser.encodeResourceToString(bundleTest));
             } catch (Exception e) {
                 System.out.println("Error message " + e.getMessage());
+                throw new ClientException(e.getMessage());
             }
             Map<String, Object> output = new HashMap<>();
             String workFlowId = UUID.randomUUID().toString();
-            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, mockRecipientCode, "", "", workFlowId, new HashMap<>(), output);
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, recipientCode, "", "", workFlowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated.");
             Response response1 = new Response(workFlowId);
             return new ResponseEntity<>(response1, HttpStatus.ACCEPTED);
