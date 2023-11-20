@@ -110,10 +110,11 @@ public class GenerateOutgoingRequest {
             if (requestBody.containsKey("supportingDocuments")) {
                 ArrayList<Map<String, Object>> supportingDocuments = JSONUtils.convert(requestBody.get("supportingDocuments"), ArrayList.class);
                 for (Map<String, Object> document : supportingDocuments) {
+                    String documentType = (String) document.getOrDefault("documentType","");
                     List<String> urls = (List<String>) document.get("urls");
                     if (urls != null && !urls.isEmpty()) {
                         for (String url : urls) {
-                            claim.addSupportingInfo(new Claim.SupportingInformationComponent().setSequence(1).setCategory(new CodeableConcept(new Coding().setCode("POI").setSystem("http://hcxprotocol.io/codes/claim-supporting-info-categories").setDisplay("proof of identity"))).setValue(new Attachment().setUrl(url)));
+                            claim.addSupportingInfo(new Claim.SupportingInformationComponent().setSequence(1).setCategory(new CodeableConcept(new Coding().setCode("MB").setSystem("http://hcxprotocol.io/codes/claim-supporting-info-categories").setDisplay(documentType))).setValue(new Attachment().setUrl(url)));
                         }
                     }
                 }
