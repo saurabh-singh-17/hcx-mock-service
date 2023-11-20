@@ -35,7 +35,8 @@ public class GenerateOutgoingRequest {
 
     @Autowired
     private BeneficiaryService beneficiaryService;
-
+    @Autowired
+    protected HcxIntegratorService hcxIntegratorService;
     @Autowired
     private PostgresService postgresService;
     @Value("${postgres.table.payerData}")
@@ -60,7 +61,14 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createCoverageEligibilityRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
-            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
+            String senderCode = (String) requestBody.getOrDefault("senderCode","");
+            HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(senderCode);
+            System.out.println("----hcxIntegrator participant code ----------" + hcxIntegrator.getParticipantCode());
+            System.out.println("----hcxIntegrator username ----------" + hcxIntegrator.getUsername());
+            System.out.println("----hcxIntegrator password ----------" + hcxIntegrator.getPassword());
+            System.out.println("----hcxIntegrator protocolbasepath ----------" + hcxIntegrator.getHCXProtocolBasePath());
+
+//          HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
             CoverageEligibilityRequest ce = OnActionFhirExamples.coverageEligibilityRequestExample();
             System.out.println("requestBody" + requestBody);
             String app = (String) requestBody.get("app");
