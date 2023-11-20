@@ -103,7 +103,9 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createClaimRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
-            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
+            String senderCode = (String) requestBody.getOrDefault("senderCode","");
+            String recipientCode = (String) requestBody.getOrDefault("recipientCode","");
+            HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(senderCode);
             Claim claim = OnActionFhirExamples.claimExample();
             String billAmount = (String) requestBody.getOrDefault("billAmount", 0);
             claim.setTotal(new Money().setCurrency("INR").setValue(Long.parseLong(billAmount)));
@@ -148,7 +150,7 @@ public class GenerateOutgoingRequest {
             } else {
                 workflowId = (String) requestBody.getOrDefault("workflowId","");
             }
-            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, mockRecipientCode, "", "", workflowId, new HashMap<>(), output);
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, recipientCode, "", "", workflowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated.");
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
