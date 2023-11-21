@@ -172,11 +172,14 @@ public class GenerateOutgoingRequest {
             Patient patient1 = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
             String mobile = patient1.getTelecom().get(0).getValue();
             System.out.println("mobile number of beneficiary: " + mobile);
-            Map<String, Object> senderRecipientCode = getSenderAndRecipientCode(requestId);
-            String recipientCode = (String) senderRecipientCode.get("recipient_code");
-            String senderCode = (String) senderRecipientCode.get("senderCode");
+            String senderCode = (String) payloadMap.get("sender_code");
+            String recipientCode = (String) payloadMap.get("recipient_code");
             HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(recipientCode);
             System.out.println("hcx integrtor -----------recipient code ---------" + hcxIntegrator.getParticipantCode());
+            System.out.println("hcx intergrator --------------protocol base path " + hcxIntegrator.getHCXProtocolBasePath());
+            System.out.println(" hcx integrator ---------username -------------" + hcxIntegrator.getUsername());
+            System.out.println("hcx integrator --- password --------------" + hcxIntegrator.getPassword());
+            System.out.println("------hcx integrtor privatekey -----------------" + hcxIntegrator.getPrivateKey());
             CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
             Patient patient = OnActionFhirExamples.patientExample();
             patient.getTelecom().add(new ContactPoint().setValue(mobile).setSystem(ContactPoint.ContactPointSystem.PHONE));
@@ -190,6 +193,7 @@ public class GenerateOutgoingRequest {
             }
             Map<String, Object> output = new HashMap<>();
             String workflowId = (String) payloadMap.getOrDefault("workflow_id", "");
+            System.out.println("workflow id -----------------------" + workflowId);
             hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, senderCode, "", correlationId, workflowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated." + output);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);

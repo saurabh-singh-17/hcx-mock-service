@@ -124,6 +124,8 @@ public class BeneficiaryService {
         payloadMap.put("request_fhir", resultSet.getString("request_fhir"));
         payloadMap.put("correlation_id", resultSet.getString("correlation_id"));
         payloadMap.put("workflow_id", resultSet.getString("workflow_id"));
+        payloadMap.put("sender_code", resultSet.getString("sender_code"));
+        payloadMap.put("recipient_code", resultSet.getString("recipient_code"));
         return payloadMap;
     }
 
