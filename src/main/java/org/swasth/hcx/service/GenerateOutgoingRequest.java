@@ -176,6 +176,7 @@ public class GenerateOutgoingRequest {
             String recipientCode = (String) senderRecipientCode.get("recipient_code");
             String senderCode = (String) senderRecipientCode.get("senderCode");
             HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(recipientCode);
+            System.out.println("hcx integrtor -----------recipient code ---------" + hcxIntegrator.getParticipantCode());
             CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
             Patient patient = OnActionFhirExamples.patientExample();
             patient.getTelecom().add(new ContactPoint().setValue(mobile).setSystem(ContactPoint.ContactPointSystem.PHONE));
@@ -318,6 +319,7 @@ public class GenerateOutgoingRequest {
             senderRecipientDetails.put("sender_code", result.getString("sender_code"));
             senderRecipientDetails.put("recipient_code", result.getString("recipient_code"));
         }
+        System.out.println("Get sender and recipient Code-------" +  senderRecipientDetails);
         return senderRecipientDetails;
     }
 
