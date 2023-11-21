@@ -297,13 +297,11 @@ public class BeneficiaryService {
                 String url = supportingInfo.getValueAttachment().getUrl();
                 String documentType = supportingInfo.getCategory().getCoding().get(0).getDisplay();
                 if (!documentMap.containsKey(documentType)) {
-                    // If not, create a new list for the document type
                     documentMap.put(documentType, new ArrayList<>());
                 }
                 documentMap.get(documentType).add(url);
             }
         }
-        System.out.println("------------document Map ============" + documentMap);
         return documentMap;
     }
 
