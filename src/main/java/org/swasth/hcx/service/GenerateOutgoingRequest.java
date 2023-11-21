@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 @Service
@@ -171,21 +172,24 @@ public class GenerateOutgoingRequest {
             Patient patient1 = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
             String mobile = patient1.getTelecom().get(0).getValue();
             System.out.println("mobile number of beneficiary: " + mobile);
-            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMapForPayor());
+            Map<String, Object> senderRecipientCode = getSenderAndRecipientCode(requestId);
+            String recipientCode = (String) senderRecipientCode.get("recipient_code");
+            String senderCode = (String) senderRecipientCode.get("senderCode");
+            HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(recipientCode);
             CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
             Patient patient = OnActionFhirExamples.patientExample();
             patient.getTelecom().add(new ContactPoint().setValue(mobile).setSystem(ContactPoint.ContactPointSystem.PHONE));
-            if(requestBody.getOrDefault("type", "").equals("bank_details")){
+            if (requestBody.getOrDefault("type", "").equals("bank_details")) {
                 communicationRequest.getPayload().add(new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please provide the bank details for claim to be complete.")));
                 System.out.println("The Communication request has been sent successfully bank details.");
-            } else if (requestBody.getOrDefault("type","").equals("otp")){
+            } else if (requestBody.getOrDefault("type", "").equals("otp")) {
                 communicationRequest.getPayload().add(new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please verify the OTP sent to your mobile number to proceed.")));
                 beneficiaryService.sendOTP(mobile, communicationContent);
                 System.out.println("The otp has been sent for the beneficiary mobile to verify cliam.");
             }
             Map<String, Object> output = new HashMap<>();
-            String workflowId = (String) payloadMap.getOrDefault("workflow_id","");
-            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, beneficiaryParticipantCode, "", correlationId, workflowId , new HashMap<>(), output);
+            String workflowId = (String) payloadMap.getOrDefault("workflow_id", "");
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, senderCode, "", correlationId, workflowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated." + output);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
@@ -222,7 +226,9 @@ public class GenerateOutgoingRequest {
     public void processOutgoingCallbackCommunication(String type, String requestId , String otpCode, String accountNumber,String ifscCode) throws Exception {
         Communication communication;
         List<DomainResource> domList = new ArrayList<>();
-        HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
+        Map<String,Object> senderRecipientCode = getSenderAndRecipientCode(requestId);
+        String senderCode = (String) senderRecipientCode.get("sender_code");
+        HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(senderCode);
         if (type.equalsIgnoreCase("otp")) {
             communication = OnActionFhirExamples.communication();
             communication.getPayload().add(new Communication.CommunicationPayloadComponent().setContent(new StringType().setValue(otpCode)));
@@ -231,7 +237,6 @@ public class GenerateOutgoingRequest {
             communication.getPayload().add(new Communication.CommunicationPayloadComponent().setContent(new StringType().setValue(accountNumber)));
             communication.getPayload().add(new Communication.CommunicationPayloadComponent().setContent(new StringType().setValue(ifscCode)));
         }
-        IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         Bundle bundleTest = new Bundle();
         try {
             bundleTest = HCXFHIRUtils.resourceToBundle(communication, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CommunicationBundle.html",hcxIntegrator);
@@ -305,5 +310,15 @@ public class GenerateOutgoingRequest {
         return configMap;
     }
 
+    public Map<String, Object> getSenderAndRecipientCode(String requestId) throws ClientException, SQLException {
+        String query = String.format("SELECT sender_code,recipient_code FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
+        ResultSet result = postgresService.executeQuery(query);
+        Map<String, Object> senderRecipientDetails = new HashMap<>();
+        while (result.next()) {
+            senderRecipientDetails.put("sender_code", result.getString("sender_code"));
+            senderRecipientDetails.put("recipient_code", result.getString("recipient_code"));
+        }
+        return senderRecipientDetails;
+    }
 
 }

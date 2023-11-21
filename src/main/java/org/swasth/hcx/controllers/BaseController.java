@@ -124,11 +124,6 @@ public class BaseController {
             Bundle bundle = new Bundle();
             Request req = new Request(requestBody, apiAction);
             HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(req.getRecipientCode());
-            System.out.println("hcxintegrtor participant code-----------" + hcxIntegrator.getParticipantCode());
-            System.out.println("hcxintegrtor username -----------" + hcxIntegrator.getUsername());
-            System.out.println("hcxintegrtor password -----------" + hcxIntegrator.getPassword());
-            System.out.println("hcxintegrtor basepath-----------" + hcxIntegrator.getHCXProtocolBasePath());
-            System.out.println("private key ------------" + hcxIntegrator.getPrivateKey());
             if (COVERAGE_ELIGIBILITY_CHECK.equalsIgnoreCase(apiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK, output);
                 if (!result) {
@@ -176,7 +171,7 @@ public class BaseController {
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
                 updateMobileNumber(request.getApiCallId(), apiAction);
             } else if (COMMUNICATION_REQUEST.equalsIgnoreCase(apiAction)) {
-                HCXIntegrator hcxIntegrator1 = HCXIntegrator.getInstance(initializingConfigMap());
+                HCXIntegrator hcxIntegrator1 = hcxIntegratorService.getHCXIntegrator(req.getSenderCode());
                 boolean result = hcxIntegrator1.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_REQUEST, output);
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);

@@ -50,7 +50,7 @@ public class HcxIntegratorService {
         String query = String.format("SELECT * FROM %s WHERE child_participant_code='%s'", env.getProperty("postgres.table.mockParticipant"), participantCode);
         ResultSet resultSet = postgres.executeQuery(query);
         if(resultSet.next()){
-            return getConfig(participantCode, resultSet.getString("primary_email"), resultSet.getString("password"),  resultSet.getString("private_key"));
+            return getConfig(participantCode, resultSet.getString("child_participant_code"), resultSet.getString("password"),  resultSet.getString("private_key"));
         } else {
             String certificate = IOUtils.toString(new URL(env.getProperty("mock_payer.private_key")), StandardCharsets.UTF_8.toString());
             return getConfig(env.getProperty("mock_payer.participant_code"), env.getProperty("mock_payer.username"), env.getProperty("mock_payer.password"), certificate);
