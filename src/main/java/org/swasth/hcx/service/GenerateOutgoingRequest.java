@@ -59,11 +59,13 @@ public class GenerateOutgoingRequest {
     @Value("${payor.password}")
     private String payorPassword;
     IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+
     public ResponseEntity<Object> createCoverageEligibilityRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
-            String senderCode = (String) requestBody.getOrDefault("senderCode","");
-            String recipientCode = (String) requestBody.getOrDefault("recipientCode","");
+            String senderCode = (String) requestBody.getOrDefault("senderCode", "");
+            getSenderAndRecipientCode(senderCode);
+            String recipientCode = (String) requestBody.getOrDefault("recipientCode", "");
             HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(senderCode);
             CoverageEligibilityRequest ce = OnActionFhirExamples.coverageEligibilityRequestExample();
             System.out.println("requestBody" + requestBody);
@@ -104,20 +106,20 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createClaimRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
-            String senderCode = (String) requestBody.getOrDefault("senderCode","");
-            String recipientCode = (String) requestBody.getOrDefault("recipientCode","");
+            String senderCode = (String) requestBody.getOrDefault("senderCode", "");
+            String recipientCode = (String) requestBody.getOrDefault("recipientCode", "");
             HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(senderCode);
             Claim claim = OnActionFhirExamples.claimExample();
             String billAmount = (String) requestBody.getOrDefault("billAmount", 0);
             claim.setTotal(new Money().setCurrency("INR").setValue(Long.parseLong(billAmount)));
             // To check type is OPD
-            String type = (String) requestBody.getOrDefault("type","");
+            String type = (String) requestBody.getOrDefault("type", "");
             claim.setSubType(new CodeableConcept(new Coding().setSystem("https://staging-hcx.swasth.app/hapi-fhir/fhir/CodeSystem/hcx-claim-sub-types").setCode(type)));
             // adding supporting documents (Bill/invoice or prescription)
             if (requestBody.containsKey("supportingDocuments")) {
                 ArrayList<Map<String, Object>> supportingDocuments = JSONUtils.convert(requestBody.get("supportingDocuments"), ArrayList.class);
                 for (Map<String, Object> document : supportingDocuments) {
-                    String documentType = (String) document.getOrDefault("documentType","");
+                    String documentType = (String) document.getOrDefault("documentType", "");
                     List<String> urls = (List<String>) document.get("urls");
                     if (urls != null && !urls.isEmpty()) {
                         for (String url : urls) {
@@ -146,10 +148,10 @@ public class GenerateOutgoingRequest {
             }
             Map<String, Object> output = new HashMap<>();
             String workflowId = "";
-            if(!requestBody.containsKey("workflowId")) {
-               workflowId = UUID.randomUUID().toString();
+            if (!requestBody.containsKey("workflowId")) {
+                workflowId = UUID.randomUUID().toString();
             } else {
-                workflowId = (String) requestBody.getOrDefault("workflowId","");
+                workflowId = (String) requestBody.getOrDefault("workflowId", "");
             }
             hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, recipientCode, "", "", workflowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated.");
@@ -216,7 +218,7 @@ public class GenerateOutgoingRequest {
                 throw new ClientException(Objects.requireNonNull(responseEntity.getBody()).toString());
             }
             return responseEntity;
-        } else if(StringUtils.equalsIgnoreCase((String) requestBody.get("type"), "bank_details")){
+        } else if (StringUtils.equalsIgnoreCase((String) requestBody.get("type"), "bank_details")) {
             String accountNumber = (String) requestBody.getOrDefault("account_number", "");
             String ifscCode = (String) requestBody.getOrDefault("ifsc_code", "");
             String query = String.format("UPDATE %s SET account_number ='%s',ifsc_code = '%s' WHERE request_id = '%s'", payorDataTable, accountNumber, ifscCode, requestId);
@@ -228,12 +230,9 @@ public class GenerateOutgoingRequest {
         return ResponseEntity.badRequest().body("Unable to update the details to database");
     }
 
-    public void processOutgoingCallbackCommunication(String type, String requestId , String otpCode, String accountNumber,String ifscCode) throws Exception {
+    public void processOutgoingCallbackCommunication(String type, String requestId, String otpCode, String accountNumber, String ifscCode) throws Exception {
         Communication communication;
         List<DomainResource> domList = new ArrayList<>();
-        Map<String,Object> senderRecipientCode = getSenderAndRecipientCode(requestId);
-        String senderCode = (String) senderRecipientCode.get("sender_code");
-        HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(senderCode);
         if (type.equalsIgnoreCase("otp")) {
             communication = OnActionFhirExamples.communication();
             communication.getPayload().add(new Communication.CommunicationPayloadComponent().setContent(new StringType().setValue(otpCode)));
@@ -242,25 +241,29 @@ public class GenerateOutgoingRequest {
             communication.getPayload().add(new Communication.CommunicationPayloadComponent().setContent(new StringType().setValue(accountNumber)));
             communication.getPayload().add(new Communication.CommunicationPayloadComponent().setContent(new StringType().setValue(ifscCode)));
         }
+        String searchCorrelationIdQuery = String.format("SELECT correlation_id FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
+        ResultSet resultSet = postgresService.executeQuery(searchCorrelationIdQuery);
+        String correlationId = "";
+        String senderCode = "";
+        while (resultSet.next()) {
+            correlationId = resultSet.getString("correlation_id");
+            senderCode = resultSet.getString("sender_code");
+        }
+        HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(senderCode);
+        String searchActionJweQuery = String.format("SELECT raw_payload from %s where correlation_id = '%s' AND action = 'communication'", payorDataTable, correlationId);
+        ResultSet resultSet1 = postgresService.executeQuery(searchActionJweQuery);
+        String rawPayload = "";
+        while (resultSet1.next()) {
+            rawPayload = resultSet1.getString("raw_payload");
+        }
         Bundle bundleTest = new Bundle();
         try {
-            bundleTest = HCXFHIRUtils.resourceToBundle(communication, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CommunicationBundle.html",hcxIntegrator);
+            bundleTest = HCXFHIRUtils.resourceToBundle(communication, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CommunicationBundle.html", hcxIntegrator);
             System.out.println("resource To Bundle communication Request\n" + parser.encodeResourceToString(bundleTest));
         } catch (Exception e) {
             System.out.println("Error message " + e.getMessage());
         }
-        String searchCorrelationIdQuery =  String.format("SELECT correlation_id FROM %s WHERE request_id = '%s'",payorDataTable, requestId);
-        ResultSet resultSet = postgresService.executeQuery(searchCorrelationIdQuery);
-        String correlationId = "";
-        while (resultSet.next()){
-            correlationId = resultSet.getString("correlation_id");
-        }
-        String searchActionJweQuery = String.format("SELECT raw_payload from %s where correlation_id = '%s' AND action = 'communication'", payorDataTable, correlationId);
-        ResultSet resultSet1 = postgresService.executeQuery(searchActionJweQuery);
-        String rawPayload = "";
-        while (resultSet1.next()){
-            rawPayload = resultSet1.getString("raw_payload");
-        }
+
         Map<String, Object> outputMap = new HashMap<>();
         hcxIntegrator.processOutgoingCallback(parser.encodeResourceToString(bundleTest), Operations.COMMUNICATION_ON_REQUEST, "", rawPayload, "response.complete", new HashMap<>(), outputMap);
     }
@@ -315,16 +318,32 @@ public class GenerateOutgoingRequest {
         return configMap;
     }
 
-    public Map<String, Object> getSenderAndRecipientCode(String requestId) throws ClientException, SQLException {
-        String query = String.format("SELECT sender_code,recipient_code FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
-        ResultSet result = postgresService.executeQuery(query);
-        Map<String, Object> senderRecipientDetails = new HashMap<>();
-        while (result.next()) {
-            senderRecipientDetails.put("sender_code", result.getString("sender_code"));
-            senderRecipientDetails.put("recipient_code", result.getString("recipient_code"));
+    public void getSenderAndRecipientCode(String senderCode) throws ClientException, SQLException {
+        String query = String.format("SELECT count(*) count from %s WHERE parent_participant_code = '%s'", payorDataTable, senderCode);
+        String childCodeQuery = String.format("SELECT child_participant_code from %s WHERE parent_participant_code = '%s'", payorDataTable, senderCode);
+        ResultSet resultSet = postgresService.executeQuery(query);
+        while (resultSet.next()) {
+            int count = resultSet.getInt("count");
+            if (count >= 2) {
+                try (ResultSet childCodeResultSet = postgresService.executeQuery(childCodeQuery)) {
+                    while (childCodeResultSet.next()) {
+                        String childCode = childCodeResultSet.getString("child_participant_code");
+                        System.out.println("Child Participant Code: " + childCode);
+                    }
+                }
+            } else {
+                throw new RuntimeException("Mock participants not found in the database");
+            }
         }
-        System.out.println("Get sender and recipient Code-------" +  senderRecipientDetails);
-        return senderRecipientDetails;
-    }
+//        String query = String.format("SELECT sender_code,recipient_code FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
+//        ResultSet result = postgresService.executeQuery(query);
+//        Map<String, Object> senderRecipientDetails = new HashMap<>();
+//        while (result.next()) {
+//            senderRecipientDetails.put("sender_code", result.getString("sender_code"));
+//            senderRecipientDetails.put("recipient_code", result.getString("recipient_code"));
+//        }
+//        System.out.println("Get sender and recipient Code-------" +  senderRecipientDetails);
+//        return senderRecipientDetails;
 
+    }
 }
