@@ -327,7 +327,7 @@ public class GenerateOutgoingRequest {
         String childCodeQuery = String.format("SELECT child_participant_code from %s WHERE parent_participant_code = '%s'", mockParticipantTable, senderCode);
         Map<String, Object> mockParticipantDetails;
         int count = getCountFromQuery(query);
-        if (count > 2) {
+        if (count >= 2) {
             mockParticipantDetails = getChildCodesFromQuery(childCodeQuery);
             System.out.println("----------mock participant details -------" + mockParticipantDetails);
         } else {
