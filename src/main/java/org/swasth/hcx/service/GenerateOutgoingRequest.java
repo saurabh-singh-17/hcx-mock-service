@@ -66,9 +66,10 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createCoverageEligibilityRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
-            String senderCode = (String) requestBody.getOrDefault("senderCode", "");
-            getSenderAndRecipientCode(senderCode);
-            String recipientCode = (String) requestBody.getOrDefault("recipientCode", "");
+            Map<String,Object> mockDetails = getSenderAndRecipientCode((String) requestBody.get("sender_code"));
+            System.out.println("----------mock details ------------" + mockDetails);
+            String senderCode = (String) mockDetails.get("sender_code");
+            String recipientCode = (String) mockDetails.get("recipient_code");
             HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(senderCode);
             CoverageEligibilityRequest ce = OnActionFhirExamples.coverageEligibilityRequestExample();
             System.out.println("requestBody" + requestBody);
@@ -321,32 +322,46 @@ public class GenerateOutgoingRequest {
         return configMap;
     }
 
-    public void getSenderAndRecipientCode(String senderCode) throws ClientException, SQLException {
+    public Map<String,Object> getSenderAndRecipientCode(String senderCode) throws ClientException {
         String query = String.format("SELECT count(*) count from %s WHERE parent_participant_code = '%s'", mockParticipantTable, senderCode);
         String childCodeQuery = String.format("SELECT child_participant_code from %s WHERE parent_participant_code = '%s'", mockParticipantTable, senderCode);
-        ResultSet resultSet = postgresService.executeQuery(query);
-        while (resultSet.next()) {
-            int count = resultSet.getInt("count");
-            if (count >= 2) {
-                try (ResultSet childCodeResultSet = postgresService.executeQuery(childCodeQuery)) {
-                    while (childCodeResultSet.next()) {
-                        String childCode = childCodeResultSet.getString("child_participant_code");
-                        System.out.println("Child Participant Code: " + childCode);
-                    }
-                }
-            } else {
-                throw new RuntimeException("Mock participants not found in the database");
-            }
+        Map<String, Object> mockParticipantDetails;
+        int count = getCountFromQuery(query);
+        if (count > 2) {
+            mockParticipantDetails = getChildCodesFromQuery(childCodeQuery);
+            System.out.println("----------mock participant details -------" + mockParticipantDetails);
+        } else {
+            throw new ClientException("Mock participants does not exist in the Database");
         }
-//        String query = String.format("SELECT sender_code,recipient_code FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
-//        ResultSet result = postgresService.executeQuery(query);
-//        Map<String, Object> senderRecipientDetails = new HashMap<>();
-//        while (result.next()) {
-//            senderRecipientDetails.put("sender_code", result.getString("sender_code"));
-//            senderRecipientDetails.put("recipient_code", result.getString("recipient_code"));
-//        }
-//        System.out.println("Get sender and recipient Code-------" +  senderRecipientDetails);
-//        return senderRecipientDetails;
+        return mockParticipantDetails;
+    }
 
+    private int getCountFromQuery(String query) {
+        try {
+            try (ResultSet resultSet = postgresService.executeQuery(query)) {
+                return resultSet.next() ? resultSet.getInt("count") : 0;
+            }
+        } catch (SQLException | ClientException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Map<String, Object> getChildCodesFromQuery(String query) {
+        Map<String, Object> childCodes = new HashMap<>();
+        try (ResultSet resultSet = postgresService.executeQuery(query)) {
+            int childCodeCount = 0;
+            while (resultSet.next()) {
+                String childCode = resultSet.getString("child_participant_code");
+                if (childCodeCount == 0) {
+                    childCodes.put("sender_code", childCode);
+                } else if (childCodeCount == 1) {
+                    childCodes.put("recipient_code", childCode);
+                }
+                childCodeCount++;
+            }
+        } catch (SQLException | ClientException e) {
+            throw new RuntimeException(e);
+        }
+        return childCodes;
     }
 }
