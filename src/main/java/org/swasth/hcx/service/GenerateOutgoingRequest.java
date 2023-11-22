@@ -2,6 +2,7 @@ package org.swasth.hcx.service;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import com.amazonaws.services.dynamodbv2.xspec.S;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
 import org.apache.commons.collections.MapUtils;
@@ -58,6 +59,9 @@ public class GenerateOutgoingRequest {
     private String payorUsername;
     @Value("${payor.password}")
     private String payorPassword;
+
+    @Value("${postgres.table.mockParticipant}")
+    private String mockParticipantTable;
     IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
 
     public ResponseEntity<Object> createCoverageEligibilityRequest(Map<String, Object> requestBody, Operations operations) {
@@ -319,8 +323,8 @@ public class GenerateOutgoingRequest {
     }
 
     public void getSenderAndRecipientCode(String senderCode) throws ClientException, SQLException {
-        String query = String.format("SELECT count(*) count from %s WHERE parent_participant_code = '%s'", payorDataTable, senderCode);
-        String childCodeQuery = String.format("SELECT child_participant_code from %s WHERE parent_participant_code = '%s'", payorDataTable, senderCode);
+        String query = String.format("SELECT count(*) count from %s WHERE parent_participant_code = '%s'", mockParticipantTable, senderCode);
+        String childCodeQuery = String.format("SELECT child_participant_code from %s WHERE parent_participant_code = '%s'", mockParticipantTable, senderCode);
         ResultSet resultSet = postgresService.executeQuery(query);
         while (resultSet.next()) {
             int count = resultSet.getInt("count");
