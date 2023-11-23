@@ -82,6 +82,7 @@ public class GenerateOutgoingRequest {
                 System.out.println("reosurceToBundle Coverage Eligibility Request \n" + parser.encodeResourceToString(bundleTest));
             } catch (Exception e) {
                 System.out.println("Error message " + e.getMessage());
+                throw new ClientException(e.getMessage());
             }
             Map<String, Object> output = new HashMap<>();
             String workFlowId = UUID.randomUUID().toString();

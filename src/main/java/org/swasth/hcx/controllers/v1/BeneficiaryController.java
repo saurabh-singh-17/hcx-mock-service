@@ -76,7 +76,6 @@ public class BeneficiaryController extends BaseController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request body");
             }
         } catch (Exception ex) {
-            // Handle other exceptions
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal Server Error: " + ex.getMessage());
         }
     }
