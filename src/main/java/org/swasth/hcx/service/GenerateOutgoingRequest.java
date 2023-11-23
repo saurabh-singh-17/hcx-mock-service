@@ -110,8 +110,10 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createClaimRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
-            String senderCode = (String) requestBody.getOrDefault("senderCode", "");
-            String recipientCode = (String) requestBody.getOrDefault("recipientCode", "");
+            Map<String,Object> mockDetails = getSenderAndRecipientCode((String) requestBody.get("sender_code"));
+
+            String senderCode = (String) mockDetails.getOrDefault("sender_code", "");
+            String recipientCode = (String) mockDetails.getOrDefault("recipient_code", "");
             HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(senderCode);
             Claim claim = OnActionFhirExamples.claimExample();
             String billAmount = (String) requestBody.getOrDefault("billAmount", 0);
