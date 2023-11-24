@@ -73,7 +73,7 @@ public class BeneficiaryController extends BaseController {
             } else if (requestBody.containsKey("sender_code")) {
                 return beneficiaryService.getRequestListFromSenderCode(requestBody);
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request body");
+                throw new ClientException("Please provide valid request body");
             }
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal Server Error: " + ex.getMessage());

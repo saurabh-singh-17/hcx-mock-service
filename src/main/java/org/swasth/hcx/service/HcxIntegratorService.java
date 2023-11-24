@@ -6,10 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.swasth.hcx.exception.ClientException;
-import org.swasth.hcx.utils.JSONUtils;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
@@ -23,13 +21,9 @@ public class HcxIntegratorService {
 
     @Autowired
     Environment env;
-
     @Autowired
     private PostgresService postgres;
-
     private Map<String,Object> configCache = new HashMap<>();
-
-
     public HCXIntegrator getHCXIntegrator(String participantCode) throws Exception {
         /**
          * Initializing hcx_sdk to use helper functions and FHIR validator
