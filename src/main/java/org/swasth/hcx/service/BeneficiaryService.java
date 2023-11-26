@@ -133,7 +133,7 @@ public class BeneficiaryService {
         String app = (String) requestBody.getOrDefault("app","");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT  workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE mobile = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, mobile, app);
+        String searchQuery = String.format("SELECT  workflow_id,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile,insurance_id,supporting_documents,bill_amount,patient_name FROM %s WHERE mobile = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, mobile, app);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
@@ -141,24 +141,23 @@ public class BeneficiaryService {
                     groupedEntries.put(workflowId, new ArrayList<>());
                 }
                 Map<String, Object> responseMap = new HashMap<>();
-                String fhirPayload = searchResultSet.getString("request_fhir");
                 String actionType = searchResultSet.getString("action");
                 if (actionType.equalsIgnoreCase("claim") || actionType.equalsIgnoreCase("preauth")) {
-                    responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
-                    responseMap.put("billAmount", getAmount(fhirPayload));
+                    responseMap.put("supportingDocuments", searchResultSet.getString("supporting_documents"));
+                    responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
                 }
                 responseMap.put("type", actionType);
                 responseMap.put("status", searchResultSet.getString("status"));
                 responseMap.put("apiCallId", searchResultSet.getString("request_id"));
                 responseMap.put("claimType", "OPD");
                 responseMap.put("date", searchResultSet.getString("created_on"));
-                responseMap.put("insurance_id", getInsuranceId(fhirPayload));
+                responseMap.put("insurance_id", searchResultSet.getString("insurance_id"));
                 responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
                 responseMap.put("sender_code", searchResultSet.getString("sender_code"));
                 responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
                 responseMap.put("workflow_id", workflowId);
                 responseMap.put("mobile", searchResultSet.getString("mobile"));
-                responseMap.put("patientName", getPatientName(fhirPayload));
+                responseMap.put("patientName", searchResultSet.getString("patient_name"));
                 groupedEntries.get(workflowId).add(responseMap);
                 if (groupedEntries.size() >= 10) {
                     break;
@@ -184,7 +183,7 @@ public class BeneficiaryService {
         String app = (String) requestBody.getOrDefault("app","");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT workflow_id,request_fhir,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile FROM %s WHERE sender_code = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, senderCode, app);
+        String searchQuery = String.format("SELECT workflow_id,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile,insurance_id,supporting_documents,bill_amount,patient_name FROM %s WHERE sender_code = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, senderCode, app);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
@@ -192,24 +191,23 @@ public class BeneficiaryService {
                     groupedEntries.put(workflowId, new ArrayList<>());
                 }
                 Map<String, Object> responseMap = new HashMap<>();
-                String fhirPayload = searchResultSet.getString("request_fhir");
                 String actionType = searchResultSet.getString("action");
                 if (actionType.equalsIgnoreCase("claim") || actionType.equalsIgnoreCase("preauth")) {
-                    responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
-                    responseMap.put("billAmount", getAmount(fhirPayload));
+                    responseMap.put("supportingDocuments", searchResultSet.getString("supporting_documents"));
+                    responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
                 }
                 responseMap.put("type", actionType);
                 responseMap.put("status", searchResultSet.getString("status"));
                 responseMap.put("apiCallId", searchResultSet.getString("request_id"));
                 responseMap.put("claimType", "OPD");
                 responseMap.put("date", searchResultSet.getString("created_on"));
-                responseMap.put("insurance_id", getInsuranceId(fhirPayload));
+                responseMap.put("insurance_id", searchResultSet.getString("insurance_id"));
                 responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
                 responseMap.put("sender_code", searchResultSet.getString("sender_code"));
                 responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
                 responseMap.put("workflow_id", workflowId);
                 responseMap.put("mobile", searchResultSet.getString("mobile"));
-                responseMap.put("patientName", getPatientName(fhirPayload));
+                responseMap.put("patientName", searchResultSet.getString("patient_name"));
                 groupedEntries.get(workflowId).add(responseMap);
                 if (groupedEntries.size() >= 10) {
                     break;
@@ -235,11 +233,10 @@ public class BeneficiaryService {
         String app = (String) requestBody.getOrDefault("app","");
         List<Map<String, Object>> entries = new ArrayList<>();
         Map<String, Object> resp = new HashMap<>();
-        String searchQuery = String.format("SELECT request_fhir,action,status,created_on,correlation_id,request_id,sender_code,recipient_code,mobile FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') AND app = '%s' ORDER BY created_on ASC", payorDataTable, workflowId, app);
+        String searchQuery = String.format("SELECT action,status,created_on,correlation_id,request_id,sender_code,recipient_code,mobile,insurance_id,supporting_documents,bill_amount,patient_name FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') AND app = '%s' ORDER BY created_on ASC", payorDataTable, workflowId, app);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 Map<String, Object> responseMap = new HashMap<>();
-                String fhirPayload = searchResultSet.getString("request_fhir");
                 responseMap.put("type", getType(searchResultSet.getString("action")));
                 responseMap.put("status", searchResultSet.getString("status"));
                 responseMap.put("apiCallId", searchResultSet.getString("request_id"));
@@ -248,10 +245,10 @@ public class BeneficiaryService {
                 responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
                 responseMap.put("sender_code", searchResultSet.getString("sender_code"));
                 responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
-                responseMap.put("billAmount", getAmount(fhirPayload));
-                responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
+                responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
+                responseMap.put("supportingDocuments", searchResultSet.getString("supporting_documents"));
                 responseMap.put("mobile", searchResultSet.getString("mobile"));
-                responseMap.put("patientName", getPatientName(fhirPayload));
+                responseMap.put("patientName", searchResultSet.getString("patient_name"));
                 entries.add(responseMap);
             }
             resp.put("entries", entries);
@@ -269,42 +266,6 @@ public class BeneficiaryService {
             return "preauth"; // You can add more handling as needed
         }
     }
-
-
-    public String getInsuranceId(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
-        return coverage.getSubscriberId();
-    }
-
-    public String getPatientName(String fhirPayload){
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
-        return patient.getName().get(0).getTextElement().getValue();
-    }
-    public String getAmount(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-        return claim.getTotal().getValue().toString();
-    }
-
-    public Map<String, List<String>> getSupportingDocuments(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-        Map<String, List<String>> documentMap = new HashMap<>();
-        for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
-            if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
-                String url = supportingInfo.getValueAttachment().getUrl();
-                String documentType = supportingInfo.getCategory().getCoding().get(0).getDisplay();
-                if (!documentMap.containsKey(documentType)) {
-                    documentMap.put(documentType, new ArrayList<>());
-                }
-                documentMap.get(documentType).add(url);
-            }
-        }
-        return documentMap;
-    }
-
 
     public List<Map<String, Object>> getDocumentUrls(List<MultipartFile> files, String mobile) throws ClientException, SQLException, IOException {
         if (isRateLimited()) {
