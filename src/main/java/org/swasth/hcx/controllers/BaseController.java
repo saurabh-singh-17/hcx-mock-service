@@ -78,6 +78,9 @@ public class BaseController {
     private String beneficiaryUsername;
     @Value("${beneficiary.password}")
     private String beneficiaryPassword;
+
+    @Value("${beneficiary.recipient-code}")
+    private String mockRecipientCode;
     @Autowired
     private PayerService payerService;
 
@@ -202,7 +205,7 @@ public class BaseController {
             onActionCall.sendOnAction(request.getRecipientCode(), respfhir, operation, actionJwe, onActionStatus, output);
         } else {
             payerService.process(request, reqFhir, respfhir);
-            if (request.getAction().equalsIgnoreCase("/v0.7/coverageeligibility/check") && request.getSenderCode().equalsIgnoreCase(beneficiaryParticipantCode)) {
+            if (request.getAction().equalsIgnoreCase("/v0.7/coverageeligibility/check") && request.getRecipientCode().equalsIgnoreCase(mockRecipientCode)) {
                 Thread.sleep(3000);
                 onActionCall.sendOnAction(request.getRecipientCode(), respfhir, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
                 String updateQuery = String.format("UPDATE %s SET status='%s',updated_on=%d WHERE request_id='%s' RETURNING %s,%s",

@@ -60,9 +60,15 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createCoverageEligibilityRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
-            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
-            CoverageEligibilityRequest ce = OnActionFhirExamples.coverageEligibilityRequestExample();
             System.out.println("requestBody" + requestBody);
+            String participantCode = (String) requestBody.get("participantCode");
+            validateKeys("participantCode", participantCode);
+            String password = (String) requestBody.get("password");
+            validateKeys("password", password);
+            String recipientCode = (String) requestBody.get("recipientCode");
+            validateKeys("recipientCode", recipientCode);
+            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap(participantCode, password));
+            CoverageEligibilityRequest ce = OnActionFhirExamples.coverageEligibilityRequestExample();
             String app = (String) requestBody.get("app");
             ce.setText(new Narrative().setDiv(new XhtmlDocument().setValue(app)).setStatus(Narrative.NarrativeStatus.GENERATED));
             Practitioner practitioner = OnActionFhirExamples.practitionerExample();
@@ -86,7 +92,7 @@ public class GenerateOutgoingRequest {
             }
             Map<String, Object> output = new HashMap<>();
             String workFlowId = UUID.randomUUID().toString();
-            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, mockRecipientCode, "", "", workFlowId, new HashMap<>(), output);
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, recipientCode, "", "", workFlowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated.");
             Response response1 = new Response(workFlowId);
             return new ResponseEntity<>(response1, HttpStatus.ACCEPTED);
@@ -100,7 +106,13 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createClaimRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
-            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
+            String participantCode = (String) requestBody.get("participantCode");
+            validateKeys("participantCode", participantCode);
+            String password = (String) requestBody.get("password");
+            validateKeys("password", password);
+            String recipientCode = (String) requestBody.get("recipientCode");
+            validateKeys("recipientCode", recipientCode);
+            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap(participantCode, password));
             Claim claim = OnActionFhirExamples.claimExample();
             String billAmount = (String) requestBody.getOrDefault("billAmount", 0);
             claim.setTotal(new Money().setCurrency("INR").setValue(Long.parseLong(billAmount)));
@@ -137,6 +149,7 @@ public class GenerateOutgoingRequest {
                 System.out.println("resource To Bundle claim Request\n" + parser.encodeResourceToString(bundleTest));
             } catch (Exception e) {
                 System.out.println("Error message " + e.getMessage());
+                throw new ClientException(e.getMessage());
             }
             Map<String, Object> output = new HashMap<>();
             String workflowId = "";
@@ -145,7 +158,7 @@ public class GenerateOutgoingRequest {
             } else {
                 workflowId = (String) requestBody.getOrDefault("workflowId","");
             }
-            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, mockRecipientCode, "", "", workflowId, new HashMap<>(), output);
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, recipientCode, "", "", workflowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated.");
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
@@ -160,13 +173,15 @@ public class GenerateOutgoingRequest {
         try {
             String requestId = (String) requestBody.get("request_id");
             validateMap(requestId, requestBody);
+            String participantCode = (String) requestBody.getOrDefault("participantCode","");
+            String password = (String) requestBody.getOrDefault("password","");
             Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestId);
             Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
             String correlationId = (String) payloadMap.getOrDefault("correlation_id", "");
             Patient patient1 = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
             String mobile = patient1.getTelecom().get(0).getValue();
             System.out.println("mobile number of beneficiary: " + mobile);
-            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMapForPayor());
+            HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMapForPayor(participantCode, password));
             CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
             Patient patient = OnActionFhirExamples.patientExample();
             patient.getTelecom().add(new ContactPoint().setValue(mobile).setSystem(ContactPoint.ContactPointSystem.PHONE));
@@ -192,12 +207,14 @@ public class GenerateOutgoingRequest {
 
     public ResponseEntity<Object> createCommunicationOnRequest(Map<String, Object> requestBody) throws Exception {
         String requestId = (String) requestBody.getOrDefault("request_id", "");
+        String participantCode = (String) requestBody.getOrDefault("participantCode","");
+        String password = (String) requestBody.getOrDefault("password","");
         if (StringUtils.equalsIgnoreCase((String) requestBody.get("type"), "otp")) {
             ResponseEntity<Object> responseEntity = beneficiaryService.verifyOTP(requestBody);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE request_id = '%s'", payorDataTable, "successful", requestId);
                 postgresService.execute(query);
-                processOutgoingCallbackCommunication("otp", requestId, (String) requestBody.get("otp_code"), "", "");
+                processOutgoingCallbackCommunication("otp", requestId, (String) requestBody.get("otp_code"), "", "", participantCode, password);
             } else {
                 throw new ClientException(Objects.requireNonNull(responseEntity.getBody()).toString());
             }
@@ -208,16 +225,16 @@ public class GenerateOutgoingRequest {
             String query = String.format("UPDATE %s SET account_number ='%s',ifsc_code = '%s' WHERE request_id = '%s'", payorDataTable, accountNumber, ifscCode, requestId);
             postgresService.execute(query);
             System.out.println("The bank details updated successfully to the request id " + requestId);
-            processOutgoingCallbackCommunication("bank_details", requestId, "", accountNumber, ifscCode);
+            processOutgoingCallbackCommunication("bank_details", requestId, "", accountNumber, ifscCode, participantCode, password);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         }
         return ResponseEntity.badRequest().body("Unable to update the details to database");
     }
 
-    public void processOutgoingCallbackCommunication(String type, String requestId , String otpCode, String accountNumber,String ifscCode) throws Exception {
+    public void processOutgoingCallbackCommunication(String type, String requestId, String otpCode, String accountNumber, String ifscCode, String participantCode, String password) throws Exception {
         Communication communication;
         List<DomainResource> domList = new ArrayList<>();
-        HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
+        HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap(participantCode, password));
         if (type.equalsIgnoreCase("otp")) {
             communication = OnActionFhirExamples.communication();
             communication.getPayload().add(new Communication.CommunicationPayloadComponent().setContent(new StringType().setValue(otpCode)));
@@ -233,6 +250,7 @@ public class GenerateOutgoingRequest {
             System.out.println("resource To Bundle communication Request\n" + parser.encodeResourceToString(bundleTest));
         } catch (Exception e) {
             System.out.println("Error message " + e.getMessage());
+            throw new ClientException(e.getMessage());
         }
         String searchCorrelationIdQuery =  String.format("SELECT correlation_id FROM %s WHERE request_id = '%s'",payorDataTable, requestId);
         ResultSet resultSet = postgresService.executeQuery(searchCorrelationIdQuery);
@@ -250,12 +268,12 @@ public class GenerateOutgoingRequest {
         hcxIntegrator.processOutgoingCallback(parser.encodeResourceToString(bundleTest), Operations.COMMUNICATION_ON_REQUEST, "", rawPayload, "response.complete", new HashMap<>(), outputMap);
     }
 
-    public Map<String, Object> initializingConfigMap() throws IOException {
+    public Map<String, Object> initializingConfigMap(String participantCode, String password) throws IOException {
         Map<String, Object> configMap = new HashMap<>();
         configMap.put("protocolBasePath", protocolBasePath);
-        configMap.put("participantCode", beneficiaryParticipantCode);
-        configMap.put("username", beneficiaryUserName);
-        configMap.put("password", beneficiaryPassword);
+        configMap.put("participantCode", participantCode);
+        configMap.put("username", participantCode);
+        configMap.put("password", password);
         String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/test-keys/private-key.pem";
         String certificate = IOUtils.toString(new URL(keyUrl), StandardCharsets.UTF_8);
         configMap.put("encryptionPrivateKey", certificate);
@@ -287,12 +305,12 @@ public class GenerateOutgoingRequest {
             throw new ClientException("Missing required field " + field);
     }
 
-    public Map<String, Object> initializingConfigMapForPayor() throws IOException {
+    public Map<String, Object> initializingConfigMapForPayor(String participantCode, String password) throws IOException {
         Map<String, Object> configMap = new HashMap<>();
         configMap.put("protocolBasePath", protocolBasePath);
-        configMap.put("participantCode", mockRecipientCode);
-        configMap.put("username", payorUsername);
-        configMap.put("password", payorPassword);
+        configMap.put("participantCode", participantCode);
+        configMap.put("username", participantCode);
+        configMap.put("password", password);
         String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/test-keys/private-key.pem";
         String certificate = IOUtils.toString(new URL(keyUrl), StandardCharsets.UTF_8);
         configMap.put("encryptionPrivateKey", certificate);
@@ -300,5 +318,9 @@ public class GenerateOutgoingRequest {
         return configMap;
     }
 
+    protected void validateKeys(String field, String value) throws ClientException {
+        if (StringUtils.isEmpty(value))
+            throw new ClientException("Missing required field " + field);
+    }
 
 }
