@@ -267,7 +267,6 @@ public class BeneficiaryService {
         }
     }
 
-
     public List<Map<String, Object>> getDocumentUrls(List<MultipartFile> files, String mobile) throws ClientException, SQLException, IOException {
         if (isRateLimited()) {
             throw new ClientException("Rate limit exceeded. Please try again later.");
