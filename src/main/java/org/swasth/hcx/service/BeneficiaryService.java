@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.exception.ErrorCodes;
 import org.swasth.hcx.utils.Constants;
+import org.swasth.hcx.utils.JSONUtils;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -193,7 +194,8 @@ public class BeneficiaryService {
                 Map<String, Object> responseMap = new HashMap<>();
                 String actionType = searchResultSet.getString("action");
                 if (actionType.equalsIgnoreCase("claim") || actionType.equalsIgnoreCase("preauth")) {
-                    responseMap.put("supportingDocuments", searchResultSet.getString("supporting_documents"));
+                    String supportingDocuments = searchResultSet.getString("supporting_documents");
+                    responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
                     responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
                 }
                 responseMap.put("type", actionType);
