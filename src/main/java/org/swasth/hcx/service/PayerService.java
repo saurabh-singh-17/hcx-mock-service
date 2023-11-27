@@ -32,26 +32,19 @@ public class PayerService {
     private final IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
 
     public void process(Request request, String reqFhirObj, String respFhirObj) throws ClientException, JsonProcessingException {
-        Map<String,Object> info = new HashMap<>();
-        String amount =  "";
+        Map<String, Object> info = new HashMap<>();
+        String amount = "";
         String serializeDocuments = "";
-        System.out.println("----------------communication ------------");
-        if((!request.getAction().contains("coverageeligibility")) || (!getEntity(request.getAction()).contains("communication"))) {
-            System.out.println(" it is coming inside the -------------");
+        if (!request.getAction().contains("coverageeligibility")) {
+            System.out.println("----------it is coming inside the -------------");
             info.put("medical", Collections.singletonMap("status", PENDING));
             info.put("financial", Collections.singletonMap("status", PENDING));
-            Map<String,List<String>> getDocuments = getSupportingDocuments(reqFhirObj);
+            Map<String, List<String>> getDocuments = getSupportingDocuments(reqFhirObj);
             serializeDocuments = JSONUtils.serialize(getDocuments);
             amount = getAmount(reqFhirObj);
         }
-        String query;
-        if(!getEntity(request.getAction()).contains("communication")) {
-            query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", serializeDocuments, amount, getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
-        } else {
-            query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", "", amount, "", "");
-        }
+        String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
+                table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", serializeDocuments, amount, getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
         System.out.println("----------communication query ------------" + query);
         postgres.execute(query);
     }
