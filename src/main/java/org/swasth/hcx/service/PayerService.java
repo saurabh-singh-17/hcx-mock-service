@@ -36,9 +36,8 @@ public class PayerService {
         String amount =  "";
         String serializeDocuments = "";
         System.out.println("----------------communication ------------");
-        System.out.println(request.getAction());
-        System.out.println(getEntity(request.getAction()));
-        if(!request.getAction().contains("coverageeligibility") || !getEntity(request.getAction()).contains("communication")) {
+        if((!request.getAction().contains("coverageeligibility")) || (!getEntity(request.getAction()).contains("communication"))) {
+            System.out.println(" it is coming inside the -------------");
             info.put("medical", Collections.singletonMap("status", PENDING));
             info.put("financial", Collections.singletonMap("status", PENDING));
             Map<String,List<String>> getDocuments = getSupportingDocuments(reqFhirObj);
