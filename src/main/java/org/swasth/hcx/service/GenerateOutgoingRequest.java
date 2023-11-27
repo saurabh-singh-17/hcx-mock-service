@@ -2,6 +2,7 @@ package org.swasth.hcx.service;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import com.amazonaws.services.dynamodbv2.xspec.S;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
 import org.apache.commons.collections.MapUtils;
@@ -61,11 +62,11 @@ public class GenerateOutgoingRequest {
         Response response = new Response();
         try {
             System.out.println("requestBody" + requestBody);
-            String participantCode = (String) requestBody.get("participantCode");
+            String participantCode = (String) requestBody.getOrDefault("participantCode", "");
             validateKeys("participantCode", participantCode);
-            String password = (String) requestBody.get("password");
+            String password = (String) requestBody.getOrDefault("password", "");
             validateKeys("password", password);
-            String recipientCode = (String) requestBody.get("recipientCode");
+            String recipientCode = (String) requestBody.getOrDefault("recipientCode", "");
             validateKeys("recipientCode", recipientCode);
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap(participantCode, password));
             CoverageEligibilityRequest ce = OnActionFhirExamples.coverageEligibilityRequestExample();
@@ -106,11 +107,11 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createClaimRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
-            String participantCode = (String) requestBody.get("participantCode");
+            String participantCode = (String) requestBody.getOrDefault("participantCode", "");
             validateKeys("participantCode", participantCode);
-            String password = (String) requestBody.get("password");
+            String password = (String) requestBody.getOrDefault("password", "");
             validateKeys("password", password);
-            String recipientCode = (String) requestBody.get("recipientCode");
+            String recipientCode = (String) requestBody.getOrDefault("recipientCode", "");
             validateKeys("recipientCode", recipientCode);
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap(participantCode, password));
             Claim claim = OnActionFhirExamples.claimExample();
@@ -173,8 +174,12 @@ public class GenerateOutgoingRequest {
         try {
             String requestId = (String) requestBody.get("request_id");
             validateMap(requestId, requestBody);
-            String participantCode = (String) requestBody.getOrDefault("participantCode","");
-            String password = (String) requestBody.getOrDefault("password","");
+            String participantCode = (String) requestBody.getOrDefault("participantCode", "");
+            validateKeys("participantCode", participantCode);
+            String password = (String) requestBody.getOrDefault("password", "");
+            validateKeys("password", password);
+            String recipientCode = (String) requestBody.getOrDefault("recipientCode", "");
+            validateKeys("recipientCode", recipientCode);
             Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestId);
             Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
             String correlationId = (String) payloadMap.getOrDefault("correlation_id", "");
@@ -207,8 +212,12 @@ public class GenerateOutgoingRequest {
 
     public ResponseEntity<Object> createCommunicationOnRequest(Map<String, Object> requestBody) throws Exception {
         String requestId = (String) requestBody.getOrDefault("request_id", "");
-        String participantCode = (String) requestBody.getOrDefault("participantCode","");
-        String password = (String) requestBody.getOrDefault("password","");
+        String participantCode = (String) requestBody.getOrDefault("participantCode", "");
+        validateKeys("participantCode", participantCode);
+        String password = (String) requestBody.getOrDefault("password", "");
+        validateKeys("password", password);
+        String recipientCode = (String) requestBody.getOrDefault("recipientCode", "");
+        validateKeys("recipientCode", recipientCode);
         if (StringUtils.equalsIgnoreCase((String) requestBody.get("type"), "otp")) {
             ResponseEntity<Object> responseEntity = beneficiaryService.verifyOTP(requestBody);
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
@@ -322,5 +331,4 @@ public class GenerateOutgoingRequest {
         if (StringUtils.isEmpty(value))
             throw new ClientException("Missing required field " + field);
     }
-
 }
