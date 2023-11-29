@@ -61,6 +61,8 @@ public class GenerateOutgoingRequest {
         Response response = new Response();
         try {
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
+            System.out.println("------------------intialize the Map-----------");
+            System.out.println(initializingConfigMap());
             CoverageEligibilityRequest ce = OnActionFhirExamples.coverageEligibilityRequestExample();
             System.out.println("requestBody" + requestBody);
             String app = (String) requestBody.get("app");
@@ -101,6 +103,8 @@ public class GenerateOutgoingRequest {
         Response response = new Response();
         try {
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
+            System.out.println("------------------intialize the Map-----------");
+            System.out.println(initializingConfigMap());
             Claim claim = OnActionFhirExamples.claimExample();
             String billAmount = (String) requestBody.getOrDefault("billAmount", 0);
             claim.setTotal(new Money().setCurrency("INR").setValue(Long.parseLong(billAmount)));
