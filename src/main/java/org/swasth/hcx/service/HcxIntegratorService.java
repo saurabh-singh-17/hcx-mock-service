@@ -6,10 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.swasth.hcx.exception.ClientException;
-import org.swasth.hcx.utils.JSONUtils;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
@@ -23,13 +21,9 @@ public class HcxIntegratorService {
 
     @Autowired
     Environment env;
-
     @Autowired
     private PostgresService postgres;
-
     private Map<String,Object> configCache = new HashMap<>();
-
-
     public HCXIntegrator getHCXIntegrator(String participantCode) throws Exception {
         /**
          * Initializing hcx_sdk to use helper functions and FHIR validator
@@ -50,7 +44,7 @@ public class HcxIntegratorService {
         String query = String.format("SELECT * FROM %s WHERE child_participant_code='%s'", env.getProperty("postgres.table.mockParticipant"), participantCode);
         ResultSet resultSet = postgres.executeQuery(query);
         if(resultSet.next()){
-            return getConfig(participantCode, resultSet.getString("primary_email"), resultSet.getString("password"),  resultSet.getString("private_key"));
+            return getConfig(participantCode, resultSet.getString("child_participant_code"), resultSet.getString("password"),  resultSet.getString("private_key"));
         } else {
             String certificate = IOUtils.toString(new URL(env.getProperty("mock_payer.private_key")), StandardCharsets.UTF_8.toString());
             return getConfig(env.getProperty("mock_payer.participant_code"), env.getProperty("mock_payer.username"), env.getProperty("mock_payer.password"), certificate);
@@ -67,7 +61,7 @@ public class HcxIntegratorService {
         configMap.put("password", password);
         configMap.put("encryptionPrivateKey", privateKey);
         configMap.put("fhirValidationEnabled", false);
-
+        configMap.put("signingPrivateKey", privateKey);
         return configMap;
     }
 }

@@ -76,7 +76,6 @@ public class OnActionCall {
     }
     @Async("asyncExecutor")
     public void sendOnAction(String recipientCode, String fhirPayload, Operations operation, String actionJwe, String onActionStatus, Map<String,Object> output) throws Exception{
-        IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(recipientCode);
         hcxIntegrator.processOutgoingCallback(fhirPayload, operation,"", actionJwe,onActionStatus, new HashMap<>(), output);
         System.out.println("output of onaction" + output);

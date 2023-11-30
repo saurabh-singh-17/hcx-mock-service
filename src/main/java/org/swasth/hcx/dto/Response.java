@@ -18,14 +18,27 @@ public class Response {
     private String apiCallId;
     @JsonProperty("subscription_id")
     private String subscriptionId;
+
+    private String recipientCode;
+    private String senderCode ;
     private ResponseError error;
     private Map<String, Object> result;
 
+    public String getWorkflowId() {
+        return workflowId;
+    }
+
+    public void setWorkflowId(String workflowId) {
+        this.workflowId = workflowId;
+    }
+
+    private String workflowId;
     public Response() {}
 
-    public Response(String correlationId, String apiCallId) {
-        this.correlationId = correlationId;
-        this.apiCallId = apiCallId;
+    public Response(String workflowId, String senderCode, String recipientCode) {
+        this.workflowId = workflowId;
+        this.senderCode = senderCode;
+        this.recipientCode = recipientCode;
     }
 
     public Response(String key, Object val) {
