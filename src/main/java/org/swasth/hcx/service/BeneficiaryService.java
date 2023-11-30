@@ -270,6 +270,37 @@ public class BeneficiaryService {
         }
     }
 
+    public String getInsuranceId(String fhirPayload) {
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
+        return coverage.getSubscriberId();
+    }
+
+    public String getPatientName(String fhirPayload){
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
+        return patient.getName().get(0).getTextElement().getValue();
+    }
+    public String getAmount(String fhirPayload) {
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+        return claim.getTotal().getValue().toString();
+    }
+
+    public List<String> getSupportingDocuments(String fhirPayload) {
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+        List<String> documentUrls = new ArrayList<>();
+        for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
+            if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
+                String url = supportingInfo.getValueAttachment().getUrl();
+                documentUrls.add(url);
+            }
+        }
+        return documentUrls;
+    }
+
+  
     public List<Map<String, Object>> getDocumentUrls(List<MultipartFile> files, String mobile) throws ClientException, SQLException, IOException {
         if (isRateLimited()) {
             throw new ClientException("Rate limit exceeded. Please try again later.");
