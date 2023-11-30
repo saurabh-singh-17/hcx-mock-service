@@ -288,21 +288,17 @@ public class BeneficiaryService {
         return claim.getTotal().getValue().toString();
     }
 
-    public Map<String, List<String>> getSupportingDocuments(String fhirPayload) {
+    public List<String> getSupportingDocuments(String fhirPayload) {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-        Map<String, List<String>> documentMap = new HashMap<>();
+        List<String> documentUrls = new ArrayList<>();
         for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
             if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
                 String url = supportingInfo.getValueAttachment().getUrl();
-                String documentType = supportingInfo.getCategory().getCoding().get(0).getDisplay();
-                if (!documentMap.containsKey(documentType)) {
-                    documentMap.put(documentType, new ArrayList<>());
-                }
-                documentMap.get(documentType).add(url);
+                documentUrls.add(url);
             }
         }
-        return documentMap;
+        return documentUrls;
     }
 
 
