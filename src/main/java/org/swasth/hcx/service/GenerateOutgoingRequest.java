@@ -91,10 +91,10 @@ public class GenerateOutgoingRequest {
                 throw new ClientException(e.getMessage());
             }
             Map<String, Object> output = new HashMap<>();
-            String workFlowId = UUID.randomUUID().toString();
-            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, recipientCode, "", "", workFlowId, new HashMap<>(), output);
+            String workflowId = UUID.randomUUID().toString();
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, recipientCode, "", "", workflowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated.");
-            Response response1 = new Response(workFlowId, participantCode, recipientCode);
+            Map<String,Object> response1 = ResponseMap(workflowId,participantCode,recipientCode);
             return new ResponseEntity<>(response1, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();
@@ -160,7 +160,7 @@ public class GenerateOutgoingRequest {
             }
             hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, recipientCode, "", "", workflowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated.");
-            Response response1 = new Response(workflowId, participantCode, recipientCode);
+            Map<String, Object> response1 = ResponseMap(workflowId, participantCode, recipientCode);
             return new ResponseEntity<>(response1, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();
@@ -331,4 +331,13 @@ public class GenerateOutgoingRequest {
         if (StringUtils.isEmpty(value))
             throw new ClientException("Missing required field " + field);
     }
+
+    public Map<String, Object> ResponseMap(String workflowId, String senderCode, String recipientCode) {
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("workflowId", workflowId);
+        responseMap.put("senderCode", senderCode);
+        responseMap.put("recipientCode", recipientCode);
+        return responseMap;
+    }
+
 }
