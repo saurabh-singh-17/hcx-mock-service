@@ -210,7 +210,9 @@ public class BaseController {
                 postgres.execute(updateQuery);
             }
             Thread.sleep(3000);
-            updateMobileNumber(request.getApiCallId(), apiAction);
+            if(!request.getAction().contains("communication")){
+                updateMobileNumber(request.getApiCallId(), apiAction);
+            }
         }
     }
 
