@@ -94,7 +94,7 @@ public class GenerateOutgoingRequest {
             String workFlowId = UUID.randomUUID().toString();
             hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, recipientCode, "", "", workFlowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated.");
-            Response response1 = new Response(workFlowId);
+            Response response1 = new Response(workFlowId, participantCode, recipientCode);
             return new ResponseEntity<>(response1, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();
@@ -160,7 +160,8 @@ public class GenerateOutgoingRequest {
             }
             hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(bundleTest), operations, recipientCode, "", "", workflowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated.");
-            return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+            Response response1 = new Response(workflowId, participantCode, recipientCode);
+            return new ResponseEntity<>(response1, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("error   " + e);

@@ -18,6 +18,9 @@ public class Response {
     private String apiCallId;
     @JsonProperty("subscription_id")
     private String subscriptionId;
+
+    private String recipientCode;
+    private String senderCode ;
     private ResponseError error;
     private Map<String, Object> result;
 
@@ -32,8 +35,10 @@ public class Response {
     private String workflowId;
     public Response() {}
 
-    public Response(String workflowId) {
+    public Response(String workflowId, String senderCode, String recipientCode) {
         this.workflowId = workflowId;
+        this.senderCode = senderCode;
+        this.recipientCode = recipientCode;
     }
 
     public Response(String key, Object val) {
