@@ -207,9 +207,9 @@ public class BaseController {
                 String updateQuery = String.format("UPDATE %s SET status='%s',updated_on=%d WHERE request_id='%s' RETURNING %s,%s",
                         table, "Approved", System.currentTimeMillis(), request.getApiCallId(), "raw_payload", "response_fhir");
                 postgres.execute(updateQuery);
-                Thread.sleep(2000);
-                updateMobileNumber(request.getApiCallId(), apiAction);
             }
+            Thread.sleep(2000);
+            updateMobileNumber(request.getApiCallId(), apiAction);
         }
     }
 
