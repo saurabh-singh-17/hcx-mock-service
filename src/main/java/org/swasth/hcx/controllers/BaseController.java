@@ -142,9 +142,6 @@ public class BaseController {
                 System.out.println("bundle reply " + parser.encodeResourceToString(bundle));
                 //sending the onaction call
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
-                if(!Objects.requireNonNull(env.getProperty("mock_payer.participant_code")).equalsIgnoreCase("1-29482df3-e875-45ef-a4e9-592b6f565782")){
-                    updateMobileNumber(request.getApiCallId(), apiAction);
-                }
             } else if (CLAIM_SUBMIT.equalsIgnoreCase(apiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT, output);
                 if (!result) {
@@ -159,9 +156,6 @@ public class BaseController {
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#", "")).setResource(claimRes));
                 System.out.println("bundle reply " + parser.encodeResourceToString(bundle));
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
-                if(!Objects.requireNonNull(env.getProperty("mock_payer.participant_code")).equalsIgnoreCase("1-29482df3-e875-45ef-a4e9-592b6f565782")){
-                    updateMobileNumber(request.getApiCallId(), apiAction);
-                }
             } else if (PRE_AUTH_SUBMIT.equalsIgnoreCase(apiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT, output);
                 if (!result) {
@@ -176,9 +170,6 @@ public class BaseController {
                 preAuthRes.setUse(ClaimResponse.Use.PREAUTHORIZATION);
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(preAuthRes.getResourceType() + "/" + preAuthRes.getId().toString().replace("#", "")).setResource(preAuthRes));
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
-                if(!Objects.requireNonNull(env.getProperty("mock_payer.participant_code")).equalsIgnoreCase("1-29482df3-e875-45ef-a4e9-592b6f565782")){
-                    updateMobileNumber(request.getApiCallId(), apiAction);
-                }
             } else if (COMMUNICATION_REQUEST.equalsIgnoreCase(apiAction)) {
                 HCXIntegrator hcxIntegrator1 = HCXIntegrator.getInstance(initializingConfigMap());
                 boolean result = hcxIntegrator1.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_REQUEST, output);
@@ -218,6 +209,8 @@ public class BaseController {
                         table, "Approved", System.currentTimeMillis(), request.getApiCallId(), "raw_payload", "response_fhir");
                 postgres.execute(updateQuery);
             }
+            Thread.sleep(3000);
+            updateMobileNumber(request.getApiCallId(), apiAction);
         }
     }
 
