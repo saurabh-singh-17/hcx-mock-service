@@ -27,7 +27,6 @@ import org.swasth.hcx.helpers.EventGenerator;
 import org.swasth.hcx.service.*;
 import org.swasth.hcx.utils.JSONUtils;
 import org.swasth.hcx.utils.OnActionCall;
-
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
