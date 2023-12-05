@@ -202,13 +202,13 @@ public class BaseController {
         } else {
             payerService.process(request, reqFhir, respfhir);
             if (request.getAction().equalsIgnoreCase("/v0.7/coverageeligibility/check") && request.getRecipientCode().equalsIgnoreCase(mockRecipientCode)) {
-                Thread.sleep(3000);
+                Thread.sleep(2000);
                 onActionCall.sendOnAction(request.getRecipientCode(), respfhir, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
                 String updateQuery = String.format("UPDATE %s SET status='%s',updated_on=%d WHERE request_id='%s' RETURNING %s,%s",
                         table, "Approved", System.currentTimeMillis(), request.getApiCallId(), "raw_payload", "response_fhir");
                 postgres.execute(updateQuery);
             }
-            Thread.sleep(3000);
+            Thread.sleep(2000);
             if(!request.getAction().contains("communication")){
                 updateMobileNumber(request.getApiCallId(), apiAction);
             }
@@ -329,8 +329,7 @@ public class BaseController {
             return ce.getText().getDiv().allText();
         } else if (apiAction.equalsIgnoreCase("/v0.7/claim/submit") || apiAction.equalsIgnoreCase("/v0.7/preauth/submit")) {
             Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-            String subType = claim.getSubType().getCoding().get(0).getCode();
-            return subType.equalsIgnoreCase("OPD") ? "BSP" : "OPD";
+            return claim.getText().getDiv().allText();
         }
         return "";
     }
