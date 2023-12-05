@@ -116,11 +116,10 @@ public class GenerateOutgoingRequest {
             Claim claim = OnActionFhirExamples.claimExample();
             String billAmount = (String) requestBody.getOrDefault("billAmount", 0);
             claim.setTotal(new Money().setCurrency("INR").setValue(Long.parseLong(billAmount)));
-            // To check type is OPD
             String type = (String) requestBody.getOrDefault("type","");
+            claim.setSubType(new CodeableConcept(new Coding().setSystem("https://staging-hcx.swasth.app/hapi-fhir/fhir/CodeSystem/hcx-claim-sub-types").setCode(type)));
             String app = (String) requestBody.getOrDefault("app", "");
             claim.setText(new Narrative().setDiv(new XhtmlDocument().setValue(app)).setStatus(Narrative.NarrativeStatus.GENERATED));
-            claim.setSubType(new CodeableConcept(new Coding().setSystem("https://staging-hcx.swasth.app/hapi-fhir/fhir/CodeSystem/hcx-claim-sub-types").setCode(type)));
             // adding supporting documents (Bill/invoice or prescription)
             if (requestBody.containsKey("supportingDocuments")) {
                 ArrayList<Map<String, Object>> supportingDocuments = JSONUtils.convert(requestBody.get("supportingDocuments"), ArrayList.class);
