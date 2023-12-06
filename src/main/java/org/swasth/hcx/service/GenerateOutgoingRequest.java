@@ -106,6 +106,7 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createClaimRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
+            System.out.println("----Request Body ----" + requestBody);
             String participantCode = (String) requestBody.getOrDefault("participantCode", "");
             validateKeys("participantCode", participantCode);
             String password = (String) requestBody.getOrDefault("password", "");
