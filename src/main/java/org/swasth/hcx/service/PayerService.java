@@ -93,7 +93,8 @@ public class PayerService {
     public DomainResource getValueWithResourceType(String fhirPayload, String resourceType) {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
-            System.out.println(" resource Type --------"  + resourceType);
+            System.out.println(" resource Type Path--------"  + bundleEntryComponent.getResource().getResourceType());
+            System.out.println("Resource --------------- "  + bundleEntryComponent.getResource().getResourceType());
             System.out.println(parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource())));
             if (StringUtils.equalsIgnoreCase(resourceType, "Claim")) {
                 return parser.parseResource(Claim.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
