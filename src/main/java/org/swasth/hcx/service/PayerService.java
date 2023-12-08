@@ -2,21 +2,16 @@ package org.swasth.hcx.service;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
-import com.amazonaws.services.dynamodbv2.xspec.S;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.Claim;
-import org.hl7.fhir.r4.model.Coverage;
-import org.hl7.fhir.r4.model.Patient;
+import org.apache.commons.lang3.StringUtils;
+import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.swasth.hcx.dto.Request;
 import org.swasth.hcx.exception.ClientException;
-import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.utils.JSONUtils;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 
 import static org.swasth.hcx.utils.Constants.PENDING;
@@ -55,8 +50,8 @@ public class PayerService {
         }
     }
 
-    private String getEntity(String action){
-        Map<String,String> actionMap = new HashMap<>();
+    private String getEntity(String action) {
+        Map<String, String> actionMap = new HashMap<>();
         actionMap.put("/v0.7/coverageeligibility/check", "coverageeligibility");
         actionMap.put("/v0.7/preauth/submit", "preauth");
         actionMap.put("/v0.7/claim/submit", "claim");
@@ -65,8 +60,7 @@ public class PayerService {
     }
 
     public Map<String, List<String>> getSupportingDocuments(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+        Claim claim = (Claim) getValueWithResourceType(fhirPayload, "Claim");
         Map<String, List<String>> documentMap = new HashMap<>();
         for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
             if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
@@ -82,20 +76,33 @@ public class PayerService {
     }
 
     public String getAmount(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+        Claim claim = (Claim) getValueWithResourceType(fhirPayload, "Claim");
         return claim.getTotal().getValue().toString();
     }
 
     public String getInsuranceId(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
+        Coverage coverage = (Coverage) getValueWithResourceType(fhirPayload, "Coverage");
         return coverage.getSubscriberId();
     }
 
-    public String getPatientName(String fhirPayload){
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
+    public String getPatientName(String fhirPayload) {
+        Patient patient = (Patient) getValueWithResourceType(fhirPayload, "Patient");
         return patient.getName().get(0).getTextElement().getValue();
+    }
+
+    public DomainResource getValueWithResourceType(String fhirPayload, String resourceType) {
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
+            if (StringUtils.equalsIgnoreCase(resourceType, "Claim")) {
+                return parser.parseResource(Claim.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+            }
+            if (StringUtils.equalsIgnoreCase(resourceType, "Patient")) {
+                return parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+            }
+            if (StringUtils.equalsIgnoreCase(resourceType, "Coverage")) {
+                return parser.parseResource(Coverage.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+            }
+        }
+        return null;
     }
 }
