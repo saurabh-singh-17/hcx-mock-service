@@ -94,17 +94,15 @@ public class PayerService {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
             System.out.println(" resource Type Path--------"  + bundleEntryComponent.getResource().getResourceType());
-            System.out.println("Resource --------------- "  + bundleEntryComponent.getResource().getResourceType());
-            System.out.println(parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource())));
             if (StringUtils.equalsIgnoreCase(resourceType, "Claim")) {
                 return parser.parseResource(Claim.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
             }
-            if (StringUtils.equalsIgnoreCase(resourceType, "Patient")) {
-                return parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+            if (StringUtils.equalsIgnoreCase(resourceType, "CoverageEligibility")) {
+                return parser.parseResource(CoverageEligibilityRequest.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
             }
-            if (StringUtils.equalsIgnoreCase(resourceType, "Coverage")) {
-                return parser.parseResource(Coverage.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
-            }
+//            if (StringUtils.equalsIgnoreCase(resourceType, "Coverage")) {
+//                return parser.parseResource(Coverage.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+//            }
         }
         return null;
     }
