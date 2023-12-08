@@ -30,7 +30,7 @@ public class PayerService {
         Map<String, Object> info = new HashMap<>();
         if (request.getAction().contains("coverageeligibility")) {
             String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", "{}", "", getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
+                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", "{}", "", getInsuranceIdForCoverageEligibility(reqFhirObj), getPatientNameForCoverageEligibility(reqFhirObj));
             postgres.execute(query);
         } else if (request.getAction().contains("communication")) {
             String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
@@ -45,7 +45,7 @@ public class PayerService {
             serializeDocuments = JSONUtils.serialize(getDocuments);
             amount = getAmount(reqFhirObj);
             String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", serializeDocuments, amount, getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
+                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", serializeDocuments, amount, getInsuranceIdForClaim(reqFhirObj), getPatientNameForClaim(reqFhirObj));
             postgres.execute(query);
         }
     }
@@ -80,13 +80,24 @@ public class PayerService {
         return claim.getTotal().getValue().toString();
     }
 
-    public String getInsuranceId(String fhirPayload) {
-        Coverage coverage = (Coverage) getValueWithResourceType(fhirPayload, "Coverage");
+
+    public String getInsuranceIdForCoverageEligibility(String fhirPayload) {
+        Coverage coverage = (Coverage) getValueWithResourceType(fhirPayload, "CoverageEligibility");
         return coverage.getSubscriberId();
     }
 
-    public String getPatientName(String fhirPayload) {
-        Patient patient = (Patient) getValueWithResourceType(fhirPayload, "Patient");
+    public String getInsuranceIdForClaim(String fhirPayload) {
+        Coverage coverage = (Coverage) getValueWithResourceType(fhirPayload, "Claim");
+        return coverage.getSubscriberId();
+    }
+
+    public String getPatientNameForCoverageEligibility(String fhirPayload) {
+        Patient patient = (Patient) getValueWithResourceType(fhirPayload, "CoverageEligibility");
+        return patient.getName().get(0).getTextElement().getValue();
+    }
+
+    public String getPatientNameForClaim(String fhirPayload) {
+        Patient patient = (Patient) getValueWithResourceType(fhirPayload, "Claim");
         return patient.getName().get(0).getTextElement().getValue();
     }
 
