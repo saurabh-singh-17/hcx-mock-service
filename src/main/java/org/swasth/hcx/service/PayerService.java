@@ -99,6 +99,7 @@ public class PayerService {
             if (StringUtils.equalsIgnoreCase(resourceType, "Patient")) {
                 return parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
             }
+            System.out.println(" resource Type --------"  + resourceType);
             if (StringUtils.equalsIgnoreCase(resourceType, "Coverage")) {
                 return parser.parseResource(Coverage.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
             }
