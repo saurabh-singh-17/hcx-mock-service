@@ -83,25 +83,41 @@ public class PayerService {
 
     public String getAmount(String fhirPayload) {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-        return claim.getTotal().getValue().toString();
+        String amount = "";
+        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
+            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Claim")) {
+                System.out.println(bundleEntryComponent.getResource().getResourceType().toString());
+                Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+                amount = claim.getTotal().getValue().toString();
+            }
+        }
+        System.out.println("--------amount--------" + amount);
+        return amount;
     }
 
     public String getInsuranceId(String fhirPayload) {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Coverage coverage = new Coverage();
+        String insuranceId = "";
         for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
-            System.out.println("-----------------------------get Insurance id --------------------------" + bundleEntryComponent.getResource().getResourceType().toString());
             if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Coverage")) {
-                coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
+                System.out.println(bundleEntryComponent.getResource().getResourceType().toString());
+                Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+                insuranceId = coverage.getSubscriberId();
             }
         }
-        return coverage.getSubscriberId();
+        System.out.println("-------insurance id -------------" + insuranceId);
+        return insuranceId;
     }
 
     public String getPatientName(String fhirPayload){
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
-        return patient.getName().get(0).getTextElement().getValue();
+        String patientName = "";
+        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
+            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Patient")) {
+                Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+                patientName = patient.getName().get(0).getTextElement().getValue();
+            }
+        }
+        return patientName;
     }
 }
