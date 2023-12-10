@@ -316,22 +316,22 @@ public class BaseController {
     public void updateMobileNumber(String requestID, String apiAction) throws SQLException, ClientException {
         Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestID);
         Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
-        String mobile = getPatientName((String) payloadMap.get("request_fhir"));
+        String mobile = getPatientMobile((String) payloadMap.get("request_fhir"));
         String app = getAppFromApiAction(apiAction, parsed);
         String query = String.format("UPDATE %s SET app = '%s', mobile = '%s' WHERE request_id ='%s'", table, app, mobile, requestID);
         postgresService.execute(query);
     }
 
-    public String getPatientName(String fhirPayload) {
+    public String getPatientMobile(String fhirPayload) {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        String patientName = "";
+        String patientMobile = "";
         for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
             if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Patient")) {
                 Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
-                patientName = patient.getName().get(0).getTextElement().getValue();
+                patientMobile = patient.getTelecom().get(0).getValue();
             }
         }
-        return patientName;
+        return patientMobile;
     }
 
     private String getAppFromApiAction(String apiAction, Bundle parsed) {
@@ -341,6 +341,14 @@ public class BaseController {
         } else if (apiAction.equalsIgnoreCase("/v0.7/claim/submit") || apiAction.equalsIgnoreCase("/v0.7/preauth/submit")) {
             Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
             return claim.getText().getDiv().allText();
+        }
+        return "";
+    }
+
+    private String getServiceType(String apiAction, Bundle parsed) {
+        if (apiAction.equalsIgnoreCase("/v0.7/claim/submit") || apiAction.equalsIgnoreCase("/v0.7/preauth/submit")) {
+            Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+            return claim.getSubType().getCoding().get(0).getCode();
         }
         return "";
     }

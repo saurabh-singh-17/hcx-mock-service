@@ -250,7 +250,8 @@ public class BeneficiaryService {
                 responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
                 responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
                 String supportingDocuments = searchResultSet.getString("supporting_documents");
-                responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));                  responseMap.put("mobile", searchResultSet.getString("mobile"));
+                responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
+                responseMap.put("mobile", searchResultSet.getString("mobile"));
                 responseMap.put("patientName", searchResultSet.getString("patient_name"));
                 entries.add(responseMap);
             }
