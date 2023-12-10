@@ -316,11 +316,22 @@ public class BaseController {
     public void updateMobileNumber(String requestID, String apiAction) throws SQLException, ClientException {
         Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestID);
         Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
-        Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
-        String mobile = patient.getTelecom().get(0).getValue();
+        String mobile = getPatientName((String) payloadMap.get("request_fhir"));
         String app = getAppFromApiAction(apiAction, parsed);
         String query = String.format("UPDATE %s SET app = '%s', mobile = '%s' WHERE request_id ='%s'", table, app, mobile, requestID);
         postgresService.execute(query);
+    }
+
+    public String getPatientName(String fhirPayload) {
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        String patientName = "";
+        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
+            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Patient")) {
+                Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+                patientName = patient.getName().get(0).getTextElement().getValue();
+            }
+        }
+        return patientName;
     }
 
     private String getAppFromApiAction(String apiAction, Bundle parsed) {

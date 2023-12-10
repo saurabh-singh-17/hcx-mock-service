@@ -66,16 +66,20 @@ public class PayerService {
 
     public Map<String, List<String>> getSupportingDocuments(String fhirPayload) {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
         Map<String, List<String>> documentMap = new HashMap<>();
-        for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
-            if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
-                String url = supportingInfo.getValueAttachment().getUrl();
-                String documentType = supportingInfo.getCategory().getCoding().get(0).getDisplay();
-                if (!documentMap.containsKey(documentType)) {
-                    documentMap.put(documentType, new ArrayList<>());
+        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
+            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Claim")) {
+                Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+                for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
+                    if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
+                        String url = supportingInfo.getValueAttachment().getUrl();
+                        String documentType = supportingInfo.getCategory().getCoding().get(0).getDisplay();
+                        if (!documentMap.containsKey(documentType)) {
+                            documentMap.put(documentType, new ArrayList<>());
+                        }
+                        documentMap.get(documentType).add(url);
+                    }
                 }
-                documentMap.get(documentType).add(url);
             }
         }
         return documentMap;
@@ -86,12 +90,10 @@ public class PayerService {
         String amount = "";
         for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
             if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Claim")) {
-                System.out.println(bundleEntryComponent.getResource().getResourceType().toString());
                 Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
                 amount = claim.getTotal().getValue().toString();
             }
         }
-        System.out.println("--------amount--------" + amount);
         return amount;
     }
 
@@ -100,12 +102,10 @@ public class PayerService {
         String insuranceId = "";
         for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
             if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Coverage")) {
-                System.out.println(bundleEntryComponent.getResource().getResourceType().toString());
                 Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
                 insuranceId = coverage.getSubscriberId();
             }
         }
-        System.out.println("-------insurance id -------------" + insuranceId);
         return insuranceId;
     }
 
