@@ -89,7 +89,13 @@ public class PayerService {
 
     public String getInsuranceId(String fhirPayload) {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
+        Coverage coverage = new Coverage();
+        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
+            System.out.println("-----------------------------get Insurance id --------------------------" + bundleEntryComponent.getResource().getResourceType().toString());
+            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Coverage")) {
+                coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
+            }
+        }
         return coverage.getSubscriberId();
     }
 
