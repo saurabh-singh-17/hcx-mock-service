@@ -118,6 +118,8 @@ public class GenerateOutgoingRequest {
             claim.setTotal(new Money().setCurrency("INR").setValue(Long.parseLong(billAmount)));
             // To check type is OPD
             String type = (String) requestBody.getOrDefault("type","");
+            String app = (String) requestBody.getOrDefault("app", "");
+            claim.setText(new Narrative().setDiv(new XhtmlDocument().setValue(app)).setStatus(Narrative.NarrativeStatus.GENERATED));
             claim.setSubType(new CodeableConcept(new Coding().setSystem("https://staging-hcx.swasth.app/hapi-fhir/fhir/CodeSystem/hcx-claim-sub-types").setCode(type)));
             // adding supporting documents (Bill/invoice or prescription)
             if (requestBody.containsKey("supportingDocuments")) {
