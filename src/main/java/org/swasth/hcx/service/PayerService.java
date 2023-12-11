@@ -66,36 +66,59 @@ public class PayerService {
 
     public Map<String, List<String>> getSupportingDocuments(String fhirPayload) {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
         Map<String, List<String>> documentMap = new HashMap<>();
-        for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
-            if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
-                String url = supportingInfo.getValueAttachment().getUrl();
-                String documentType = supportingInfo.getCategory().getCoding().get(0).getDisplay();
-                if (!documentMap.containsKey(documentType)) {
-                    documentMap.put(documentType, new ArrayList<>());
+        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
+            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Claim")) {
+                Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+                for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
+                    if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
+                        String url = supportingInfo.getValueAttachment().getUrl();
+                        String documentType = supportingInfo.getCategory().getCoding().get(0).getDisplay();
+                        if (!documentMap.containsKey(documentType)) {
+                            documentMap.put(documentType, new ArrayList<>());
+                        }
+                        documentMap.get(documentType).add(url);
+                    }
                 }
-                documentMap.get(documentType).add(url);
             }
         }
         return documentMap;
     }
 
+
     public String getAmount(String fhirPayload) {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-        return claim.getTotal().getValue().toString();
+        String amount = "";
+        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
+            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Claim")) {
+                Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+                amount = claim.getTotal().getValue().toString();
+            }
+        }
+        return amount;
     }
 
     public String getInsuranceId(String fhirPayload) {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
-        return coverage.getSubscriberId();
+        String insuranceId = "";
+        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
+            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Coverage")) {
+                Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+                insuranceId = coverage.getSubscriberId();
+            }
+        }
+        return insuranceId;
     }
 
-    public String getPatientName(String fhirPayload){
+    public String getPatientName(String fhirPayload) {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
-        return patient.getName().get(0).getTextElement().getValue();
+        String patientName = "";
+        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
+            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Patient")) {
+                Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+                patientName = patient.getName().get(0).getTextElement().getValue();
+            }
+        }
+        return patientName;
     }
 }
