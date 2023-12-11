@@ -134,7 +134,7 @@ public class BeneficiaryService {
         String app = (String) requestBody.getOrDefault("app","");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT  workflow_id,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile,insurance_id,supporting_documents,bill_amount,patient_name FROM %s WHERE mobile = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, mobile, app);
+        String searchQuery = String.format("SELECT  workflow_id,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile,insurance_id,supporting_documents,bill_amount,patient_name,service_type FROM %s WHERE mobile = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, mobile, app);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
@@ -151,7 +151,7 @@ public class BeneficiaryService {
                 responseMap.put("type", actionType);
                 responseMap.put("status", searchResultSet.getString("status"));
                 responseMap.put("apiCallId", searchResultSet.getString("request_id"));
-                responseMap.put("claimType", "OPD");
+                responseMap.put("claimType", searchResultSet.getString("service_type"));
                 responseMap.put("date", searchResultSet.getString("created_on"));
                 responseMap.put("insurance_id", searchResultSet.getString("insurance_id"));
                 responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
@@ -185,7 +185,7 @@ public class BeneficiaryService {
         String app = (String) requestBody.getOrDefault("app","");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT workflow_id,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile,insurance_id,supporting_documents,bill_amount,patient_name FROM %s WHERE sender_code = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, senderCode, app);
+        String searchQuery = String.format("SELECT workflow_id,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile,insurance_id,supporting_documents,bill_amount,patient_name,service_type FROM %s WHERE sender_code = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, senderCode, app);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
@@ -202,7 +202,7 @@ public class BeneficiaryService {
                 responseMap.put("type", actionType);
                 responseMap.put("status", searchResultSet.getString("status"));
                 responseMap.put("apiCallId", searchResultSet.getString("request_id"));
-                responseMap.put("claimType", "OPD");
+                responseMap.put("claimType", searchResultSet.getString("service_type"));
                 responseMap.put("date", searchResultSet.getString("created_on"));
                 responseMap.put("insurance_id", searchResultSet.getString("insurance_id"));
                 responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
@@ -236,14 +236,14 @@ public class BeneficiaryService {
         String app = (String) requestBody.getOrDefault("app","");
         List<Map<String, Object>> entries = new ArrayList<>();
         Map<String, Object> resp = new HashMap<>();
-        String searchQuery = String.format("SELECT action,status,created_on,correlation_id,request_id,sender_code,recipient_code,mobile,insurance_id,supporting_documents,bill_amount,patient_name FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') AND app = '%s' ORDER BY created_on ASC", payorDataTable, workflowId, app);
+        String searchQuery = String.format("SELECT action,status,created_on,correlation_id,request_id,sender_code,recipient_code,mobile,insurance_id,supporting_documents,bill_amount,patient_name,service_type FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') AND app = '%s' ORDER BY created_on ASC", payorDataTable, workflowId, app);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 Map<String, Object> responseMap = new HashMap<>();
                 responseMap.put("type", getType(searchResultSet.getString("action")));
                 responseMap.put("status", searchResultSet.getString("status"));
                 responseMap.put("apiCallId", searchResultSet.getString("request_id"));
-                responseMap.put("claimType", "OPD");
+                responseMap.put("claimType", searchResultSet.getString("service_type"));
                 responseMap.put("date", searchResultSet.getString("created_on"));
                 responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
                 responseMap.put("sender_code", searchResultSet.getString("sender_code"));

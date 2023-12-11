@@ -318,7 +318,8 @@ public class BaseController {
         Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
         String mobile = getPatientMobile((String) payloadMap.get("request_fhir"));
         String app = getAppFromApiAction(apiAction, parsed);
-        String query = String.format("UPDATE %s SET app = '%s', mobile = '%s' WHERE request_id ='%s'", table, app, mobile, requestID);
+        String serviceType = getServiceType(apiAction, parsed);
+        String query = String.format("UPDATE %s SET app = '%s', mobile = '%s' , service_type = '%s' WHERE request_id ='%s'", table, app, mobile, serviceType, requestID);
         postgresService.execute(query);
     }
 
