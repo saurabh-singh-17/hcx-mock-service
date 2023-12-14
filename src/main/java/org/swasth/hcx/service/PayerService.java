@@ -88,11 +88,13 @@ public class PayerService {
 
     public String getAmount(String fhirPayload) {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        String amount = "";
+        String amount = "0"; // Default value if claim.getTotal() is not present
         for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
             if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Claim")) {
                 Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
-                amount = claim.getTotal().getValue().toString();
+                if (claim.getTotal() != null && claim.getTotal().getValue() != null) {
+                    amount = claim.getTotal().getValue().toString();
+                }
             }
         }
         return amount;
@@ -100,11 +102,13 @@ public class PayerService {
 
     public String getInsuranceId(String fhirPayload) {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        String insuranceId = "";
+        String insuranceId = ""; // Default value if coverage.getSubscriberId() is not present
         for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
             if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Coverage")) {
                 Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
-                insuranceId = coverage.getSubscriberId();
+                if (coverage.getSubscriberId() != null) {
+                    insuranceId = coverage.getSubscriberId();
+                }
             }
         }
         return insuranceId;
@@ -116,7 +120,9 @@ public class PayerService {
         for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
             if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Patient")) {
                 Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
-                patientName = patient.getName().get(0).getTextElement().getValue();
+                if(patient.getName() != null && patient.getName().get(0).getTextElement() != null && patient.getName().get(0).getTextElement().getValue() != null) {
+                    patientName = patient.getName().get(0).getTextElement().getValue();
+                }
             }
         }
         return patientName;
