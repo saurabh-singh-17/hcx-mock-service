@@ -147,6 +147,8 @@ public class BeneficiaryService {
                     String supportingDocuments = searchResultSet.getString("supporting_documents");
                     responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
                     responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
+                    responseMap.put("otpStatus" , searchResultSet.getString("otp_verification"));
+                    responseMap.put("additionalInfo" , searchResultSet.getString("additional_info"));
                 }
                 responseMap.put("type", actionType);
                 responseMap.put("status", searchResultSet.getString("status"));
@@ -198,6 +200,8 @@ public class BeneficiaryService {
                     String supportingDocuments = searchResultSet.getString("supporting_documents");
                     responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
                     responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
+                    responseMap.put("otpStatus" , searchResultSet.getString("otp_verification"));
+                    responseMap.put("additionalInfo" , searchResultSet.getString("additional_info"));
                 }
                 responseMap.put("type", actionType);
                 responseMap.put("status", searchResultSet.getString("status"));
@@ -252,6 +256,8 @@ public class BeneficiaryService {
                 String supportingDocuments = searchResultSet.getString("supporting_documents");
                 responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));                  responseMap.put("mobile", searchResultSet.getString("mobile"));
                 responseMap.put("patientName", searchResultSet.getString("patient_name"));
+                responseMap.put("otpStatus" , searchResultSet.getString("otp_verification"));
+                responseMap.put("additionalInfo" , searchResultSet.getString("additional_info"));
                 entries.add(responseMap);
             }
             resp.put("entries", entries);
