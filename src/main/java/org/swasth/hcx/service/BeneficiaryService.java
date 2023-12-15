@@ -134,7 +134,7 @@ public class BeneficiaryService {
         String app = (String) requestBody.getOrDefault("app","");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT  workflow_id,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile,insurance_id,supporting_documents,bill_amount,patient_name,otp_verification,additional_info FROM %s WHERE mobile = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, mobile, app);
+        String searchQuery = String.format("SELECT  workflow_id,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile,insurance_id,supporting_documents,bill_amount,patient_name,otp_verification,additional_info,account_number,ifsc_code FROM %s WHERE mobile = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, mobile, app);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
@@ -149,6 +149,8 @@ public class BeneficiaryService {
                     responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
                     responseMap.put("otpStatus" , searchResultSet.getString("otp_verification"));
                     responseMap.put("additionalInfo" , searchResultSet.getString("additional_info"));
+                    responseMap.put("accountNumber", searchResultSet.getString("account_number"));
+                    responseMap.put("ifscCode" , searchResultSet.getString("ifsc_code"));
                 }
                 responseMap.put("type", actionType);
                 responseMap.put("status", searchResultSet.getString("status"));
@@ -202,6 +204,8 @@ public class BeneficiaryService {
                     responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
                     responseMap.put("otpStatus" , searchResultSet.getString("otp_verification"));
                     responseMap.put("additionalInfo" , searchResultSet.getString("additional_info"));
+                    responseMap.put("accountNumber", searchResultSet.getString("account_number"));
+                    responseMap.put("ifscCode" , searchResultSet.getString("ifsc_code"));
                 }
                 responseMap.put("type", actionType);
                 responseMap.put("status", searchResultSet.getString("status"));
@@ -258,6 +262,8 @@ public class BeneficiaryService {
                 responseMap.put("patientName", searchResultSet.getString("patient_name"));
                 responseMap.put("otpStatus" , searchResultSet.getString("otp_verification"));
                 responseMap.put("additionalInfo" , searchResultSet.getString("additional_info"));
+                responseMap.put("accountNumber", searchResultSet.getString("account_number"));
+                responseMap.put("ifscCode" , searchResultSet.getString("ifsc_code"));
                 entries.add(responseMap);
             }
             resp.put("entries", entries);
