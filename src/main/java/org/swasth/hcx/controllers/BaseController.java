@@ -325,11 +325,12 @@ public class BaseController {
     private String getAppFromApiAction(String apiAction, Bundle parsed) {
         if (apiAction.equalsIgnoreCase("/v0.7/coverageeligibility/check")) {
             CoverageEligibilityRequest ce = parser.parseResource(CoverageEligibilityRequest.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-            return ce.getText().getDiv().allText();
+            if (ce.getText() != null && ce.getText().getDiv().allText() != null)
+                return ce.getText().getDiv().allText();
         } else if (apiAction.equalsIgnoreCase("/v0.7/claim/submit") || apiAction.equalsIgnoreCase("/v0.7/preauth/submit")) {
             Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-            String subType = claim.getSubType().getCoding().get(0).getCode();
-            return subType.equalsIgnoreCase("OPD") ? "BSP" : "OPD";
+            if (claim.getText() != null && claim.getText().getDiv().allText() != null)
+                return claim.getText().getDiv().allText();
         }
         return "";
     }
@@ -340,7 +341,9 @@ public class BaseController {
         for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
             if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Patient")) {
                 Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
-                patientMobile = patient.getTelecom().get(0).getValue();
+                if (patient.getTelecom() != null && patient.getTelecom().get(0) != null) {
+                    patientMobile = patient.getTelecom().get(0).getValue();
+                }
             }
         }
         return patientMobile;

@@ -120,6 +120,8 @@ public class GenerateOutgoingRequest {
             String type = (String) requestBody.getOrDefault("type","");
             claim.setSubType(new CodeableConcept(new Coding().setSystem("https://staging-hcx.swasth.app/hapi-fhir/fhir/CodeSystem/hcx-claim-sub-types").setCode(type)));
             // adding supporting documents (Bill/invoice or prescription)
+            String app = (String) requestBody.getOrDefault("app", "");
+            claim.setText(new Narrative().setDiv(new XhtmlDocument().setValue(app)).setStatus(Narrative.NarrativeStatus.GENERATED));
             if (requestBody.containsKey("supportingDocuments")) {
                 ArrayList<Map<String, Object>> supportingDocuments = JSONUtils.convert(requestBody.get("supportingDocuments"), ArrayList.class);
                 for (Map<String, Object> document : supportingDocuments) {
