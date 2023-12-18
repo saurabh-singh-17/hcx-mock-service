@@ -148,6 +148,7 @@ public class BeneficiaryService {
                     responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
                     responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
                     responseMap.put("otpStatus" , searchResultSet.getString("otp_verification"));
+                    responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
                     responseMap.put("additionalInfo" , searchResultSet.getString("additional_info"));
                     responseMap.put("accountNumber", searchResultSet.getString("account_number"));
                     responseMap.put("ifscCode" , searchResultSet.getString("ifsc_code"));
@@ -203,6 +204,7 @@ public class BeneficiaryService {
                     responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
                     responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
                     responseMap.put("otpStatus" , searchResultSet.getString("otp_verification"));
+                    responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
                     responseMap.put("additionalInfo" , searchResultSet.getString("additional_info"));
                     responseMap.put("accountNumber", searchResultSet.getString("account_number"));
                     responseMap.put("ifscCode" , searchResultSet.getString("ifsc_code"));
@@ -261,6 +263,7 @@ public class BeneficiaryService {
                 responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));                  responseMap.put("mobile", searchResultSet.getString("mobile"));
                 responseMap.put("patientName", searchResultSet.getString("patient_name"));
                 responseMap.put("otpStatus" , searchResultSet.getString("otp_verification"));
+                responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
                 responseMap.put("additionalInfo" , searchResultSet.getString("additional_info"));
                 responseMap.put("accountNumber", searchResultSet.getString("account_number"));
                 responseMap.put("ifscCode" , searchResultSet.getString("ifsc_code"));
