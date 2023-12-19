@@ -114,7 +114,7 @@ public class BeneficiaryController extends BaseController {
     public ResponseEntity<Object> checkCommunicationRequest(@RequestBody Map<String, Object> requestBody) {
         try {
             if (requestBody.isEmpty() || !requestBody.containsKey("request_id")) {
-                throw new ClientException("Request body cannot be empty");
+                throw new ClientException("Request body is empty or request_id is missing");
             }
             Map<String, Object> response = beneficiaryService.checkCommunicationRequest(requestBody);
             return ResponseEntity.ok(response);

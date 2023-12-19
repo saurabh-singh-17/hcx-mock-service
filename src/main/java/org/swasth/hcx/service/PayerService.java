@@ -4,10 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import com.amazonaws.services.dynamodbv2.xspec.S;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.Claim;
-import org.hl7.fhir.r4.model.Coverage;
-import org.hl7.fhir.r4.model.Patient;
+import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -35,11 +32,11 @@ public class PayerService {
         Map<String, Object> info = new HashMap<>();
         if (request.getAction().contains("coverageeligibility")) {
             String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", "{}", "", getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
+                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), getPatientMobile(reqFhirObj), PENDING, request.getWorkflowId(), "1234", "1234", PENDING, getApp(request.getAction(),reqFhirObj), "{}", "", getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
             postgres.execute(query);
         } else if (request.getAction().contains("communication")) {
             String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", "{}", "", "", "");
+                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), getPatientMobile(reqFhirObj), PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", "{}", "", "", "");
             postgres.execute(query);
         } else {
             info.put("medical", Collections.singletonMap("status", PENDING));
@@ -50,7 +47,7 @@ public class PayerService {
             serializeDocuments = JSONUtils.serialize(getDocuments);
             amount = getAmount(reqFhirObj);
             String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", serializeDocuments, amount, getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
+                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, getApp(request.getAction(),reqFhirObj) , serializeDocuments, amount, getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
             postgres.execute(query);
         }
     }
@@ -126,5 +123,33 @@ public class PayerService {
             }
         }
         return patientName;
+    }
+
+    private String getApp(String apiAction, String fhirPayload) {
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        if (apiAction.equalsIgnoreCase("/v0.7/coverageeligibility/check")) {
+            CoverageEligibilityRequest ce = parser.parseResource(CoverageEligibilityRequest.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+            if (ce.getText() != null && ce.getText().getDiv().allText() != null)
+                return ce.getText().getDiv().allText();
+        } else if (apiAction.equalsIgnoreCase("/v0.7/claim/submit") || apiAction.equalsIgnoreCase("/v0.7/preauth/submit")) {
+            Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+            if (claim.getText() != null && claim.getText().getDiv().allText() != null)
+                return claim.getText().getDiv().allText();
+        }
+        return "";
+    }
+
+    public String getPatientMobile(String fhirPayload) {
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        String patientMobile = "";
+        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
+            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Patient")) {
+                Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+                if (patient.getTelecom() != null && patient.getTelecom().get(0) != null) {
+                    patientMobile = patient.getTelecom().get(0).getValue();
+                }
+            }
+        }
+        return patientMobile;
     }
 }

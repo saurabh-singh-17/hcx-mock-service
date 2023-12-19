@@ -202,16 +202,16 @@ public class BaseController {
         } else {
             payerService.process(request, reqFhir, respfhir);
             if (request.getAction().equalsIgnoreCase("/v0.7/coverageeligibility/check") && request.getRecipientCode().equalsIgnoreCase(mockRecipientCode)) {
-                Thread.sleep(3000);
+                Thread.sleep(1000);
                 onActionCall.sendOnAction(request.getRecipientCode(), respfhir, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
                 String updateQuery = String.format("UPDATE %s SET status='%s',updated_on=%d WHERE request_id='%s' RETURNING %s,%s",
                         table, "Approved", System.currentTimeMillis(), request.getApiCallId(), "raw_payload", "response_fhir");
                 postgres.execute(updateQuery);
             }
-            Thread.sleep(3000);
-            if(!request.getAction().contains("communication")){
-                updateMobileNumber(request.getApiCallId(), apiAction);
-            }
+//            Thread.sleep(1000);
+//            if(!request.getAction().contains("communication")){
+//                updateMobileNumber(request.getApiCallId(), apiAction);
+//            }
         }
     }
 
