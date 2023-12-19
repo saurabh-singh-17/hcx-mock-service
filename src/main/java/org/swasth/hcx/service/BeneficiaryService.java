@@ -317,10 +317,11 @@ public class BeneficiaryService {
         String query = String.format("SELECT otp_verification,bank_details FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
         ResultSet resultSet = postgresService.executeQuery(query);
         Map<String, Object> status = new HashMap<>();
-        if (resultSet.next()) {
-            status.put("otpStatus", resultSet.getString("otp_verification"));
-            status.put("bankStatus", resultSet.getString("bank_details"));
+        if (!resultSet.next()) {
+           throw new ClientException("Claim Request Id Does not exist in the database");
         }
+        status.put("otpStatus", resultSet.getString("otp_verification"));
+        status.put("bankStatus", resultSet.getString("bank_details"));
         return status;
     }
 }
