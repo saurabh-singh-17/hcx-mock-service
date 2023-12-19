@@ -107,15 +107,15 @@ public class BeneficiaryService {
         }
     }
 
-    public Map<String,Object> response(String message  , String mobile,String verification){
-        Map<String,Object> response = new HashMap<>();
-        response.put("message",message);
-        response.put("mobile",mobile);
-        response.put("verification",verification);
+    public Map<String, Object> response(String message, String mobile, String verification) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", message);
+        response.put("mobile", mobile);
+        response.put("verification", verification);
         return response;
     }
 
-    public Map<String,Object> getPayloadMap(String requestID) throws ClientException, SQLException {
+    public Map<String, Object> getPayloadMap(String requestID) throws ClientException, SQLException {
         String searchQuery = String.format("SELECT * FROM %s WHERE request_id = '%s'", payorDataTable, requestID);
         ResultSet resultSet = postgresService.executeQuery(searchQuery);
         if (!resultSet.next()) {
@@ -131,7 +131,7 @@ public class BeneficiaryService {
 
     public ResponseEntity<Object> getRequestListFromDatabase(Map<String, Object> requestBody) throws Exception {
         String mobile = (String) requestBody.getOrDefault("mobile", "");
-        String app = (String) requestBody.getOrDefault("app","");
+        String app = (String) requestBody.getOrDefault("app", "");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
         String searchQuery = String.format("SELECT * FROM %s WHERE mobile = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, mobile, app);
@@ -147,11 +147,11 @@ public class BeneficiaryService {
                     String supportingDocuments = searchResultSet.getString("supporting_documents");
                     responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
                     responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
-                    responseMap.put("otpStatus" , searchResultSet.getString("otp_verification"));
+                    responseMap.put("otpStatus", searchResultSet.getString("otp_verification"));
                     responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
-                    responseMap.put("additionalInfo" , searchResultSet.getString("additional_info"));
+                    responseMap.put("additionalInfo", searchResultSet.getString("additional_info"));
                     responseMap.put("accountNumber", searchResultSet.getString("account_number"));
-                    responseMap.put("ifscCode" , searchResultSet.getString("ifsc_code"));
+                    responseMap.put("ifscCode", searchResultSet.getString("ifsc_code"));
                 }
                 responseMap.put("type", actionType);
                 responseMap.put("status", searchResultSet.getString("status"));
@@ -181,13 +181,13 @@ public class BeneficiaryService {
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace(); // Log the exception for debugging
-            return new ResponseEntity<>(Map.of("error","Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(Map.of("error", "Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     public ResponseEntity<Object> getRequestListFromSenderCode(Map<String, Object> requestBody) throws Exception {
         String senderCode = (String) requestBody.getOrDefault("sender_code", "");
-        String app = (String) requestBody.getOrDefault("app","");
+        String app = (String) requestBody.getOrDefault("app", "");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
         String searchQuery = String.format("SELECT * FROM %s WHERE sender_code = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, senderCode, app);
@@ -203,11 +203,11 @@ public class BeneficiaryService {
                     String supportingDocuments = searchResultSet.getString("supporting_documents");
                     responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
                     responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
-                    responseMap.put("otpStatus" , searchResultSet.getString("otp_verification"));
+                    responseMap.put("otpStatus", searchResultSet.getString("otp_verification"));
                     responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
-                    responseMap.put("additionalInfo" , searchResultSet.getString("additional_info"));
+                    responseMap.put("additionalInfo", searchResultSet.getString("additional_info"));
                     responseMap.put("accountNumber", searchResultSet.getString("account_number"));
-                    responseMap.put("ifscCode" , searchResultSet.getString("ifsc_code"));
+                    responseMap.put("ifscCode", searchResultSet.getString("ifsc_code"));
                 }
                 responseMap.put("type", actionType);
                 responseMap.put("status", searchResultSet.getString("status"));
@@ -237,13 +237,13 @@ public class BeneficiaryService {
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace(); // Log the exception for debugging
-            return new ResponseEntity<>(Map.of("error","Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(Map.of("error", "Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     public ResponseEntity<Object> getDataFromWorkflowId(Map<String, Object> requestBody) {
         String workflowId = (String) requestBody.getOrDefault("workflow_id", "");
-        String app = (String) requestBody.getOrDefault("app","");
+        String app = (String) requestBody.getOrDefault("app", "");
         List<Map<String, Object>> entries = new ArrayList<>();
         Map<String, Object> resp = new HashMap<>();
         String searchQuery = String.format("SELECT * FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') AND app = '%s' ORDER BY created_on ASC", payorDataTable, workflowId, app);
@@ -260,20 +260,21 @@ public class BeneficiaryService {
                 responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
                 responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
                 String supportingDocuments = searchResultSet.getString("supporting_documents");
-                responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));                  responseMap.put("mobile", searchResultSet.getString("mobile"));
+                responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
+                responseMap.put("mobile", searchResultSet.getString("mobile"));
                 responseMap.put("patientName", searchResultSet.getString("patient_name"));
-                responseMap.put("otpStatus" , searchResultSet.getString("otp_verification"));
+                responseMap.put("otpStatus", searchResultSet.getString("otp_verification"));
                 responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
-                responseMap.put("additionalInfo" , searchResultSet.getString("additional_info"));
+                responseMap.put("additionalInfo", searchResultSet.getString("additional_info"));
                 responseMap.put("accountNumber", searchResultSet.getString("account_number"));
-                responseMap.put("ifscCode" , searchResultSet.getString("ifsc_code"));
+                responseMap.put("ifscCode", searchResultSet.getString("ifsc_code"));
                 entries.add(responseMap);
             }
             resp.put("entries", entries);
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace(); // Log the exception for debugging
-            return new ResponseEntity<>(Map.of("error","Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(Map.of("error", "Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -311,19 +312,16 @@ public class BeneficiaryService {
         return responses;
     }
 
-    public boolean checkCommunicationRequest(Map<String,Object> requestBody) throws ClientException, SQLException {
+    public Map<String, Object> checkCommunicationRequest(Map<String, Object> requestBody) throws ClientException, SQLException {
         String requestId = (String) requestBody.get("request_id");
-        String type = (String) requestBody.get("type");
-        String query = String.format("SELECT %s FROM %s WHERE request_id = '%s'", type, payorDataTable, requestId);
+        String query = String.format("SELECT otp_verification bank_details FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
         ResultSet resultSet = postgresService.executeQuery(query);
-        String status;
+        Map<String, Object> status = new HashMap<>();
         if (resultSet.next()) {
-            status = resultSet.getString(type);
-            return status.equalsIgnoreCase("initiated");
-        } else {
-            return false;
+            status.put("otpStatus", resultSet.getString("otp_verification"));
+            status.put("bankStatus", resultSet.getString("bank_details"));
         }
+        return status;
     }
-
-
 }
+

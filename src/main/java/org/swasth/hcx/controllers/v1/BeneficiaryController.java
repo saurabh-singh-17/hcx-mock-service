@@ -111,15 +111,15 @@ public class BeneficiaryController extends BaseController {
     }
 
     @PostMapping("/check/communication/request")
-    public ResponseEntity<Object> checkCommunicationRequest(@RequestBody Map<String,Object> requestBody) throws ClientException, SQLException {
-        if (requestBody.isEmpty()) {
-            throw new ClientException("Request body cannot be empty");
-        }
-        boolean isCommunicationInitiated = beneficiaryService.checkCommunicationRequest(requestBody);
-        if (isCommunicationInitiated) {
-            return ResponseEntity.ok("Communication is initiated");
-        } else {
-            return ResponseEntity.badRequest().body("Communication is not initiated");
+    public ResponseEntity<Object> checkCommunicationRequest(@RequestBody Map<String, Object> requestBody) {
+        try {
+            if (requestBody.isEmpty()) {
+                throw new ClientException("Request body cannot be empty");
+            }
+            Map<String, Object> response = beneficiaryService.checkCommunicationRequest(requestBody);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("Message", e.getMessage()));
         }
     }
 
