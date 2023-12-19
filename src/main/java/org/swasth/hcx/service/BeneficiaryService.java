@@ -314,7 +314,7 @@ public class BeneficiaryService {
 
     public Map<String, Object> checkCommunicationRequest(Map<String, Object> requestBody) throws ClientException, SQLException {
         String requestId = (String) requestBody.get("request_id");
-        String query = String.format("SELECT otp_verification bank_details FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
+        String query = String.format("SELECT otp_verification,bank_details FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
         ResultSet resultSet = postgresService.executeQuery(query);
         Map<String, Object> status = new HashMap<>();
         if (resultSet.next()) {
