@@ -101,10 +101,11 @@ public class Response {
         return this;
     }
 
-    public Response putAll(Map<String, Object> resultMap) {
-        result.putAll(resultMap);
-        return this;
+    public Response(Map<String, Object> result) {
+        this.timestamp = System.currentTimeMillis();
+        this.result = result;
     }
+
 
 }
 

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.swasth.hcx.controllers.BaseController;
+import org.swasth.hcx.dto.Response;
 import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.service.BeneficiaryService;
 import org.swasth.hcx.service.CloudStorageClient;
@@ -116,7 +117,8 @@ public class BeneficiaryController extends BaseController {
             if (requestBody.isEmpty() || !requestBody.containsKey("request_id")) {
                 throw new ClientException("Request body is empty or request_id is missing");
             }
-            Map<String, Object> response = beneficiaryService.checkCommunicationRequest(requestBody);
+            Map<String, Object> responseMap = beneficiaryService.checkCommunicationRequest(requestBody);
+            Response response = new Response(responseMap);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("Message", e.getMessage()));

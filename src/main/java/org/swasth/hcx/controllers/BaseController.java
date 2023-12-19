@@ -208,10 +208,6 @@ public class BaseController {
                         table, "Approved", System.currentTimeMillis(), request.getApiCallId(), "raw_payload", "response_fhir");
                 postgres.execute(updateQuery);
             }
-//            Thread.sleep(1000);
-//            if(!request.getAction().contains("communication")){
-//                updateMobileNumber(request.getApiCallId(), apiAction);
-//            }
         }
     }
 
