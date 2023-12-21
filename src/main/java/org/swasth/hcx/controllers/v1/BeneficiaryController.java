@@ -111,14 +111,14 @@ public class BeneficiaryController extends BaseController {
         }
     }
 
-    @PostMapping("/check/communication/request")
+    @PostMapping("/claim/communication/check/status")
     public ResponseEntity<Object> checkCommunicationRequest(@RequestBody Map<String, Object> requestBody) {
         try {
             if (requestBody.isEmpty() || !requestBody.containsKey("request_id")) {
                 throw new ClientException("Request body is empty or request_id is missing");
             }
-            Map<String, Object> responseMap = beneficiaryService.checkCommunicationRequest(requestBody);
-            Response response = new Response(responseMap);
+            List<Object> responseList = beneficiaryService.checkCommunicationRequest(requestBody);
+            Response response = new Response(responseList);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("Message", e.getMessage()));
