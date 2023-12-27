@@ -4,6 +4,8 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import com.amazonaws.services.dynamodbv2.xspec.S;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,7 +104,7 @@ public class PayerService {
     public String getPatientName(String fhirPayload) {
         String patientName = "";
         Patient patient = getResourceByType("Patient", Patient.class, fhirPayload);
-        if (patient!= null && patient.getName() != null && patient.getName().get(0).getTextElement() != null && patient.getName().get(0).getTextElement().getValue() != null) {
+        if (patient!= null && patient.getName() != null && CollectionUtils.isEmpty(patient.getName()) && patient.getName().get(0).getTextElement() != null && patient.getName().get(0).getTextElement().getValue() != null) {
             patientName = patient.getName().get(0).getTextElement().getValue();
         }
         return patientName;
@@ -125,7 +127,7 @@ public class PayerService {
     public String getPatientMobile(String fhirPayload) {
         String patientMobile = "";
         Patient patient = getResourceByType("Patient", Patient.class, fhirPayload);
-        if (patient != null && patient.getTelecom() != null) {
+        if (patient != null && patient.getTelecom() != null && CollectionUtils.isEmpty(patient.getTelecom())) {
             patientMobile = patient.getTelecom().get(0).getValue();
         }
         return patientMobile;
