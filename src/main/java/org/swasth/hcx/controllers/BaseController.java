@@ -4,6 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -334,7 +335,7 @@ public class BaseController {
     public String getPatientMobile(String fhirPayload) {
         String patientMobile = "";
         Patient patient = payerService.getResourceByType("Patient", Patient.class, fhirPayload);
-        if (patient != null && patient.getTelecom() != null) {
+        if (patient != null && patient.getTelecom() != null && CollectionUtils.isEmpty(patient.getTelecom())) {
             patientMobile = patient.getTelecom().get(0).getValue();
         }
         return patientMobile;
