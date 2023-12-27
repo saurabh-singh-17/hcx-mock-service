@@ -26,7 +26,7 @@ public class Response {
     private ResponseError error;
     private Map<String, Object> result;
 
-    private ArrayList<Object> resultList;
+    private ArrayList<Map<String,Object>> resultList;
 
     public String getWorkflowId() {
         return workflowId;
@@ -110,7 +110,7 @@ public class Response {
         this.result = result;
     }
 
-    public Response(ArrayList<Object> result){
+    public Response(ArrayList<Map<String,Object>> result){
         this.timestamp = System.currentTimeMillis();
         this.resultList = result;
     }

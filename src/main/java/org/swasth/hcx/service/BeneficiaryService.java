@@ -2,6 +2,7 @@ package org.swasth.hcx.service;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import com.amazonaws.services.dynamodbv2.xspec.S;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -312,11 +313,11 @@ public class BeneficiaryService {
         return responses;
     }
 
-    public ArrayList<Object> checkCommunicationRequest(Map<String, Object> requestBody) throws ClientException, SQLException {
+    public ArrayList<Map<String,Object>> checkCommunicationRequest(Map<String, Object> requestBody) throws ClientException, SQLException {
         String requestId = (String) requestBody.get("request_id");
         String query = String.format("SELECT otp_verification,bank_details FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
         ResultSet resultSet = postgresService.executeQuery(query);
-        ArrayList<Object> statusList =  new ArrayList<>();
+        ArrayList<Map<String,Object>> statusList =  new ArrayList<>();
         if (!resultSet.next()) {
            throw new ClientException("Claim Request Id Does not exist in the database");
         }
