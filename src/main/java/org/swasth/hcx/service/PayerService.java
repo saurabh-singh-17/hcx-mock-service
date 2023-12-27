@@ -4,10 +4,10 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import com.amazonaws.services.dynamodbv2.xspec.S;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.Claim;
-import org.hl7.fhir.r4.model.Coverage;
-import org.hl7.fhir.r4.model.Patient;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,7 @@ public class PayerService {
         Map<String, Object> info = new HashMap<>();
         if (request.getAction().contains("coverageeligibility")) {
             String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", "{}", "", getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
+                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), getPatientMobile(reqFhirObj), PENDING, request.getWorkflowId(), "1234", "1234", PENDING, getApp(request.getAction(),reqFhirObj), "{}", "", getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
             postgres.execute(query);
         } else if (request.getAction().contains("communication")) {
             String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
@@ -50,7 +50,7 @@ public class PayerService {
             serializeDocuments = JSONUtils.serialize(getDocuments);
             amount = getAmount(reqFhirObj);
             String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", serializeDocuments, amount, getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
+                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), getPatientMobile(reqFhirObj), PENDING, request.getWorkflowId(), "1234", "1234", PENDING, getApp(request.getAction(),reqFhirObj) , serializeDocuments, amount, getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
             postgres.execute(query);
         }
     }
@@ -65,37 +65,80 @@ public class PayerService {
     }
 
     public Map<String, List<String>> getSupportingDocuments(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
         Map<String, List<String>> documentMap = new HashMap<>();
-        for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
-            if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
-                String url = supportingInfo.getValueAttachment().getUrl();
-                String documentType = supportingInfo.getCategory().getCoding().get(0).getDisplay();
-                if (!documentMap.containsKey(documentType)) {
-                    documentMap.put(documentType, new ArrayList<>());
+        Claim claim = getResourceByType("Claim", Claim.class, fhirPayload);
+        if (claim != null) {
+            for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
+                if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
+                    String url = supportingInfo.getValueAttachment().getUrl();
+                    String documentType = supportingInfo.getCategory().getCoding().get(0).getDisplay();
+                    if (!documentMap.containsKey(documentType)) {
+                        documentMap.put(documentType, new ArrayList<>());
+                    }
+                    documentMap.get(documentType).add(url);
                 }
-                documentMap.get(documentType).add(url);
             }
         }
         return documentMap;
     }
 
+
     public String getAmount(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-        return claim.getTotal().getValue().toString();
+        String amount = "0";
+        Claim claim = getResourceByType("Claim", Claim.class, fhirPayload);
+        if (claim != null && claim.getTotal() != null && claim.getTotal().getValue() != null) {
+            amount = String.valueOf(claim.getTotal().getValue());
+        }
+        return amount;
     }
 
     public String getInsuranceId(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
-        return coverage.getSubscriberId();
+        String insuranceId = "";
+        Coverage coverage = getResourceByType("Coverage", Coverage.class, fhirPayload);
+        if (coverage != null && coverage.getSubscriberId() != null) {
+            insuranceId = coverage.getSubscriberId();
+        }
+        return insuranceId;
     }
 
-    public String getPatientName(String fhirPayload){
+    public String getPatientName(String fhirPayload) {
+        String patientName = "";
+        Patient patient = getResourceByType("Patient", Patient.class, fhirPayload);
+        if (patient!= null && patient.getName() != null && CollectionUtils.isEmpty(patient.getName()) && patient.getName().get(0).getTextElement() != null && patient.getName().get(0).getTextElement().getValue() != null) {
+            patientName = patient.getName().get(0).getTextElement().getValue();
+        }
+        return patientName;
+    }
+
+    private String getApp(String apiAction, String fhirPayload) {
         Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
-        return patient.getName().get(0).getTextElement().getValue();
+        if (apiAction.equalsIgnoreCase("/v0.7/coverageeligibility/check")) {
+            CoverageEligibilityRequest ce = parser.parseResource(CoverageEligibilityRequest.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+            if (ce.getText() != null && ce.getText().getDiv().allText() != null)
+                return ce.getText().getDiv().allText();
+        } else if (apiAction.equalsIgnoreCase("/v0.7/claim/submit") || apiAction.equalsIgnoreCase("/v0.7/preauth/submit")) {
+            Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+            if (claim.getText() != null && claim.getText().getDiv().allText() != null)
+                return claim.getText().getDiv().allText();
+        }
+        return "";
+    }
+
+    public String getPatientMobile(String fhirPayload) {
+        String patientMobile = "";
+        Patient patient = getResourceByType("Patient", Patient.class, fhirPayload);
+        if (patient != null && patient.getTelecom() != null && CollectionUtils.isEmpty(patient.getTelecom())) {
+            patientMobile = patient.getTelecom().get(0).getValue();
+        }
+        return patientMobile;
+    }
+
+    public <T extends Resource> T getResourceByType(String type, Class<T> resourceClass, String fhirPayload) {
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        return parsed.getEntry().stream()
+                .filter(entry -> StringUtils.equalsIgnoreCase(String.valueOf(entry.getResource().getResourceType()), type))
+                .findFirst()
+                .map(entry -> parser.parseResource(resourceClass, parser.encodeResourceToString(entry.getResource())))
+                .orElse(null);
     }
 }

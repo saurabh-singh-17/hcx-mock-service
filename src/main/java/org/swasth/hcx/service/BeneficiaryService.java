@@ -107,15 +107,15 @@ public class BeneficiaryService {
         }
     }
 
-    public Map<String,Object> response(String message  , String mobile,String verification){
-        Map<String,Object> response = new HashMap<>();
-        response.put("message",message);
-        response.put("mobile",mobile);
-        response.put("verification",verification);
+    public Map<String, Object> response(String message, String mobile, String verification) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", message);
+        response.put("mobile", mobile);
+        response.put("verification", verification);
         return response;
     }
 
-    public Map<String,Object> getPayloadMap(String requestID) throws ClientException, SQLException {
+    public Map<String, Object> getPayloadMap(String requestID) throws ClientException, SQLException {
         String searchQuery = String.format("SELECT * FROM %s WHERE request_id = '%s'", payorDataTable, requestID);
         ResultSet resultSet = postgresService.executeQuery(searchQuery);
         if (!resultSet.next()) {
@@ -131,10 +131,10 @@ public class BeneficiaryService {
 
     public ResponseEntity<Object> getRequestListFromDatabase(Map<String, Object> requestBody) throws Exception {
         String mobile = (String) requestBody.getOrDefault("mobile", "");
-        String app = (String) requestBody.getOrDefault("app","");
+        String app = (String) requestBody.getOrDefault("app", "");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT  workflow_id,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile,insurance_id,supporting_documents,bill_amount,patient_name FROM %s WHERE mobile = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, mobile, app);
+        String searchQuery = String.format("SELECT * FROM %s WHERE mobile = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, mobile, app);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
@@ -147,6 +147,11 @@ public class BeneficiaryService {
                     String supportingDocuments = searchResultSet.getString("supporting_documents");
                     responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
                     responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
+                    responseMap.put("otpStatus", searchResultSet.getString("otp_verification"));
+                    responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
+                    responseMap.put("additionalInfo", searchResultSet.getString("additional_info"));
+                    responseMap.put("accountNumber", searchResultSet.getString("account_number"));
+                    responseMap.put("ifscCode", searchResultSet.getString("ifsc_code"));
                 }
                 responseMap.put("type", actionType);
                 responseMap.put("status", searchResultSet.getString("status"));
@@ -176,16 +181,16 @@ public class BeneficiaryService {
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace(); // Log the exception for debugging
-            return new ResponseEntity<>(Map.of("error","Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(Map.of("error", "Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     public ResponseEntity<Object> getRequestListFromSenderCode(Map<String, Object> requestBody) throws Exception {
         String senderCode = (String) requestBody.getOrDefault("sender_code", "");
-        String app = (String) requestBody.getOrDefault("app","");
+        String app = (String) requestBody.getOrDefault("app", "");
         Map<String, Object> resp = new HashMap<>();
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT workflow_id,action,status,request_id,created_on,correlation_id,sender_code,recipient_code,mobile,insurance_id,supporting_documents,bill_amount,patient_name FROM %s WHERE sender_code = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, senderCode, app);
+        String searchQuery = String.format("SELECT * FROM %s WHERE sender_code = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, senderCode, app);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 String workflowId = searchResultSet.getString("workflow_id");
@@ -198,6 +203,11 @@ public class BeneficiaryService {
                     String supportingDocuments = searchResultSet.getString("supporting_documents");
                     responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
                     responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
+                    responseMap.put("otpStatus", searchResultSet.getString("otp_verification"));
+                    responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
+                    responseMap.put("additionalInfo", searchResultSet.getString("additional_info"));
+                    responseMap.put("accountNumber", searchResultSet.getString("account_number"));
+                    responseMap.put("ifscCode", searchResultSet.getString("ifsc_code"));
                 }
                 responseMap.put("type", actionType);
                 responseMap.put("status", searchResultSet.getString("status"));
@@ -227,16 +237,16 @@ public class BeneficiaryService {
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace(); // Log the exception for debugging
-            return new ResponseEntity<>(Map.of("error","Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(Map.of("error", "Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     public ResponseEntity<Object> getDataFromWorkflowId(Map<String, Object> requestBody) {
         String workflowId = (String) requestBody.getOrDefault("workflow_id", "");
-        String app = (String) requestBody.getOrDefault("app","");
+        String app = (String) requestBody.getOrDefault("app", "");
         List<Map<String, Object>> entries = new ArrayList<>();
         Map<String, Object> resp = new HashMap<>();
-        String searchQuery = String.format("SELECT action,status,created_on,correlation_id,request_id,sender_code,recipient_code,mobile,insurance_id,supporting_documents,bill_amount,patient_name FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') AND app = '%s' ORDER BY created_on ASC", payorDataTable, workflowId, app);
+        String searchQuery = String.format("SELECT * FROM %s WHERE workflow_id = '%s' AND (action = 'claim' OR action = 'preauth') AND app = '%s' ORDER BY created_on ASC", payorDataTable, workflowId, app);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 Map<String, Object> responseMap = new HashMap<>();
@@ -250,15 +260,21 @@ public class BeneficiaryService {
                 responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
                 responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
                 String supportingDocuments = searchResultSet.getString("supporting_documents");
-                responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));                  responseMap.put("mobile", searchResultSet.getString("mobile"));
+                responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
+                responseMap.put("mobile", searchResultSet.getString("mobile"));
                 responseMap.put("patientName", searchResultSet.getString("patient_name"));
+                responseMap.put("otpStatus", searchResultSet.getString("otp_verification"));
+                responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
+                responseMap.put("additionalInfo", searchResultSet.getString("additional_info"));
+                responseMap.put("accountNumber", searchResultSet.getString("account_number"));
+                responseMap.put("ifscCode", searchResultSet.getString("ifsc_code"));
                 entries.add(responseMap);
             }
             resp.put("entries", entries);
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace(); // Log the exception for debugging
-            return new ResponseEntity<>(Map.of("error","Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(Map.of("error", "Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -270,37 +286,6 @@ public class BeneficiaryService {
         }
     }
 
-    public String getInsuranceId(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
-        return coverage.getSubscriberId();
-    }
-
-    public String getPatientName(String fhirPayload){
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
-        return patient.getName().get(0).getTextElement().getValue();
-    }
-    public String getAmount(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-        return claim.getTotal().getValue().toString();
-    }
-
-    public List<String> getSupportingDocuments(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-        List<String> documentUrls = new ArrayList<>();
-        for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
-            if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
-                String url = supportingInfo.getValueAttachment().getUrl();
-                documentUrls.add(url);
-            }
-        }
-        return documentUrls;
-    }
-
-  
     public List<Map<String, Object>> getDocumentUrls(List<MultipartFile> files, String mobile) throws ClientException, SQLException, IOException {
         if (isRateLimited()) {
             throw new ClientException("Rate limit exceeded. Please try again later.");
@@ -327,19 +312,17 @@ public class BeneficiaryService {
         return responses;
     }
 
-    public boolean checkCommunicationRequest(Map<String,Object> requestBody) throws ClientException, SQLException {
+    public Map<String, Object> checkCommunicationRequest(Map<String, Object> requestBody) throws ClientException, SQLException {
         String requestId = (String) requestBody.get("request_id");
-        String type = (String) requestBody.get("type");
-        String query = String.format("SELECT %s FROM %s WHERE request_id = '%s'", type, payorDataTable, requestId);
+        String query = String.format("SELECT otp_verification,bank_details FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
         ResultSet resultSet = postgresService.executeQuery(query);
-        String status;
-        if (resultSet.next()) {
-            status = resultSet.getString(type);
-            return status.equalsIgnoreCase("initiated");
-        } else {
-            return false;
+        Map<String, Object> status = new HashMap<>();
+        if (!resultSet.next()) {
+           throw new ClientException("Claim Request Id Does not exist in the database");
         }
+        status.put("otpStatus", resultSet.getString("otp_verification"));
+        status.put("bankStatus", resultSet.getString("bank_details"));
+        return status;
     }
-
-
 }
+

@@ -28,7 +28,7 @@ public class OPDAppController {
     private PostgresService postgres;
 
     @PostMapping(CONSULTATION_ADD)
-    public ResponseEntity<String> addConsultationInfo(@RequestBody Map<String, Object> requestBody) throws ClientException {
+    public ResponseEntity<Object> addConsultationInfo(@RequestBody Map<String, Object> requestBody) throws ClientException {
         String workflowId = (String) requestBody.getOrDefault("workflow_id", "");
         if (!requestBody.containsKey("workflow_id") && workflowId.isEmpty()) {
             throw new ClientException("Work flow id cannot be empty");
@@ -46,10 +46,12 @@ public class OPDAppController {
                 supportingDocuments);
         try {
             postgres.execute(insertQuery);
-            return ResponseEntity.ok("Insertion successful"); // Return a 200 OK response
+            Map<String, Object> responseMap = getResponse(workflowId, Constants.SUCCESSFUL);
+            return ResponseEntity.ok(responseMap); // Return a 200 OK response
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Insertion failed"); // Return a 500 Internal Server Error response
+            Map<String, Object> responseMap = getResponse(workflowId, Constants.FAILED);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMap); // Return a 500 Internal Server Error response
         }
     }
 
@@ -82,6 +84,12 @@ public class OPDAppController {
             throw new ClientException("The Record does not exit for workflow id  : " + workflowId);
         }
         return consultationInfo;
+    }
+    public Map<String,Object> getResponse(String workflowId , String status){
+        Map<String,Object> responseMap = new HashMap<>();
+        responseMap.put("status" , status);
+        responseMap.put("workflowId" , workflowId);
+        return responseMap;
     }
 
 }

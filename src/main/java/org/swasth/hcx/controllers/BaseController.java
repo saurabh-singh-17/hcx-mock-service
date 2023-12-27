@@ -202,15 +202,11 @@ public class BaseController {
         } else {
             payerService.process(request, reqFhir, respfhir);
             if (request.getAction().equalsIgnoreCase("/v0.7/coverageeligibility/check") && request.getRecipientCode().equalsIgnoreCase(mockRecipientCode)) {
-                Thread.sleep(3000);
+                Thread.sleep(1000);
                 onActionCall.sendOnAction(request.getRecipientCode(), respfhir, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
                 String updateQuery = String.format("UPDATE %s SET status='%s',updated_on=%d WHERE request_id='%s' RETURNING %s,%s",
                         table, "Approved", System.currentTimeMillis(), request.getApiCallId(), "raw_payload", "response_fhir");
                 postgres.execute(updateQuery);
-            }
-            Thread.sleep(3000);
-            if(!request.getAction().contains("communication")){
-                updateMobileNumber(request.getApiCallId(), apiAction);
             }
         }
     }
@@ -316,8 +312,7 @@ public class BaseController {
     public void updateMobileNumber(String requestID, String apiAction) throws SQLException, ClientException {
         Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestID);
         Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
-        Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
-        String mobile = patient.getTelecom().get(0).getValue();
+        String mobile = getPatientMobile((String) payloadMap.get("request_fhir"));
         String app = getAppFromApiAction(apiAction, parsed);
         String query = String.format("UPDATE %s SET app = '%s', mobile = '%s' WHERE request_id ='%s'", table, app, mobile, requestID);
         postgresService.execute(query);
@@ -326,15 +321,24 @@ public class BaseController {
     private String getAppFromApiAction(String apiAction, Bundle parsed) {
         if (apiAction.equalsIgnoreCase("/v0.7/coverageeligibility/check")) {
             CoverageEligibilityRequest ce = parser.parseResource(CoverageEligibilityRequest.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-            return ce.getText().getDiv().allText();
+            if (ce.getText() != null && ce.getText().getDiv().allText() != null)
+                return ce.getText().getDiv().allText();
         } else if (apiAction.equalsIgnoreCase("/v0.7/claim/submit") || apiAction.equalsIgnoreCase("/v0.7/preauth/submit")) {
             Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-            String subType = claim.getSubType().getCoding().get(0).getCode();
-            return subType.equalsIgnoreCase("OPD") ? "BSP" : "OPD";
+            if (claim.getText() != null && claim.getText().getDiv().allText() != null)
+                return claim.getText().getDiv().allText();
         }
         return "";
     }
 
+    public String getPatientMobile(String fhirPayload) {
+        String patientMobile = "";
+        Patient patient = payerService.getResourceByType("Patient", Patient.class, fhirPayload);
+        if (patient != null && patient.getTelecom() != null) {
+            patientMobile = patient.getTelecom().get(0).getValue();
+        }
+        return patientMobile;
+    }
 
     public Map<String, Object> initializingConfigMap() throws IOException {
         Map<String, Object> configMap = new HashMap<>();

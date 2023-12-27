@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.swasth.hcx.controllers.BaseController;
+import org.swasth.hcx.dto.Response;
 import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.service.BeneficiaryService;
 import org.swasth.hcx.service.CloudStorageClient;
@@ -111,15 +112,16 @@ public class BeneficiaryController extends BaseController {
     }
 
     @PostMapping("/check/communication/request")
-    public ResponseEntity<Object> checkCommunicationRequest(@RequestBody Map<String,Object> requestBody) throws ClientException, SQLException {
-        if (requestBody.isEmpty()) {
-            throw new ClientException("Request body cannot be empty");
-        }
-        boolean isCommunicationInitiated = beneficiaryService.checkCommunicationRequest(requestBody);
-        if (isCommunicationInitiated) {
-            return ResponseEntity.ok("Communication is initiated");
-        } else {
-            return ResponseEntity.badRequest().body("Communication is not initiated");
+    public ResponseEntity<Object> checkCommunicationRequest(@RequestBody Map<String, Object> requestBody) {
+        try {
+            if (requestBody.isEmpty() || !requestBody.containsKey("request_id")) {
+                throw new ClientException("Request body is empty or request_id is missing");
+            }
+            Map<String, Object> responseMap = beneficiaryService.checkCommunicationRequest(requestBody);
+            Response response = new Response(responseMap);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("Message", e.getMessage()));
         }
     }
 

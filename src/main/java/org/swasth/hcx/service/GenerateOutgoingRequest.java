@@ -120,6 +120,8 @@ public class GenerateOutgoingRequest {
             String type = (String) requestBody.getOrDefault("type","");
             claim.setSubType(new CodeableConcept(new Coding().setSystem("https://staging-hcx.swasth.app/hapi-fhir/fhir/CodeSystem/hcx-claim-sub-types").setCode(type)));
             // adding supporting documents (Bill/invoice or prescription)
+            String app = (String) requestBody.getOrDefault("app", "");
+            claim.setText(new Narrative().setDiv(new XhtmlDocument().setValue(app)).setStatus(Narrative.NarrativeStatus.GENERATED));
             if (requestBody.containsKey("supportingDocuments")) {
                 ArrayList<Map<String, Object>> supportingDocuments = JSONUtils.convert(requestBody.get("supportingDocuments"), ArrayList.class);
                 for (Map<String, Object> document : supportingDocuments) {
@@ -231,7 +233,7 @@ public class GenerateOutgoingRequest {
         } else if(StringUtils.equalsIgnoreCase((String) requestBody.get("type"), "bank_details")){
             String accountNumber = (String) requestBody.getOrDefault("account_number", "");
             String ifscCode = (String) requestBody.getOrDefault("ifsc_code", "");
-            String query = String.format("UPDATE %s SET account_number ='%s',ifsc_code = '%s' WHERE request_id = '%s'", payorDataTable, accountNumber, ifscCode, requestId);
+            String query = String.format("UPDATE %s SET account_number ='%s',ifsc_code = '%s', bank_details = '%s' WHERE request_id = '%s'", payorDataTable, accountNumber, ifscCode, "successful", requestId);
             postgresService.execute(query);
             System.out.println("The bank details updated successfully to the request id " + requestId);
             processOutgoingCallbackCommunication("bank_details", requestId, "", accountNumber, ifscCode, participantCode, password);
