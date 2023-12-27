@@ -123,7 +123,7 @@ public class PayerService {
     public String getPatientMobile(String fhirPayload) {
         String patientMobile = "";
         Patient patient = getResourceByType("Patient", Patient.class, fhirPayload);
-        if (patient.getTelecom() != null && patient.getTelecom().get(0) != null) {
+        if (patient.getTelecom() != null) {
             patientMobile = patient.getTelecom().get(0).getValue();
         }
         return patientMobile;
