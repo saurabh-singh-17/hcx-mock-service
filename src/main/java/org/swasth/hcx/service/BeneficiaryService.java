@@ -312,24 +312,17 @@ public class BeneficiaryService {
         return responses;
     }
 
-    public List<Object> checkCommunicationRequest(Map<String, Object> requestBody) throws ClientException, SQLException {
+    public Map<String, Object> checkCommunicationRequest(Map<String, Object> requestBody) throws ClientException, SQLException {
         String requestId = (String) requestBody.get("request_id");
         String query = String.format("SELECT otp_verification,bank_details FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
         ResultSet resultSet = postgresService.executeQuery(query);
-        List<Object> statusList =  new ArrayList<>();
+        Map<String, Object> status = new HashMap<>();
         if (!resultSet.next()) {
            throw new ClientException("Claim Request Id Does not exist in the database");
         }
-        statusList.add(getResponse("policy_consent", resultSet.getString("otp_verification")));
-        statusList.add(getResponse("capture_bankDetails", resultSet.getString("bank_details")));
-        return statusList;
-    }
-
-    public Map<String, Object> getResponse(String type, String status) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("type", type);
-        response.put("status", status);
-        return response;
+        status.put("otpStatus", resultSet.getString("otp_verification"));
+        status.put("bankStatus", resultSet.getString("bank_details"));
+        return status;
     }
 }
 
