@@ -65,14 +65,16 @@ public class PayerService {
     public Map<String, List<String>> getSupportingDocuments(String fhirPayload) {
         Map<String, List<String>> documentMap = new HashMap<>();
         Claim claim = getResourceByType("Claim", Claim.class, fhirPayload);
-        for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
-            if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
-                String url = supportingInfo.getValueAttachment().getUrl();
-                String documentType = supportingInfo.getCategory().getCoding().get(0).getDisplay();
-                if (!documentMap.containsKey(documentType)) {
-                    documentMap.put(documentType, new ArrayList<>());
+        if (claim != null) {
+            for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
+                if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
+                    String url = supportingInfo.getValueAttachment().getUrl();
+                    String documentType = supportingInfo.getCategory().getCoding().get(0).getDisplay();
+                    if (!documentMap.containsKey(documentType)) {
+                        documentMap.put(documentType, new ArrayList<>());
+                    }
+                    documentMap.get(documentType).add(url);
                 }
-                documentMap.get(documentType).add(url);
             }
         }
         return documentMap;
@@ -82,7 +84,7 @@ public class PayerService {
     public String getAmount(String fhirPayload) {
         String amount = "0";
         Claim claim = getResourceByType("Claim", Claim.class, fhirPayload);
-        if (claim.getTotal() != null && claim.getTotal().getValue() != null) {
+        if (claim != null && claim.getTotal() != null && claim.getTotal().getValue() != null) {
             amount = String.valueOf(claim.getTotal().getValue());
         }
         return amount;
@@ -91,7 +93,7 @@ public class PayerService {
     public String getInsuranceId(String fhirPayload) {
         String insuranceId = "";
         Coverage coverage = getResourceByType("Coverage", Coverage.class, fhirPayload);
-        if (coverage.getSubscriberId() != null) {
+        if (coverage != null && coverage.getSubscriberId() != null) {
             insuranceId = coverage.getSubscriberId();
         }
         return insuranceId;
@@ -100,7 +102,7 @@ public class PayerService {
     public String getPatientName(String fhirPayload) {
         String patientName = "";
         Patient patient = getResourceByType("Patient", Patient.class, fhirPayload);
-        if (patient.getName() != null && patient.getName().get(0).getTextElement() != null && patient.getName().get(0).getTextElement().getValue() != null) {
+        if (patient!= null && patient.getName() != null && patient.getName().get(0).getTextElement() != null && patient.getName().get(0).getTextElement().getValue() != null) {
             patientName = patient.getName().get(0).getTextElement().getValue();
         }
         return patientName;
@@ -123,7 +125,7 @@ public class PayerService {
     public String getPatientMobile(String fhirPayload) {
         String patientMobile = "";
         Patient patient = getResourceByType("Patient", Patient.class, fhirPayload);
-        if (patient.getTelecom() != null) {
+        if (patient != null && patient.getTelecom() != null) {
             patientMobile = patient.getTelecom().get(0).getValue();
         }
         return patientMobile;

@@ -332,15 +332,10 @@ public class BaseController {
     }
 
     public String getPatientMobile(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         String patientMobile = "";
-        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
-            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Patient")) {
-                Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
-                if (patient.getTelecom() != null && patient.getTelecom().get(0) != null) {
-                    patientMobile = patient.getTelecom().get(0).getValue();
-                }
-            }
+        Patient patient = payerService.getResourceByType("Patient", Patient.class, fhirPayload);
+        if (patient != null && patient.getTelecom() != null) {
+            patientMobile = patient.getTelecom().get(0).getValue();
         }
         return patientMobile;
     }
