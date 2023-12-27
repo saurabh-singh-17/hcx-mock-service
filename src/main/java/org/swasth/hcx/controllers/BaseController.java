@@ -335,7 +335,7 @@ public class BaseController {
     public String getPatientMobile(String fhirPayload) {
         String patientMobile = "";
         Patient patient = payerService.getResourceByType("Patient", Patient.class, fhirPayload);
-        if (patient != null && patient.getTelecom() != null && CollectionUtils.isEmpty(patient.getTelecom())) {
+        if (patient != null && patient.getTelecom() != null && !CollectionUtils.isEmpty(patient.getTelecom())) {
             patientMobile = patient.getTelecom().get(0).getValue();
         }
         return patientMobile;
