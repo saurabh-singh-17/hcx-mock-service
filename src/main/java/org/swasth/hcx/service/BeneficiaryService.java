@@ -312,11 +312,11 @@ public class BeneficiaryService {
         return responses;
     }
 
-    public List<Object> checkCommunicationRequest(Map<String, Object> requestBody) throws ClientException, SQLException {
+    public ArrayList<Object> checkCommunicationRequest(Map<String, Object> requestBody) throws ClientException, SQLException {
         String requestId = (String) requestBody.get("request_id");
         String query = String.format("SELECT otp_verification,bank_details FROM %s WHERE request_id = '%s'", payorDataTable, requestId);
         ResultSet resultSet = postgresService.executeQuery(query);
-        List<Object> statusList =  new ArrayList<>();
+        ArrayList<Object> statusList =  new ArrayList<>();
         if (!resultSet.next()) {
            throw new ClientException("Claim Request Id Does not exist in the database");
         }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.swasth.hcx.dto.ResponseError;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,7 @@ public class Response {
     private ResponseError error;
     private Map<String, Object> result;
 
-    private List<Object> resultList;
+    private ArrayList<Object> resultList;
 
     public String getWorkflowId() {
         return workflowId;
@@ -109,7 +110,7 @@ public class Response {
         this.result = result;
     }
 
-    public Response(List<Object> result){
+    public Response(ArrayList<Object> result){
         this.timestamp = System.currentTimeMillis();
         this.resultList = result;
     }

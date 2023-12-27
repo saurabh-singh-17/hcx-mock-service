@@ -19,6 +19,7 @@ import org.swasth.hcx.service.GenerateOutgoingRequest;
 import org.swasth.hcx.utils.Constants;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -117,7 +118,8 @@ public class BeneficiaryController extends BaseController {
             if (requestBody.isEmpty() || !requestBody.containsKey("request_id")) {
                 throw new ClientException("Request body is empty or request_id is missing");
             }
-            List<Object> responseList = beneficiaryService.checkCommunicationRequest(requestBody);
+            ArrayList<Object> responseList = beneficiaryService.checkCommunicationRequest(requestBody);
+            System.out.println("Response ---" + responseList);
             Response response = new Response(responseList);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
