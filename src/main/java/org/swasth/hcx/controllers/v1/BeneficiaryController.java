@@ -19,11 +19,9 @@ import org.swasth.hcx.service.GenerateOutgoingRequest;
 import org.swasth.hcx.utils.Constants;
 
 import java.sql.SQLException;
-<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.HashMap;
-=======
->>>>>>> parent of 5beac0a (feat : list type changed)
+
 import java.util.List;
 import java.util.Map;
 
@@ -122,17 +120,11 @@ public class BeneficiaryController extends BaseController {
             if (requestBody.isEmpty() || !requestBody.containsKey("request_id")) {
                 throw new ClientException("Request body is empty or request_id is missing");
             }
-<<<<<<< HEAD
-            ArrayList<Map<String, Object>> responseList = beneficiaryService.checkCommunicationRequest(requestBody);
-            Map<String, Object> responseMap = new HashMap<>();
+            ArrayList<Map<String,Object>> responseList = beneficiaryService.checkCommunicationRequest(requestBody);
+            Map<String,Object> responseMap = new HashMap<>();
             responseMap.put("timestamp", System.currentTimeMillis());
             responseMap.put("result", responseList);
             return ResponseEntity.ok(responseMap);
-=======
-            List<Object> responseList = beneficiaryService.checkCommunicationRequest(requestBody);
-            Response response = new Response(responseList);
-            return ResponseEntity.ok(response);
->>>>>>> parent of 5beac0a (feat : list type changed)
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("Message", e.getMessage()));
         }
