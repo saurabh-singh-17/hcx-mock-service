@@ -4,6 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import com.amazonaws.services.dynamodbv2.xspec.S;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -139,17 +140,36 @@ public class PayerService {
         return "";
     }
 
+//    public String getPatientMobile(String fhirPayload) {
+//        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+//        String patientMobile = "";
+//        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
+//            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Patient")) {
+//                Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+//                if (patient.getTelecom() != null && patient.getTelecom().get(0) != null) {
+//                    patientMobile = patient.getTelecom().get(0).getValue();
+//                }
+//            }
+//        }
+//        return patientMobile;
+//    }
+
     public String getPatientMobile(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         String patientMobile = "";
-        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
-            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Patient")) {
-                Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
-                if (patient.getTelecom() != null && patient.getTelecom().get(0) != null) {
-                    patientMobile = patient.getTelecom().get(0).getValue();
-                }
-            }
+        Patient patient = getResourceByType("Patient", Patient.class, fhirPayload);
+        if (patient.getTelecom() != null && patient.getTelecom().get(0) != null) {
+          patientMobile = patient.getTelecom().get(0).getValue();
         }
         return patientMobile;
     }
+
+    public <T extends Resource> T getResourceByType(String type, Class<T> resourceClass, String fhirPayload) {
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        return parsed.getEntry().stream()
+                .filter(entry -> StringUtils.equalsIgnoreCase(String.valueOf(entry.getResource().getResourceType()), type))
+                .findFirst()
+                .map(entry -> parser.parseResource(resourceClass, parser.encodeResourceToString(entry.getResource())))
+                .orElse(null);
+    }
+
 }
