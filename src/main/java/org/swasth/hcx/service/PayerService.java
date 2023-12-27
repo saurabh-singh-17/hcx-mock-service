@@ -63,21 +63,16 @@ public class PayerService {
     }
 
     public Map<String, List<String>> getSupportingDocuments(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         Map<String, List<String>> documentMap = new HashMap<>();
-        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
-            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Claim")) {
-                Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
-                for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
-                    if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
-                        String url = supportingInfo.getValueAttachment().getUrl();
-                        String documentType = supportingInfo.getCategory().getCoding().get(0).getDisplay();
-                        if (!documentMap.containsKey(documentType)) {
-                            documentMap.put(documentType, new ArrayList<>());
-                        }
-                        documentMap.get(documentType).add(url);
-                    }
+        Claim claim = getResourceByType("Claim", Claim.class, fhirPayload);
+        for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
+            if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
+                String url = supportingInfo.getValueAttachment().getUrl();
+                String documentType = supportingInfo.getCategory().getCoding().get(0).getDisplay();
+                if (!documentMap.containsKey(documentType)) {
+                    documentMap.put(documentType, new ArrayList<>());
                 }
+                documentMap.get(documentType).add(url);
             }
         }
         return documentMap;
@@ -85,43 +80,28 @@ public class PayerService {
 
 
     public String getAmount(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        String amount = "0"; // Default value if claim.getTotal() is not present
-        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
-            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Claim")) {
-                Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
-                if (claim.getTotal() != null && claim.getTotal().getValue() != null) {
-                    amount = claim.getTotal().getValue().toString();
-                }
-            }
+        String amount = "0";
+        Claim claim = getResourceByType("Claim", Claim.class, fhirPayload);
+        if (claim.getTotal() != null && claim.getTotal().getValue() != null) {
+            amount = String.valueOf(claim.getTotal().getValue());
         }
         return amount;
     }
 
     public String getInsuranceId(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        String insuranceId = ""; // Default value if coverage.getSubscriberId() is not present
-        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
-            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Coverage")) {
-                Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
-                if (coverage.getSubscriberId() != null) {
-                    insuranceId = coverage.getSubscriberId();
-                }
-            }
+        String insuranceId = "";
+        Coverage coverage = getResourceByType("Coverage", Coverage.class, fhirPayload);
+        if (coverage.getSubscriberId() != null) {
+            insuranceId = coverage.getSubscriberId();
         }
         return insuranceId;
     }
 
     public String getPatientName(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         String patientName = "";
-        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
-            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Patient")) {
-                Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
-                if(patient.getName() != null && patient.getName().get(0).getTextElement() != null && patient.getName().get(0).getTextElement().getValue() != null) {
-                    patientName = patient.getName().get(0).getTextElement().getValue();
-                }
-            }
+        Patient patient = getResourceByType("Patient", Patient.class, fhirPayload);
+        if (patient.getName() != null && patient.getName().get(0).getTextElement() != null && patient.getName().get(0).getTextElement().getValue() != null) {
+            patientName = patient.getName().get(0).getTextElement().getValue();
         }
         return patientName;
     }
@@ -140,25 +120,11 @@ public class PayerService {
         return "";
     }
 
-//    public String getPatientMobile(String fhirPayload) {
-//        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-//        String patientMobile = "";
-//        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
-//            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "Patient")) {
-//                Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
-//                if (patient.getTelecom() != null && patient.getTelecom().get(0) != null) {
-//                    patientMobile = patient.getTelecom().get(0).getValue();
-//                }
-//            }
-//        }
-//        return patientMobile;
-//    }
-
     public String getPatientMobile(String fhirPayload) {
         String patientMobile = "";
         Patient patient = getResourceByType("Patient", Patient.class, fhirPayload);
         if (patient.getTelecom() != null && patient.getTelecom().get(0) != null) {
-          patientMobile = patient.getTelecom().get(0).getValue();
+            patientMobile = patient.getTelecom().get(0).getValue();
         }
         return patientMobile;
     }
@@ -171,5 +137,4 @@ public class PayerService {
                 .map(entry -> parser.parseResource(resourceClass, parser.encodeResourceToString(entry.getResource())))
                 .orElse(null);
     }
-
 }
