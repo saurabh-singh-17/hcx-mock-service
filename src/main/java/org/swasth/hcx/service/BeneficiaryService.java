@@ -312,6 +312,104 @@ public class BeneficiaryService {
         return responses;
     }
 
+    public String getInsuranceId(String fhirPayload) {
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
+        return coverage.getSubscriberId();
+    }
+
+    public String getPatientName(String fhirPayload){
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
+        return patient.getName().get(0).getTextElement().getValue();
+    }
+    public String getAmount(String fhirPayload) {
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+        return claim.getTotal().getValue().toString();
+    }
+
+    public List<String> getSupportingDocuments(String fhirPayload) {
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+        List<String> documentUrls = new ArrayList<>();
+        for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
+            if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
+                String url = supportingInfo.getValueAttachment().getUrl();
+                documentUrls.add(url);
+            }
+        }
+        return documentUrls;
+    }
+
+    public ResponseEntity<Object> getRequestList(Map<String, Object> requestBody, String condition, String conditionValue) {
+        Map<String, Object> resp = new HashMap<>();
+        Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
+        String searchQuery = String.format("SELECT * FROM %s WHERE %s = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, condition, conditionValue, requestBody.get("app"));
+        try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
+            while (!searchResultSet.isClosed() && searchResultSet.next()) {
+                String workflowId = searchResultSet.getString("workflow_id");
+                if (!groupedEntries.containsKey(workflowId)) {
+                    groupedEntries.put(workflowId, new ArrayList<>());
+                }
+                Map<String, Object> responseMap = new HashMap<>();
+                String actionType = searchResultSet.getString("action");
+                if (actionType.equalsIgnoreCase("claim") || actionType.equalsIgnoreCase("preauth")) {
+                    responseMap.put("supportingDocuments", JSONUtils.deserialize(searchResultSet.getString("supporting_documents"), Map.class));
+                    responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
+                    responseMap.put("otpStatus", searchResultSet.getString("otp_verification"));
+                    responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
+                    responseMap.put("additionalInfo", searchResultSet.getString("additional_info"));
+                    responseMap.put("accountNumber", searchResultSet.getString("account_number"));
+                    responseMap.put("ifscCode", searchResultSet.getString("ifsc_code"));
+                }
+                responseMap.put("type", actionType);
+                responseMap.put("status", searchResultSet.getString("status"));
+                responseMap.put("apiCallId", searchResultSet.getString("request_id"));
+                responseMap.put("claimType", "OPD");
+                responseMap.put("date", searchResultSet.getString("created_on"));
+                responseMap.put("insurance_id", searchResultSet.getString("insurance_id"));
+                responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
+                responseMap.put("sender_code", searchResultSet.getString("sender_code"));
+                responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
+                responseMap.put("workflow_id", workflowId);
+                responseMap.put("mobile", searchResultSet.getString("mobile"));
+                responseMap.put("patientName", searchResultSet.getString("patient_name"));
+                groupedEntries.get(workflowId).add(responseMap);
+                if (groupedEntries.size() >= 10) {
+                    break;
+                }
+            }
+            List<Map<String, Object>> entries = new ArrayList<>();
+            for (String key : groupedEntries.keySet()) {
+                Map<String, Object> entry = new HashMap<>();
+                entry.put(key, groupedEntries.get(key));
+                entries.add(entry);
+            }
+            resp.put("entries", entries);
+            resp.put("count", entries.size());
+            return new ResponseEntity<>(resp, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace(); // Log the exception for debugging
+            return new ResponseEntity<>(Map.of("error", "Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public ResponseEntity<Object> getRequestListFromDatabase1(Map<String, Object> requestBody) throws Exception {
+        return getRequestList(requestBody, "mobile", (String) requestBody.getOrDefault("mobile", ""));
+    }
+
+    public ResponseEntity<Object> getRequestListFromSenderCode1(Map<String, Object> requestBody) throws Exception {
+        return getRequestList(requestBody, "sender_code", (String) requestBody.getOrDefault("sender_code", ""));
+    }
+
+    public ResponseEntity<Object> getDataFromWorkflowId1(Map<String, Object> requestBody) {
+        return getRequestList(requestBody, "workflow_id", (String) requestBody.getOrDefault("workflow_id", ""));
+    }
+
+
+
+
     public Map<String, Object> checkCommunicationRequest(Map<String, Object> requestBody) throws ClientException, SQLException {
         String requestId = (String) requestBody.get("request_id");
         String query = String.format("SELECT otp_verification,bank_details FROM %s WHERE request_id = '%s'", payorDataTable, requestId);

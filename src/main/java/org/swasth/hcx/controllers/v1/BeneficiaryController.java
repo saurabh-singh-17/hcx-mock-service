@@ -68,11 +68,11 @@ public class BeneficiaryController extends BaseController {
     public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody) {
         try {
             if (requestBody.containsKey("mobile")) {
-                return beneficiaryService.getRequestListFromDatabase(requestBody);
+                return beneficiaryService.getRequestListFromDatabase1(requestBody);
             } else if (requestBody.containsKey("workflow_id")) {
-                return beneficiaryService.getDataFromWorkflowId(requestBody);
+                return beneficiaryService.getDataFromWorkflowId1(requestBody);
             } else if (requestBody.containsKey("sender_code")) {
-                return beneficiaryService.getRequestListFromSenderCode(requestBody);
+                return beneficiaryService.getRequestListFromSenderCode1(requestBody);
             } else {
                 throw new ClientException("Please provide valid request body");
             }
