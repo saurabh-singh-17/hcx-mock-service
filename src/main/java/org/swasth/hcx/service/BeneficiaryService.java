@@ -204,7 +204,8 @@ public class BeneficiaryService {
                 String actionType = searchResultSet.getString("action");
                 String fhirPayload = searchResultSet.getString("request_fhir");
                 if (actionType.equalsIgnoreCase("claim") || actionType.equalsIgnoreCase("preauth")) {
-                    responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
+                    String supportingDocuments = searchResultSet.getString("supporting_documents");
+                    responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
                     responseMap.put("billAmount", getAmount(fhirPayload));
                     responseMap.put("otpStatus", searchResultSet.getString("otp_verification"));
                     responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
@@ -263,8 +264,8 @@ public class BeneficiaryService {
                 responseMap.put("sender_code", searchResultSet.getString("sender_code"));
                 responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
                 responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
-//                String supportingDocuments = searchResultSet.getString("supporting_documents");
-                responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
+                String supportingDocuments = searchResultSet.getString("supporting_documents");
+                responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
                 responseMap.put("mobile", getPatientMobile(fhirPayload));
                 responseMap.put("patientName", getPatientName(fhirPayload));
                 responseMap.put("otpStatus", searchResultSet.getString("otp_verification"));
