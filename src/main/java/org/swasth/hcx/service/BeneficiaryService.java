@@ -2,6 +2,8 @@ package org.swasth.hcx.service;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -143,10 +145,11 @@ public class BeneficiaryService {
                 }
                 Map<String, Object> responseMap = new HashMap<>();
                 String actionType = searchResultSet.getString("action");
+                String fhirPayload = searchResultSet.getString("request_fhir");
                 if (actionType.equalsIgnoreCase("claim") || actionType.equalsIgnoreCase("preauth")) {
                     String supportingDocuments = searchResultSet.getString("supporting_documents");
-                    responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
-                    responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
+                    responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
+                    responseMap.put("billAmount", getAmount(fhirPayload));
                     responseMap.put("otpStatus", searchResultSet.getString("otp_verification"));
                     responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
                     responseMap.put("additionalInfo", searchResultSet.getString("additional_info"));
@@ -158,13 +161,13 @@ public class BeneficiaryService {
                 responseMap.put("apiCallId", searchResultSet.getString("request_id"));
                 responseMap.put("claimType", "OPD");
                 responseMap.put("date", searchResultSet.getString("created_on"));
-                responseMap.put("insurance_id", searchResultSet.getString("insurance_id"));
+                responseMap.put("insurance_id", getInsuranceId(fhirPayload));
                 responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
                 responseMap.put("sender_code", searchResultSet.getString("sender_code"));
                 responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
                 responseMap.put("workflow_id", workflowId);
-                responseMap.put("mobile", searchResultSet.getString("mobile"));
-                responseMap.put("patientName", searchResultSet.getString("patient_name"));
+                responseMap.put("mobile", getPatientMobile(fhirPayload));
+                responseMap.put("patientName", getPatientName(fhirPayload));
                 groupedEntries.get(workflowId).add(responseMap);
                 if (groupedEntries.size() >= 10) {
                     break;
@@ -199,10 +202,10 @@ public class BeneficiaryService {
                 }
                 Map<String, Object> responseMap = new HashMap<>();
                 String actionType = searchResultSet.getString("action");
+                String fhirPayload = searchResultSet.getString("request_fhir");
                 if (actionType.equalsIgnoreCase("claim") || actionType.equalsIgnoreCase("preauth")) {
-                    String supportingDocuments = searchResultSet.getString("supporting_documents");
-                    responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
-                    responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
+                    responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
+                    responseMap.put("billAmount", getAmount(fhirPayload));
                     responseMap.put("otpStatus", searchResultSet.getString("otp_verification"));
                     responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
                     responseMap.put("additionalInfo", searchResultSet.getString("additional_info"));
@@ -214,13 +217,13 @@ public class BeneficiaryService {
                 responseMap.put("apiCallId", searchResultSet.getString("request_id"));
                 responseMap.put("claimType", "OPD");
                 responseMap.put("date", searchResultSet.getString("created_on"));
-                responseMap.put("insurance_id", searchResultSet.getString("insurance_id"));
+                responseMap.put("insurance_id", getInsuranceId(fhirPayload));
                 responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
                 responseMap.put("sender_code", searchResultSet.getString("sender_code"));
                 responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
                 responseMap.put("workflow_id", workflowId);
-                responseMap.put("mobile", searchResultSet.getString("mobile"));
-                responseMap.put("patientName", searchResultSet.getString("patient_name"));
+                responseMap.put("mobile", getPatientMobile(fhirPayload));
+                responseMap.put("patientName", getPatientMobile(fhirPayload));
                 groupedEntries.get(workflowId).add(responseMap);
                 if (groupedEntries.size() >= 10) {
                     break;
@@ -250,6 +253,7 @@ public class BeneficiaryService {
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
             while (!searchResultSet.isClosed() && searchResultSet.next()) {
                 Map<String, Object> responseMap = new HashMap<>();
+                String fhirPayload = searchResultSet.getString("request_fhir");
                 responseMap.put("type", getType(searchResultSet.getString("action")));
                 responseMap.put("status", searchResultSet.getString("status"));
                 responseMap.put("apiCallId", searchResultSet.getString("request_id"));
@@ -259,10 +263,10 @@ public class BeneficiaryService {
                 responseMap.put("sender_code", searchResultSet.getString("sender_code"));
                 responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
                 responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
-                String supportingDocuments = searchResultSet.getString("supporting_documents");
-                responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
-                responseMap.put("mobile", searchResultSet.getString("mobile"));
-                responseMap.put("patientName", searchResultSet.getString("patient_name"));
+//                String supportingDocuments = searchResultSet.getString("supporting_documents");
+                responseMap.put("supportingDocuments", getSupportingDocuments(fhirPayload));
+                responseMap.put("mobile", getPatientMobile(fhirPayload));
+                responseMap.put("patientName", getPatientName(fhirPayload));
                 responseMap.put("otpStatus", searchResultSet.getString("otp_verification"));
                 responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
                 responseMap.put("additionalInfo", searchResultSet.getString("additional_info"));
@@ -312,101 +316,69 @@ public class BeneficiaryService {
         return responses;
     }
 
-    public String getInsuranceId(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Coverage coverage = parser.parseResource(Coverage.class, parser.encodeResourceToString(parsed.getEntry().get(4).getResource()));
-        return coverage.getSubscriberId();
+    public Map<String, List<String>> getSupportingDocuments(String fhirPayload) {
+        Map<String, List<String>> documentMap = new HashMap<>();
+        Claim claim = getResourceByType("Claim", Claim.class, fhirPayload);
+        if (claim != null) {
+            for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
+                if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
+                    String url = supportingInfo.getValueAttachment().getUrl();
+                    String documentType = supportingInfo.getCategory().getCoding().get(0).getDisplay();
+                    if (!documentMap.containsKey(documentType)) {
+                        documentMap.put(documentType, new ArrayList<>());
+                    }
+                    documentMap.get(documentType).add(url);
+                }
+            }
+        }
+        return documentMap;
     }
 
-    public String getPatientName(String fhirPayload){
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Patient patient = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
-        return patient.getName().get(0).getTextElement().getValue();
-    }
+
     public String getAmount(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-        return claim.getTotal().getValue().toString();
-    }
-
-    public List<String> getSupportingDocuments(String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-        List<String> documentUrls = new ArrayList<>();
-        for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
-            if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
-                String url = supportingInfo.getValueAttachment().getUrl();
-                documentUrls.add(url);
-            }
+        String amount = "0";
+        Claim claim = getResourceByType("Claim", Claim.class, fhirPayload);
+        if (claim != null && claim.getTotal() != null && claim.getTotal().getValue() != null) {
+            amount = String.valueOf(claim.getTotal().getValue());
         }
-        return documentUrls;
+        return amount;
     }
 
-    public ResponseEntity<Object> getRequestList(Map<String, Object> requestBody, String condition, String conditionValue) {
-        Map<String, Object> resp = new HashMap<>();
-        Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
-        String searchQuery = String.format("SELECT * FROM %s WHERE %s = '%s' AND app = '%s' ORDER BY created_on DESC", payorDataTable, condition, conditionValue, requestBody.get("app"));
-        try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
-            while (!searchResultSet.isClosed() && searchResultSet.next()) {
-                String workflowId = searchResultSet.getString("workflow_id");
-                if (!groupedEntries.containsKey(workflowId)) {
-                    groupedEntries.put(workflowId, new ArrayList<>());
-                }
-                Map<String, Object> responseMap = new HashMap<>();
-                String actionType = searchResultSet.getString("action");
-                if (actionType.equalsIgnoreCase("claim") || actionType.equalsIgnoreCase("preauth")) {
-                    responseMap.put("supportingDocuments", JSONUtils.deserialize(searchResultSet.getString("supporting_documents"), Map.class));
-                    responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
-                    responseMap.put("otpStatus", searchResultSet.getString("otp_verification"));
-                    responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
-                    responseMap.put("additionalInfo", searchResultSet.getString("additional_info"));
-                    responseMap.put("accountNumber", searchResultSet.getString("account_number"));
-                    responseMap.put("ifscCode", searchResultSet.getString("ifsc_code"));
-                }
-                responseMap.put("type", actionType);
-                responseMap.put("status", searchResultSet.getString("status"));
-                responseMap.put("apiCallId", searchResultSet.getString("request_id"));
-                responseMap.put("claimType", "OPD");
-                responseMap.put("date", searchResultSet.getString("created_on"));
-                responseMap.put("insurance_id", searchResultSet.getString("insurance_id"));
-                responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
-                responseMap.put("sender_code", searchResultSet.getString("sender_code"));
-                responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
-                responseMap.put("workflow_id", workflowId);
-                responseMap.put("mobile", searchResultSet.getString("mobile"));
-                responseMap.put("patientName", searchResultSet.getString("patient_name"));
-                groupedEntries.get(workflowId).add(responseMap);
-                if (groupedEntries.size() >= 10) {
-                    break;
-                }
-            }
-            List<Map<String, Object>> entries = new ArrayList<>();
-            for (String key : groupedEntries.keySet()) {
-                Map<String, Object> entry = new HashMap<>();
-                entry.put(key, groupedEntries.get(key));
-                entries.add(entry);
-            }
-            resp.put("entries", entries);
-            resp.put("count", entries.size());
-            return new ResponseEntity<>(resp, HttpStatus.OK);
-        } catch (Exception e) {
-            e.printStackTrace(); // Log the exception for debugging
-            return new ResponseEntity<>(Map.of("error", "Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
+    public String getInsuranceId(String fhirPayload) {
+        String insuranceId = "";
+        Coverage coverage = getResourceByType("Coverage", Coverage.class, fhirPayload);
+        if (coverage != null && coverage.getSubscriberId() != null) {
+            insuranceId = coverage.getSubscriberId();
         }
+        return insuranceId;
     }
 
-    public ResponseEntity<Object> getRequestListFromDatabase1(Map<String, Object> requestBody) throws Exception {
-        return getRequestList(requestBody, "mobile", (String) requestBody.getOrDefault("mobile", ""));
+    public String getPatientName(String fhirPayload) {
+        String patientName = "";
+        Patient patient = getResourceByType("Patient", Patient.class, fhirPayload);
+        if (patient!= null && patient.getName() != null && !CollectionUtils.isEmpty(patient.getName()) && patient.getName().get(0).getTextElement() != null && patient.getName().get(0).getTextElement().getValue() != null) {
+            patientName = patient.getName().get(0).getTextElement().getValue();
+        }
+        return patientName;
     }
 
-    public ResponseEntity<Object> getRequestListFromSenderCode1(Map<String, Object> requestBody) throws Exception {
-        return getRequestList(requestBody, "sender_code", (String) requestBody.getOrDefault("sender_code", ""));
+    public String getPatientMobile(String fhirPayload) {
+        String patientMobile = "";
+        Patient patient = getResourceByType("Patient", Patient.class, fhirPayload);
+        if (patient != null && patient.getTelecom() != null && !CollectionUtils.isEmpty(patient.getTelecom())) {
+            patientMobile = patient.getTelecom().get(0).getValue();
+        }
+        return patientMobile;
     }
 
-    public ResponseEntity<Object> getDataFromWorkflowId1(Map<String, Object> requestBody) {
-        return getRequestList(requestBody, "workflow_id", (String) requestBody.getOrDefault("workflow_id", ""));
+    public <T extends Resource> T getResourceByType(String type, Class<T> resourceClass, String fhirPayload) {
+        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
+        return parsed.getEntry().stream()
+                .filter(entry -> StringUtils.equalsIgnoreCase(String.valueOf(entry.getResource().getResourceType()), type))
+                .findFirst()
+                .map(entry -> parser.parseResource(resourceClass, parser.encodeResourceToString(entry.getResource())))
+                .orElse(null);
     }
-
 
 
 
