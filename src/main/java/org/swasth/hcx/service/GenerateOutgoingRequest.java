@@ -116,6 +116,12 @@ public class GenerateOutgoingRequest {
             validateKeys("recipientCode", recipientCode);
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap(participantCode, password));
             Claim claim = OnActionFhirExamples.claimExample();
+            Date date = new Date();
+            if (requestBody.containsKey("date")) {
+                long timeStamp = (Long) requestBody.getOrDefault("date", "");
+                date = new Date(timeStamp);
+            }
+            claim.setCreated(date);
             String billAmount = (String) requestBody.getOrDefault("billAmount", 0);
             claim.setTotal(new Money().setCurrency("INR").setValue(Long.parseLong(billAmount)));
             // To check type is OPD
