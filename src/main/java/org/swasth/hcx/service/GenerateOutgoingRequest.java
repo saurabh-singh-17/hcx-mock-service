@@ -107,6 +107,7 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createClaimRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
+            System.out.println("Request Body ----------" + requestBody);
             String participantCode = (String) requestBody.getOrDefault("participantCode", "");
             validateKeys("participantCode", participantCode);
             String password = (String) requestBody.getOrDefault("password", "");
@@ -118,7 +119,7 @@ public class GenerateOutgoingRequest {
             Date date = new Date();
             if(requestBody.containsKey("date")){
                 String dateString = (String) requestBody.get("date");
-                SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
                 date =  dateFormat.parse(dateString);
             }
             claim.setCreated(date);
