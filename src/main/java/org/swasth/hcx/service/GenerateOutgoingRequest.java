@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -114,7 +115,12 @@ public class GenerateOutgoingRequest {
             validateKeys("recipientCode", recipientCode);
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap(participantCode, password));
             Claim claim = OnActionFhirExamples.claimExample();
-            Date date = (Date) requestBody.getOrDefault("date", new Date());
+            Date date = new Date();
+            if(requestBody.containsKey("date")){
+                String dateString = (String) requestBody.get("date");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+                date =  dateFormat.parse(dateString);
+            }
             claim.setCreated(date);
             String billAmount = (String) requestBody.getOrDefault("billAmount", 0);
             claim.setTotal(new Money().setCurrency("INR").setValue(Long.parseLong(billAmount)));
