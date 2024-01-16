@@ -107,7 +107,7 @@ public class GenerateOutgoingRequest {
     public ResponseEntity<Object> createClaimRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
         try {
-            System.out.println("Request Body ----------" + requestBody);
+            System.out.println("Request Body" + requestBody);
             String participantCode = (String) requestBody.getOrDefault("participantCode", "");
             validateKeys("participantCode", participantCode);
             String password = (String) requestBody.getOrDefault("password", "");
@@ -116,13 +116,6 @@ public class GenerateOutgoingRequest {
             validateKeys("recipientCode", recipientCode);
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap(participantCode, password));
             Claim claim = OnActionFhirExamples.claimExample();
-            Date date = new Date();
-            if(requestBody.containsKey("date")){
-                String dateString = (String) requestBody.get("date");
-                SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
-                date =  dateFormat.parse(dateString);
-            }
-            claim.setCreated(date);
             String billAmount = (String) requestBody.getOrDefault("billAmount", 0);
             claim.setTotal(new Money().setCurrency("INR").setValue(Long.parseLong(billAmount)));
             // To check type is OPD
