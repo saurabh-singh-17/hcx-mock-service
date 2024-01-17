@@ -21,7 +21,7 @@ public class Request {
         this.payload = body;
         this.action = action;
         if (NOTIFICATION_NOTIFY.equals(action)) {
-            String encodedPayload = (String) requestBody.get(PAYLOAD);
+            String encodedPayload = (String) ((Map<String, Object>) requestBody.get(PAYLOAD)).get(PAYLOAD);
             hcxHeaders = JSONUtils.decodeBase64String(encodedPayload.split("\\.")[0], Map.class);
             payload = JSONUtils.decodeBase64String(encodedPayload.split("\\.")[1], Map.class);
         } else {
