@@ -130,9 +130,9 @@ public class BaseController {
             Map<String, Object> outputOfOnAction = new HashMap<>();
             System.out.println("create the oncheck payload");
             Bundle bundle = new Bundle();
+            System.out.println("-----Request---" + requestBody);
             Request req = new Request(requestBody, apiAction);
             HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(req.getRecipientCode());
-            System.out.println("-----Request---" + JSONUtils.serialize(req));
             if (COVERAGE_ELIGIBILITY_CHECK.equalsIgnoreCase(apiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK, output);
                 if (!result) {
