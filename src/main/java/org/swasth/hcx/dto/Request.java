@@ -23,10 +23,9 @@ public class Request {
         this.action = action;
         if (NOTIFICATION_NOTIFY.equals(action)) {
             notificationRequest = (String) ((Map<String, Object>) body.get(PAYLOAD)).get(PAYLOAD);
-
-//            System.out.println("Encoded payload ----------" + JSONUtils.serialize(encodedPayload));
-//            hcxHeaders = JSONUtils.decodeBase64String(encodedPayload.split("\\.")[0], Map.class);
-//            payload = JSONUtils.decodeBase64String(encodedPayload.split("\\.")[1], Map.class);
+            System.out.println("Encoded payload ----------" + JSONUtils.serialize(notificationRequest));
+            hcxHeaders = JSONUtils.decodeBase64String(notificationRequest.split("\\.")[0], Map.class);
+            payload = JSONUtils.decodeBase64String(notificationRequest.split("\\.")[1], Map.class);
         } else {
             try {
                 if (body.containsKey(PAYLOAD)) {
