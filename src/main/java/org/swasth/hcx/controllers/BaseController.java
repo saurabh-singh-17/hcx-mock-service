@@ -202,7 +202,8 @@ public class BaseController {
                 System.out.println("---------Notification API request came ---------");
                 String topicCode = request.getTopicCode();
                 System.out.println("Topic code ------"  + topicCode);
-                hcxIntegrator.receiveNotification(JSONUtils.serialize(requestBody), output);
+                System.out.println("Notification Request -------" + request.getNotificationRequest());
+                hcxIntegrator.receiveNotification(request.getNotificationRequest(), output);
                 String key = request.getRecipientCode() + ":" + topicCode;
                 redisService.set(key, notificationService.notificationResponse(output), redisExpires);
             }

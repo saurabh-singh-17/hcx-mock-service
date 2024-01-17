@@ -14,6 +14,7 @@ public class Request {
     private  Map<String, Object> payload;
     protected Map<String, Object> hcxHeaders = null;
     private Map<String,Object> requestBody;
+    private String notificationRequest;
     private String action;
 
     public Request(Map<String, Object> body, String action) throws Exception {
@@ -21,10 +22,11 @@ public class Request {
         this.payload = body;
         this.action = action;
         if (NOTIFICATION_NOTIFY.equals(action)) {
-            String encodedPayload = (String) ((Map<String, Object>) body.get(PAYLOAD)).get(PAYLOAD);
-            System.out.println("Encoded payload ----------" + JSONUtils.serialize(encodedPayload));
-            hcxHeaders = JSONUtils.decodeBase64String(encodedPayload.split("\\.")[0], Map.class);
-            payload = JSONUtils.decodeBase64String(encodedPayload.split("\\.")[1], Map.class);
+            notificationRequest = (String) ((Map<String, Object>) body.get(PAYLOAD)).get(PAYLOAD);
+
+//            System.out.println("Encoded payload ----------" + JSONUtils.serialize(encodedPayload));
+//            hcxHeaders = JSONUtils.decodeBase64String(encodedPayload.split("\\.")[0], Map.class);
+//            payload = JSONUtils.decodeBase64String(encodedPayload.split("\\.")[1], Map.class);
         } else {
             try {
                 if (body.containsKey(PAYLOAD)) {
@@ -35,6 +37,10 @@ public class Request {
                 throw new ClientException(ErrorCodes.ERR_INVALID_PAYLOAD, "Invalid Payload");
             }
         }
+    }
+
+    public String getNotificationRequest() {
+        return notificationRequest;
     }
 
 
