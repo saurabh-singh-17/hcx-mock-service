@@ -34,8 +34,9 @@ public class NotificationController extends BaseController {
     @Value("${kafka.topic.coverageeligibility}")
     private String kafkaTopic;
 
-    @RequestMapping(value = "/notification/notify", method = RequestMethod.POST)
+    @RequestMapping(value = Constants.NOTIFICATION_NOTIFY, method = RequestMethod.POST)
     public ResponseEntity<Object> claimSubmit(@RequestBody Map<String, Object> requestBody) throws Exception {
+        System.out.println("----Notification notify API -----");
         return processRequest(requestBody, Constants.NOTIFICATION_NOTIFY, Constants.NOTIFICATION_NOTIFY, kafkaTopic);
     }
 

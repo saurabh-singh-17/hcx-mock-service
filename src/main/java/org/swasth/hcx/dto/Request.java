@@ -1,5 +1,6 @@
 package org.swasth.hcx.dto;
 
+import org.apache.commons.lang3.StringUtils;
 import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.exception.ErrorCodes;
 import org.swasth.hcx.utils.JSONUtils;
@@ -18,15 +19,22 @@ public class Request {
     public Request(Map<String, Object> body, String action) throws Exception {
         this.payload = body;
         this.action = action;
-        try {
-            if (body.containsKey(PAYLOAD)) {
-                hcxHeaders = JSONUtils.decodeBase64String(((String) body.get(PAYLOAD)).split("\\.")[0], Map.class);
-            } else if (body.containsKey(STATUS))
-                hcxHeaders = body;
-        } catch (Exception e) {
-            throw new ClientException(ErrorCodes.ERR_INVALID_PAYLOAD, "Invalid Payload");
+        if (NOTIFICATION_NOTIFY.equals(action)) {
+            String encodedPayload = (String) requestBody.get(PAYLOAD);
+            hcxHeaders = JSONUtils.decodeBase64String(encodedPayload.split("\\.")[0], Map.class);
+            payload = JSONUtils.decodeBase64String(encodedPayload.split("\\.")[1], Map.class);
+        } else {
+            try {
+                if (body.containsKey(PAYLOAD)) {
+                    hcxHeaders = JSONUtils.decodeBase64String(((String) body.get(PAYLOAD)).split("\\.")[0], Map.class);
+                } else if (body.containsKey(STATUS))
+                    hcxHeaders = body;
+            } catch (Exception e) {
+                throw new ClientException(ErrorCodes.ERR_INVALID_PAYLOAD, "Invalid Payload");
+            }
         }
     }
+
 
     public Request(Map<String, Object> requestBody) throws Exception {
         this.requestBody = requestBody;
