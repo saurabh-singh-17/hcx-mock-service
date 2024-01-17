@@ -74,7 +74,12 @@ mock_payer:
   private_key: ${mock_payer_private_key:https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/demo-app/server/resources/keys/x509-private-key.pem}
   username: ${mock_payer_username:swasth_mock_payer@swasthapp.org}
   password: ${mock_payer_password:Opensaber@123}
-  participant_code: ${mock_payer_participant_code:1-29482df3-e875-45ef-a4e9-592b6f565782}
+  participant_code: ${mock_payer_participant_code:1-29482df3-e875-45ef-a4e9-592b6f565782
+
+redis:
+  host: ${redis_host:localhost}
+  port: ${redis_port:6379}
+  expires: ${redis_expires:172800}
 
 aws:
   access-key: ${aws_accessKey:}

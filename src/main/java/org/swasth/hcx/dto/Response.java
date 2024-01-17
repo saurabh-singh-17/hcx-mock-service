@@ -96,6 +96,10 @@ public class Response {
         return result.get(key);
     }
 
+    public Response(long timestamp){
+        this.timestamp = timestamp;
+    }
+
     public Response put(String key, Object vo) {
         result.put(key, vo);
         return this;

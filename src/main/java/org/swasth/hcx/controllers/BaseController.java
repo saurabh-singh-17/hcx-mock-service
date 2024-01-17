@@ -84,6 +84,11 @@ public class BaseController {
     @Autowired
     private PayerService payerService;
 
+    @Autowired
+    private RedisService redisService;
+    @Value("${redis.expires}")
+    private int redisExpires;
+
     private static final Logger logger = LoggerFactory.getLogger(BaseController.class);
 
     IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
@@ -127,6 +132,7 @@ public class BaseController {
             Bundle bundle = new Bundle();
             Request req = new Request(requestBody, apiAction);
             HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(req.getRecipientCode());
+            System.out.println("-----Request---" + JSONUtils.serialize(req));
             if (COVERAGE_ELIGIBILITY_CHECK.equalsIgnoreCase(apiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK, output);
                 if (!result) {
@@ -192,6 +198,13 @@ public class BaseController {
                     postgresService.execute(query);
                 }
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+            } else if(NOTIFICATION_NOTIFY.equalsIgnoreCase(apiAction)){
+                System.out.println("---------Notification API request came ---------");
+                String topicCode = request.getTopicCode();
+                System.out.println("Topic code ------"  + topicCode);
+                hcxIntegrator.receiveNotification(JSONUtils.serialize(requestBody), output);
+                String key = request.getRecipientCode() + ":" + topicCode;
+                redisService.set(key, notificationService.notificationResponse(output), redisExpires);
             }
         }
     }
