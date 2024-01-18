@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.swasth.hcx.controllers.BaseController;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,16 +60,26 @@ public class NotificationController extends BaseController {
         }
     }
 
-    @GetMapping(value = "/notification/list/{participantCode}")
-    public ResponseEntity<Object> getNotification(@PathVariable("participantCode") String code) throws Exception {
+    @PostMapping(value = "/notification/list")
+    public ResponseEntity<Object> getNotification(@RequestBody Map<String, Object> requestBody) throws Exception {
+        Response response = new Response();
         try {
-            System.out.println("Getting the values for participant code :" + code);
-            List<Map<String,Object>> details = redisService.get(code);
+            System.out.println("Getting the values for participant code :" + requestBody);
             Map<String, Object> output = new HashMap<>();
-            output.put("notification", details);
-            return new ResponseEntity<>(output, HttpStatus.OK);
+            List<Map<String, Object>> detailsParticipantRole = new ArrayList<>();
+            List<Map<String, Object>> detailsParticipantCode = new ArrayList<>();
+            if (requestBody.containsKey("participant_role")) {
+                detailsParticipantRole = redisService.get((String) requestBody.get("participant_role"));
+            } else if (requestBody.containsKey("participant_code")) {
+                detailsParticipantCode = redisService.get((String) requestBody.get("participant_code"));
+            }
+            List<Map<String, Object>> combinedDetails = new ArrayList<>(detailsParticipantRole);
+            combinedDetails.addAll(detailsParticipantCode);
+            output.put("result", combinedDetails);
+            response.setResult(output);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+            return exceptionHandler(response, e);
         }
     }
 }

@@ -62,12 +62,14 @@ public class NotificationService {
         Map<String,String> result = onActionCall.jwsEncryptPayload(privateKeyPath,resBody);
         //onActionCall.sendOnAction("/" + env.getProperty("hcx_application.api_version") + Constants.NOTIFICATION_NOTIFY,result);
     }
-    public String notificationResponse(Map<String,Object> notification) throws JsonProcessingException {
+
+    public String notificationResponse(Map<String, Object> notification) throws JsonProcessingException {
         Map<String, Object> notificationHeaders = (Map<String, Object>) ((Map<String, Object>) notification.get(Constants.HEADERS)).get("x-hcx-notification_headers");
         Map<String, Object> payload = (Map<String, Object>) notification.get(Constants.PAYLOAD);
         Map<String, Object> notificationMap = new HashMap<>();
         notificationMap.put("timestamp", notificationHeaders.get("timestamp"));
         notificationMap.put("sender_code", notificationHeaders.get("sender_code"));
+        notificationMap.put("topic_code", payload.get("topic_code"));
         notificationMap.put(Constants.MESSAGE, payload.get(Constants.MESSAGE));
         return JSONUtils.serialize(notificationMap);
     }

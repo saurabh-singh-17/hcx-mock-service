@@ -39,15 +39,15 @@ public class RedisService {
     }
 
     public List<Map<String, Object>> get(String key) throws Exception {
+        List<Map<String, Object>> notificationList = new ArrayList<>();
         try (Jedis jedis = getConnection()) {
             Set<String> matchingKeys = jedis.keys("*" + key + "*");
             if (matchingKeys.isEmpty()) {
-                throw new ClientException("There is no value present with key :" + key);
+                return notificationList;
             }
             List<String> sortedKeys = new ArrayList<>(matchingKeys);
             sortedKeys.sort((k1, k2) -> (int) (jedis.ttl(k2) - jedis.ttl(k1)));
             List<String> matchingValues = jedis.mget(sortedKeys.toArray(new String[0]));
-            List<Map<String, Object>> notificationList = new ArrayList<>();
             for (String keys : matchingValues) {
                 notificationList.add(JSONUtils.deserialize(keys, Map.class));
             }

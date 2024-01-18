@@ -202,24 +202,17 @@ public class BaseController {
             } else if (NOTIFICATION_NOTIFY.equalsIgnoreCase(apiAction)) {
                 System.out.println("---------Notification API request came ---------");
                 hcxIntegrator.receiveNotification(request.getNotificationRequest(), output);
-                System.out.println("output of notifications  ----------" + output);
                 String topicCode = request.getTopicCode();
                 Map<String, Object> notificationHeaders = request.getNotificationHeaders();
                 String recipientType = (String) notificationHeaders.get("recipient_type");
-                if (StringUtils.equalsIgnoreCase(recipientType,"participant_role")) {
-                    List<String> roleRecipients = (List<String>) notificationHeaders.get("recipients");
-                    for (String role : roleRecipients) {
-                        String key = role + ":" + topicCode;
-                        redisService.set(key, notificationService.notificationResponse(output), redisExpires);
-                    }
-                } else if (StringUtils.equalsIgnoreCase(recipientType, "participant_code")) {
-                    List<String> participantRecipients = (List<String>) notificationHeaders.get("recipients");
-                    for (String code : participantRecipients) {
-                        String key = code + ":" + topicCode;
+                List<String> recipients = (List<String>) notificationHeaders.getOrDefault("recipients", "");
+                for (String recipient : recipients) {
+                    String key = StringUtils.equalsIgnoreCase(recipientType, "participant_role") ? recipient + ":" + topicCode
+                            : StringUtils.equalsIgnoreCase(recipientType, "participant_code") ? recipient + ":" + topicCode : null;
+                    if (key != null) {
                         redisService.set(key, notificationService.notificationResponse(output), redisExpires);
                     }
                 }
-                System.out.println("Output --------" + output);
             }
         }
     }
