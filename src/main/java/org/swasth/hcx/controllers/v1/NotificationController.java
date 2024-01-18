@@ -63,11 +63,11 @@ public class NotificationController extends BaseController {
 
     @PostMapping(value = "/notification/list")
     public ResponseEntity<Object> getNotification(@RequestBody Map<String, Object> requestBody) throws Exception {
-        Response response = new Response();
         try {
             System.out.println("Getting the values for participant code :" + requestBody);
             List<Map<String, Object>> detailsParticipantRole = new ArrayList<>();
-            List<Map<String, Object>> detailsParticipantCode = new ArrayList<>();
+            System.out.println(requestBody.containsKey("participant_role"));
+            
             if (requestBody.containsKey("participant_role") && StringUtils.isEmpty("participant_role")) {
                 System.out.println("Participant role ---" + requestBody.get("participant_role"));
                 detailsParticipantRole = redisService.get((String) requestBody.get("participant_role"));
@@ -76,13 +76,15 @@ public class NotificationController extends BaseController {
 //            } else if (requestBody.containsKey("participant_code")) {
 //                detailsParticipantCode = redisService.get((String) requestBody.get("participant_code"));
 //            }
-            List<Map<String, Object>> combinedDetails = new ArrayList<>(detailsParticipantRole);
+//            List<Map<String, Object>> combinedDetails = new ArrayList<>(detailsParticipantRole);
 //            combinedDetails.addAll(detailsParticipantCode);
-            System.out.println("Combined details ---" + combinedDetails);
-            response.setResultList(combinedDetails);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            System.out.println("detailsParticipantRole ---" + detailsParticipantRole);
+            Map<String, Object> output = new HashMap<>();
+            output.put("result", detailsParticipantRole);
+
+            return new ResponseEntity<>(output, HttpStatus.OK);
         } catch (Exception e) {
-            return exceptionHandler(response, e);
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 }
