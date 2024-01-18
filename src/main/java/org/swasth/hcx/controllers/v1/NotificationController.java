@@ -66,19 +66,19 @@ public class NotificationController extends BaseController {
         Response response = new Response();
         try {
             System.out.println("Getting the values for participant code :" + requestBody);
-            Map<String, Object> output = new HashMap<>();
             List<Map<String, Object>> detailsParticipantRole = new ArrayList<>();
             List<Map<String, Object>> detailsParticipantCode = new ArrayList<>();
             if (requestBody.containsKey("participant_role") && StringUtils.isEmpty("participant_role")) {
+                System.out.println("Participant role ---" + requestBody.get("participant_role"));
                 detailsParticipantRole = redisService.get((String) requestBody.get("participant_role"));
-                System.out.println("-- Details participant Roles---- "  + detailsParticipantRole);
-            } else if (requestBody.containsKey("participant_code")) {
-                detailsParticipantCode = redisService.get((String) requestBody.get("participant_code"));
+                System.out.println("-- Details participant Roles---- " + detailsParticipantRole);
             }
+//            } else if (requestBody.containsKey("participant_code")) {
+//                detailsParticipantCode = redisService.get((String) requestBody.get("participant_code"));
+//            }
             List<Map<String, Object>> combinedDetails = new ArrayList<>(detailsParticipantRole);
-            combinedDetails.addAll(detailsParticipantCode);
+//            combinedDetails.addAll(detailsParticipantCode);
             System.out.println("Combined details ---" + combinedDetails);
-            output.put("result", combinedDetails);
             response.setResultList(combinedDetails);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {

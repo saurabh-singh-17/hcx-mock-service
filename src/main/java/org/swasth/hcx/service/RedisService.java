@@ -39,10 +39,13 @@ public class RedisService {
     }
 
     public List<Map<String, Object>> get(String key) throws Exception {
+        System.out.println("------key-----" + key);
         List<Map<String, Object>> notificationList = new ArrayList<>();
         try (Jedis jedis = getConnection()) {
             Set<String> matchingKeys = jedis.keys("*" + key + "*");
+            System.out.println("matching keys ------" + matchingKeys);
             if (matchingKeys.isEmpty()) {
+                System.out.println("Matching key are empty --------");
                 return notificationList;
             }
             List<String> sortedKeys = new ArrayList<>(matchingKeys);
