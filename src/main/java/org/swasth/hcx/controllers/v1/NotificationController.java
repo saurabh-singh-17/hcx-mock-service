@@ -77,7 +77,7 @@ public class NotificationController extends BaseController {
                 detailsParticipantCode = redisService.get((String) requestBody.get("participant_code"));
             }
             List<Map<String, Object>> combinedDetails = new ArrayList<>();
-            combinedDetails.addAll(detailsParticipantRole)
+            combinedDetails.addAll(detailsParticipantRole);
             combinedDetails.addAll(detailsParticipantCode);
             System.out.println("combinedDetails ---" + combinedDetails);
             Map<String, Object> output = new HashMap<>();
