@@ -79,9 +79,8 @@ public class NotificationController extends BaseController {
             List<Map<String, Object>> combinedDetails = new ArrayList<>();
             combinedDetails.addAll(detailsParticipantRole);
             combinedDetails.addAll(detailsParticipantCode);
-            System.out.println("combinedDetails ---" + combinedDetails);
             Map<String, Object> output = new HashMap<>();
-            output.put("result", detailsParticipantRole);
+            output.put("result", combinedDetails);
             return new ResponseEntity<>(output, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
