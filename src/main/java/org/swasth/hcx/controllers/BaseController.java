@@ -2,6 +2,7 @@ package org.swasth.hcx.controllers;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import com.amazonaws.services.dynamodbv2.xspec.S;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
 import org.apache.commons.collections.CollectionUtils;
@@ -198,14 +199,27 @@ public class BaseController {
                     postgresService.execute(query);
                 }
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
-            } else if(NOTIFICATION_NOTIFY.equalsIgnoreCase(apiAction)){
+            } else if (NOTIFICATION_NOTIFY.equalsIgnoreCase(apiAction)) {
                 System.out.println("---------Notification API request came ---------");
-                String topicCode = request.getTopicCode();
-                System.out.println("Topic code ------"  + topicCode);
-                System.out.println("Notification Request -------" + request.getNotificationRequest());
                 hcxIntegrator.receiveNotification(request.getNotificationRequest(), output);
-                String key = request.getRecipientCode() + ":" + topicCode;
-                redisService.set(key, notificationService.notificationResponse(output), redisExpires);
+                System.out.println("output of notifications  ----------" + output);
+                String topicCode = request.getTopicCode();
+                Map<String, Object> notificationHeaders = request.getNotificationHeaders();
+                String recipientType = (String) notificationHeaders.get("recipient_type");
+                if (StringUtils.equalsIgnoreCase(recipientType,"participant_role")) {
+                    List<String> roleRecipients = (List<String>) notificationHeaders.get("recipients");
+                    for (String role : roleRecipients) {
+                        String key = role + ":" + topicCode;
+                        redisService.set(key, notificationService.notificationResponse(output), redisExpires);
+                    }
+                } else if (StringUtils.equalsIgnoreCase(recipientType, "participant_code")) {
+                    List<String> participantRecipients = (List<String>) notificationHeaders.get("recipients");
+                    for (String code : participantRecipients) {
+                        String key = code + ":" + topicCode;
+                        redisService.set(key, notificationService.notificationResponse(output), redisExpires);
+                    }
+                }
+                System.out.println("Output --------" + output);
             }
         }
     }

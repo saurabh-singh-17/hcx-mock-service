@@ -18,7 +18,6 @@ public class Request {
     private String action;
 
     public Request(Map<String, Object> body, String action) throws Exception {
-        System.out.println("-----body -------" + body);
         this.payload = body;
         this.action = action;
         if (NOTIFICATION_NOTIFY.equals(action)) {

@@ -79,7 +79,7 @@ mock_payer:
 redis:
   host: ${redis_host:localhost}
   port: ${redis_port:6379}
-  expires: ${redis_expires:172800}
+  expires: ${redis_expires:432000}  #Redis Cache expires in sec (5 days)
 
 aws:
   access-key: ${aws_accessKey:}
