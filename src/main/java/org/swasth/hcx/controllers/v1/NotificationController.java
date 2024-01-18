@@ -59,7 +59,7 @@ public class NotificationController extends BaseController {
         }
     }
 
-    @GetMapping(value = "/" + "${hcx_application.api_version}" + "/notification/list")
+    @GetMapping(value = "/notification/list")
     public ResponseEntity<Object> getNotification(@PathVariable("participantCode") String code) throws Exception {
         try {
             System.out.println("Getting the values for participant code :" + code);
