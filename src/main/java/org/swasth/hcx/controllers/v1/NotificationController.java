@@ -1,6 +1,7 @@
 package org.swasth.hcx.controllers.v1;
 
 import io.hcxprotocol.init.HCXIntegrator;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -68,15 +69,17 @@ public class NotificationController extends BaseController {
             Map<String, Object> output = new HashMap<>();
             List<Map<String, Object>> detailsParticipantRole = new ArrayList<>();
             List<Map<String, Object>> detailsParticipantCode = new ArrayList<>();
-            if (requestBody.containsKey("participant_role")) {
+            if (requestBody.containsKey("participant_role") && StringUtils.isEmpty("participant_role")) {
                 detailsParticipantRole = redisService.get((String) requestBody.get("participant_role"));
+                System.out.println("-- Details participant Roles---- "  + detailsParticipantRole);
             } else if (requestBody.containsKey("participant_code")) {
                 detailsParticipantCode = redisService.get((String) requestBody.get("participant_code"));
             }
             List<Map<String, Object>> combinedDetails = new ArrayList<>(detailsParticipantRole);
             combinedDetails.addAll(detailsParticipantCode);
+            System.out.println("Combined details ---" + combinedDetails);
             output.put("result", combinedDetails);
-            response.setResult(output);
+            response.setResultList(combinedDetails);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return exceptionHandler(response, e);
