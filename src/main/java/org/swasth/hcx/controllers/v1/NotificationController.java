@@ -67,8 +67,7 @@ public class NotificationController extends BaseController {
             System.out.println("Getting the values for participant code :" + requestBody);
             List<Map<String, Object>> detailsParticipantRole = new ArrayList<>();
             System.out.println(requestBody.containsKey("participant_role"));
-            
-            if (requestBody.containsKey("participant_role") && StringUtils.isEmpty("participant_role")) {
+            if (requestBody.containsKey("participant_role") && !StringUtils.isEmpty("participant_role")) {
                 System.out.println("Participant role ---" + requestBody.get("participant_role"));
                 detailsParticipantRole = redisService.get((String) requestBody.get("participant_role"));
                 System.out.println("-- Details participant Roles---- " + detailsParticipantRole);
