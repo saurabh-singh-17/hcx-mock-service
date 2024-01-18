@@ -68,16 +68,18 @@ public class NotificationController extends BaseController {
             List<Map<String, Object>> detailsParticipantRole = new ArrayList<>();
             List<Map<String, Object>> detailsParticipantCode = new ArrayList<>();
             System.out.println(requestBody.containsKey("participant_role"));
-            if (requestBody.containsKey("participant_role") && !StringUtils.isEmpty("participant_role")) {
+            if (requestBody.containsKey("participant_role") && !StringUtils.isEmpty((String) requestBody.get("participant_role"))) {
                 System.out.println("Participant role ---" + requestBody.get("participant_role"));
                 detailsParticipantRole = redisService.get((String) requestBody.get("participant_role"));
                 System.out.println("-- Details participant Roles---- " + detailsParticipantRole);
-            } else if (requestBody.containsKey("participant_code") && !StringUtils.isEmpty("participant_code")) {
+            }
+            if (requestBody.containsKey("participant_code") && !StringUtils.isEmpty((String) requestBody.get("participant_code"))) {
                 detailsParticipantCode = redisService.get((String) requestBody.get("participant_code"));
             }
-            List<Map<String, Object>> combinedDetails = new ArrayList<>(detailsParticipantRole);
+            List<Map<String, Object>> combinedDetails = new ArrayList<>();
+            combinedDetails.addAll(detailsParticipantRole)
             combinedDetails.addAll(detailsParticipantCode);
-            System.out.println("detailsParticipantRole ---" + detailsParticipantRole);
+            System.out.println("combinedDetails ---" + combinedDetails);
             Map<String, Object> output = new HashMap<>();
             output.put("result", detailsParticipantRole);
             return new ResponseEntity<>(output, HttpStatus.OK);
