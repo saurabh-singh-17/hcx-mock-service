@@ -206,10 +206,10 @@ public class BaseController {
                 Map<String, Object> notificationHeaders = request.getNotificationHeaders();
                 String recipientType = (String) notificationHeaders.get("recipient_type");
                 List<String> recipients = (List<String>) notificationHeaders.getOrDefault("recipients", "");
+                System.out.println("Recipients ------" + recipients);
                 for (String recipient : recipients) {
-                    String key = StringUtils.equalsIgnoreCase(recipientType, "participant_role") ? recipient + ":" + topicCode
-                            : StringUtils.equalsIgnoreCase(recipientType, "participant_code") ? recipient + ":" + topicCode : null;
-                    if (key != null) {
+                    String key = recipient + ":" + topicCode;
+                    if (StringUtils.equalsIgnoreCase(recipientType, "participant_role") || StringUtils.equalsIgnoreCase(recipientType, "participant_code")) {
                         redisService.set(key, notificationService.notificationResponse(output), redisExpires);
                     }
                 }
