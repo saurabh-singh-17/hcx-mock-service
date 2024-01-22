@@ -8,21 +8,21 @@ import org.swasth.hcx.utils.Constants;
 
 import java.util.Map;
 
-@RestController()
-@RequestMapping(value =  "/"+ "${hcx_application.api_version}" + "/paymentnotice")
+//@RestController()
+//@RequestMapping(value =  "/"+ "${hcx_application.api_version}" + "/paymentnotice")
 public class PaymentsController extends BaseController {
 
-    @Value("${kafka.topic.payment}")
-    private String kafkaTopic;
-
-    @RequestMapping(value = "/request", method = RequestMethod.POST)
-    public ResponseEntity<Object> paymentNoticeRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return processRequest(requestBody, Constants.PAYMENT_NOTICE_REQUEST,Constants.PAYMENT_NOTICE_ONREQUEST, kafkaTopic);
-    }
-
-    @RequestMapping(value = "/on_request", method = RequestMethod.POST)
-    public ResponseEntity<Object> paymentNoticeOnRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return processRequest(requestBody, Constants.PAYMENT_NOTICE_ONREQUEST,Constants.PAYMENT_NOTICE_ONREQUEST, kafkaTopic);
-    }
+//    @Value("${kafka.topic.payment}")
+//    private String kafkaTopic;
+//
+//    @RequestMapping(value = "/request", method = RequestMethod.POST)
+//    public ResponseEntity<Object> paymentNoticeRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
+//        return processRequest(requestBody, Constants.PAYMENT_NOTICE_REQUEST,Constants.PAYMENT_NOTICE_ONREQUEST, kafkaTopic);
+//    }
+//
+//    @RequestMapping(value = "/on_request", method = RequestMethod.POST)
+//    public ResponseEntity<Object> paymentNoticeOnRequest(@RequestBody Map<String, Object> requestBody) throws Exception {
+//        return processRequest(requestBody, Constants.PAYMENT_NOTICE_ONREQUEST,Constants.PAYMENT_NOTICE_ONREQUEST, kafkaTopic);
+//    }
 
 }

@@ -17,6 +17,7 @@ import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.utils.JSONUtils;
 
 import javax.annotation.PostConstruct;
+import java.sql.SQLException;
 import java.util.*;
 
 import static org.swasth.hcx.utils.Constants.PENDING;
@@ -31,7 +32,7 @@ public class PayerService {
     private PostgresService postgres;
     private final IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
 
-    public void process(Request request, String reqFhirObj, String respFhirObj) throws ClientException, JsonProcessingException {
+    public void process(Request request, String reqFhirObj, String respFhirObj) throws ClientException, JsonProcessingException, SQLException {
         Map<String, Object> info = new HashMap<>();
         if (request.getAction().contains("coverageeligibility")) {
             String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",

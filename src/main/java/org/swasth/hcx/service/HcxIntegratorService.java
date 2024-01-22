@@ -3,10 +3,12 @@ package org.swasth.hcx.service;
 import io.hcxprotocol.init.HCXIntegrator;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.swasth.hcx.exception.ClientException;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -22,7 +24,20 @@ public class HcxIntegratorService {
     @Autowired
     Environment env;
     @Autowired
-    private PostgresService postgres;
+    protected PostgresService postgresService;
+    @Value("${postgres.url}")
+    private String postgresUrl;
+
+    @Value("${postgres.user}")
+    private String postgresUser;
+
+    @Value("${postgres.password}")
+    private String postgresPassword;
+
+    @PostConstruct
+    public void init() throws ClientException {
+        postgresService = new PostgresService(postgresUrl, postgresUser, postgresPassword);
+    }
     private Map<String,Object> configCache = new HashMap<>();
     public HCXIntegrator getHCXIntegrator(String participantCode) throws Exception {
         /**
@@ -41,11 +56,13 @@ public class HcxIntegratorService {
     }
 
     public Map<String,Object> getParticipantConfig(String participantCode) throws ClientException, SQLException, IOException {
+        System.out.println(participantCode+"---------------------PARTICIPANTCODE_________");
         String query = String.format("SELECT * FROM %s WHERE child_participant_code='%s'", env.getProperty("postgres.table.mockParticipant"), participantCode);
-        ResultSet resultSet = postgres.executeQuery(query);
+        ResultSet resultSet = postgresService.executeQuery(query);
         if(resultSet.next()){
             return getConfig(participantCode, resultSet.getString("child_participant_code"), resultSet.getString("password"),  resultSet.getString("private_key"));
-        } else {
+        }
+        else {
             String certificate = IOUtils.toString(new URL(env.getProperty("mock_payer.private_key")), StandardCharsets.UTF_8.toString());
             return getConfig(env.getProperty("mock_payer.participant_code"), env.getProperty("mock_payer.username"), env.getProperty("mock_payer.password"), certificate);
         }

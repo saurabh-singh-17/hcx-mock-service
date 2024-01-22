@@ -54,9 +54,6 @@ public class BaseController {
     protected Environment env;
 
     @Autowired
-    protected HeaderAuditService auditService;
-
-    @Autowired
     protected NotificationService notificationService;
 
     @Autowired
@@ -64,8 +61,6 @@ public class BaseController {
 
     private String baseURL;
 
-    @Autowired
-    private PostgresService postgres;
     @Value("${autoresponse}")
     private Boolean autoResponse;
 
@@ -207,7 +202,7 @@ public class BaseController {
                 onActionCall.sendOnAction(request.getRecipientCode(), respfhir, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
                 String updateQuery = String.format("UPDATE %s SET status='%s',updated_on=%d WHERE request_id='%s' RETURNING %s,%s",
                         table, "Approved", System.currentTimeMillis(), request.getApiCallId(), "raw_payload", "response_fhir");
-                postgres.execute(updateQuery);
+                postgresService.execute(updateQuery);
             }
         }
     }
@@ -222,7 +217,8 @@ public class BaseController {
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("error   " + e);
+            System.out.println("error   " + e.getMessage());
+            System.out.println("error   " + e.getCause());
             return exceptionHandler(response, e);
         }
     }

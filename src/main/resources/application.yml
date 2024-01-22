@@ -70,11 +70,11 @@ request_list:
   default_limit: ${request_list_default_limit:100}
   default_latest_data_by_day: ${request_list_default_latest_data_by_day:2}
 
-mock_payer:
-  private_key: ${mock_payer_private_key:https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/demo-app/server/resources/keys/x509-private-key.pem}
-  username: ${mock_payer_username:swasth_mock_payer@swasthapp.org}
-  password: ${mock_payer_password:Opensaber@123}
-  participant_code: ${mock_payer_participant_code:1-29482df3-e875-45ef-a4e9-592b6f565782}
+#mock_payer:
+#  private_key: ${mock_payer_private_key:https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/demo-app/server/resources/keys/x509-private-key.pem}
+#  username: ${mock_payer_username:swasth_mock_payer@swasthapp.org}
+#  password: ${mock_payer_password:Opensaber@123}
+#  participant_code: ${mock_payer_participant_code:1-29482df3-e875-45ef-a4e9-592b6f565782}
 
 aws:
   access-key: ${aws_accessKey:}
@@ -88,13 +88,13 @@ phone:
 otp:
   expiry: ${verification_otp_expiry:300000}
   send-per-minute: ${otp_sent_per_minute:5}
-
-beneficiary:
-    protocol-base-path: ${beneficiary_protocol_base_path:https://dev-hcx.swasth.app/api/v0.8}
-    participant-code: ${beneficiary_sender_code:testprovider1.apollo@swasth-hcx-dev}
-    username: ${beneficiary_username:testprovider1@apollo.com}
-    password: ${beneficiary_password:Opensaber@123}
-    recipient-code: ${beneficiary-config_recipient_code:wemeanhospital+mock_payor.yopmail@swasth-hcx-dev}
+#
+#beneficiary:
+#    protocol-base-path: ${beneficiary_protocol_base_path:https://dev-hcx.swasth.app/api/v0.8}
+#    participant-code: ${beneficiary_sender_code:testprovider1.apollo@swasth-hcx-dev}
+#    username: ${beneficiary_username:testprovider1@apollo.com}
+#    password: ${beneficiary_password:Opensaber@123}
+#    recipient-code: ${beneficiary-config_recipient_code:wemeanhospital+mock_payor.yopmail@swasth-hcx-dev}
 
 payor:
   username: ${payor_username:wemeanhospital+mock_payor@yopmail.com}

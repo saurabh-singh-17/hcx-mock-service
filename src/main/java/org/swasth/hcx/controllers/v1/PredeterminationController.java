@@ -11,20 +11,20 @@ import org.swasth.hcx.controllers.BaseController;
 
 import java.util.Map;
 
-@RestController()
-@RequestMapping(value = "/"+ "${hcx_application.api_version}" + "/predetermination")
+//@RestController()
+//@RequestMapping(value = "/"+ "${hcx_application.api_version}" + "/predetermination")
 public class PredeterminationController extends BaseController {
 
-    @Value("${kafka.topic.predetermination}")
-    private String kafkaTopic;
-
-    @RequestMapping(value = "/submit", method = RequestMethod.POST)
-    public ResponseEntity<Object> submitPredetermination(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return processRequest(requestBody, Constants.PREDETERMINATION_SUBMIT,Constants.PREDETERMINATION_ONSUBMIT, kafkaTopic);
-    }
-
-    @RequestMapping(value = "/on_submit", method = RequestMethod.POST)
-    public ResponseEntity<Object> onSubmitPredetermination(@RequestBody Map<String, Object> requestBody) throws Exception {
-        return processRequest(requestBody, Constants.PREDETERMINATION_ONSUBMIT,Constants.PREDETERMINATION_ONSUBMIT, kafkaTopic);
-    }
+//    @Value("${kafka.topic.predetermination}")
+//    private String kafkaTopic;
+//
+//    @RequestMapping(value = "/submit", method = RequestMethod.POST)
+//    public ResponseEntity<Object> submitPredetermination(@RequestBody Map<String, Object> requestBody) throws Exception {
+//        return processRequest(requestBody, Constants.PREDETERMINATION_SUBMIT,Constants.PREDETERMINATION_ONSUBMIT, kafkaTopic);
+//    }
+//
+//    @RequestMapping(value = "/on_submit", method = RequestMethod.POST)
+//    public ResponseEntity<Object> onSubmitPredetermination(@RequestBody Map<String, Object> requestBody) throws Exception {
+//        return processRequest(requestBody, Constants.PREDETERMINATION_ONSUBMIT,Constants.PREDETERMINATION_ONSUBMIT, kafkaTopic);
+//    }
 }

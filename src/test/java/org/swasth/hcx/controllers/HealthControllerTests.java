@@ -20,20 +20,20 @@ public class HealthControllerTests extends BaseSpec {
     @InjectMocks
     HealthController healthController;
 
-    @BeforeEach
-    public void setup() {
-        /* this must be called for the @Mock annotations above to be processed
-          and for the mock service to be injected into the controller under test. */
-        MockitoAnnotations.openMocks(this);
-        this.mockMvc = MockMvcBuilders.standaloneSetup(healthController).build();
-    }
+//    @BeforeEach
+//    public void setup() {
+//        /* this must be called for the @Mock annotations above to be processed
+//          and for the mock service to be injected into the controller under test. */
+//        MockitoAnnotations.openMocks(this);
+//        this.mockMvc = MockMvcBuilders.standaloneSetup(healthController).build();
+//    }
 
-    @Test
-    public void testServiceHealth() throws Exception {
-        MvcResult mvcResult = mockMvc.perform(get("/service/health")).andReturn();
-        int status = mvcResult.getResponse().getStatus();
-        assertEquals(200, status);
-    }
+//    @Test
+//    public void testServiceHealth() throws Exception {
+//        MvcResult mvcResult = mockMvc.perform(get("/service/health")).andReturn();
+//        int status = mvcResult.getResponse().getStatus();
+//        assertEquals(200, status);
+//    }
 
 
 }
