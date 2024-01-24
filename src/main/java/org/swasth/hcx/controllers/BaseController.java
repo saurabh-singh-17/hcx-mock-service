@@ -131,7 +131,6 @@ public class BaseController {
             Map<String, Object> outputOfOnAction = new HashMap<>();
             System.out.println("create the oncheck payload");
             Bundle bundle = new Bundle();
-            System.out.println("-----Request---" + requestBody);
             Request req = new Request(requestBody, apiAction);
             HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(req.getRecipientCode());
             if (COVERAGE_ELIGIBILITY_CHECK.equalsIgnoreCase(apiAction)) {
@@ -206,7 +205,6 @@ public class BaseController {
                 Map<String, Object> notificationHeaders = request.getNotificationHeaders();
                 String recipientType = (String) notificationHeaders.get("recipient_type");
                 List<String> recipients = (List<String>) notificationHeaders.getOrDefault("recipients", "");
-                System.out.println("Recipients ------" + recipients);
                 for (String recipient : recipients) {
                     String key = recipient + ":" + topicCode;
                     if (StringUtils.equalsIgnoreCase(recipientType, "participant_role") || StringUtils.equalsIgnoreCase(recipientType, "participant_code")) {
