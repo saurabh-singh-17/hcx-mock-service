@@ -34,8 +34,9 @@ public class PayerService {
     public void process(Request request, String reqFhirObj, String respFhirObj) throws ClientException, JsonProcessingException {
         Map<String, Object> info = new HashMap<>();
         String app = getApp(request.getAction(), reqFhirObj);
+        System.out.println("----app -------" + app);
         if (!StringUtils.isEmpty(app)) {
-            processWithApp(request, info, reqFhirObj, respFhirObj);
+            processWithApp(request, info, reqFhirObj, respFhirObj,app);
         } else {
             processWithOutApp(request, info, reqFhirObj, respFhirObj);
         }
@@ -51,12 +52,12 @@ public class PayerService {
         postgres.execute(query);
     }
 
-    public void processWithApp(Request request, Map<String, Object> info, String reqFhirObj, String respFhirObj) throws ClientException, JsonProcessingException {
+    public void processWithApp(Request request, Map<String, Object> info, String reqFhirObj, String respFhirObj, String app) throws ClientException, JsonProcessingException {
         String action = request.getAction();
         String payload = (String) request.getPayload().getOrDefault(Constants.PAYLOAD, "");
         String query;
         if (action.contains(Constants.COVERAGE_ELIGIBILITY)) {
-            query = String.format(generateQueryTemplate(), request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(action), payload, reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), getPatientMobile(reqFhirObj), PENDING, request.getWorkflowId(), getApp(action, reqFhirObj), "{}", "", getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
+            query = String.format(generateQueryTemplate(), request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(action), payload, reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), getPatientMobile(reqFhirObj), PENDING, request.getWorkflowId(), app, "{}", "", getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
         } else if (action.contains(Constants.COMMUNICATION)) {
             query = String.format(generateQueryTemplate(), request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(action), payload, reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", "{}", "", "", "");
         } else {
@@ -65,13 +66,15 @@ public class PayerService {
             Map<String, List<String>> documents = getSupportingDocuments(reqFhirObj);
             String amount = getAmount(reqFhirObj);
             String serializedDocuments = JSONUtils.serialize(documents);
-            query = String.format(generateQueryTemplate(), request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(action), payload, reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), getPatientMobile(reqFhirObj), PENDING, request.getWorkflowId(), getApp(action, reqFhirObj), serializedDocuments, amount, getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
+            System.out.println("---- generate template query ----" + generateQueryTemplate()    );
+            query = String.format(generateQueryTemplate(), table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(action), payload, reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), getPatientMobile(reqFhirObj), PENDING, request.getWorkflowId(), app, serializedDocuments, amount, getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
+            System.out.println("-----query -----" +   query);
         }
         postgres.execute(query);
     }
 
     private String generateQueryTemplate() {
-        return "INSERT INTO %s (request_id, sender_code, recipient_code, action, raw_payload, " + "request_fhir, response_fhir, status, additional_info, created_on, updated_on, " + "correlation_id, mobile, otp_verification, workflow_id, account_number, " + "ifsc_code, bank_details, app, supporting_documents, bill_amount, insurance_id, patient_name) " +
+        return "INSERT INTO %s (request_id, sender_code, recipient_code, action, raw_payload,request_fhir, response_fhir, status, additional_info, created_on, updated_on,correlation_id, mobile, otp_verification, workflow_id, account_number,ifsc_code, bank_details, app, supporting_documents, bill_amount, insurance_id, patient_name) " +
                 "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')";
     }
 
