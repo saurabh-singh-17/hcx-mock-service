@@ -129,12 +129,13 @@ public class PayerService {
     }
 
     private String getApp(String apiAction, String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
         if (apiAction.equalsIgnoreCase(Constants.COVERAGE_ELIGIBILITY_CHECK)) {
+            Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
             CoverageEligibilityRequest ce = parser.parseResource(CoverageEligibilityRequest.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
             if (ce.getText() != null && ce.getText().getDiv().allText() != null)
                 return ce.getText().getDiv().allText();
         } else if (apiAction.equalsIgnoreCase(Constants.CLAIM_SUBMIT) || apiAction.equalsIgnoreCase(Constants.PREDETERMINATION_SUBMIT)) {
+            Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
             Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
             if (claim.getText() != null && claim.getText().getDiv().allText() != null)
                 return claim.getText().getDiv().allText();
