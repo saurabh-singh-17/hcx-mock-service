@@ -43,6 +43,7 @@ public class Response {
         this.workflowId = workflowId;
     }
 
+
     private String workflowId;
     public Response() {}
 
@@ -65,16 +66,8 @@ public class Response {
         this.timestamp = timestamp;
     }
 
-    public String getCorrelationId() {
-        return correlationId;
-    }
-
     public void setCorrelationId(String correlationId) {
         this.correlationId = correlationId;
-    }
-
-    public String getApiCallId() {
-        return apiCallId;
     }
 
     public void setApiCallId(String apiCallId) {
@@ -88,20 +81,6 @@ public class Response {
     public void setError(ResponseError error) {
         this.error = error;
     }
-
-    public Map<String, Object> getResult() {
-        return result;
-    }
-
-    public void setResult(Map<String, Object> result) {
-        this.result = result;
-    }
-
-    public void setSubscriptionId(String subscriptionId) {
-        this.subscriptionId = subscriptionId;
-    }
-
-    public String getSubscriptionId() {return  subscriptionId;}
 
     public Object get(String key) {
         return result.get(key);

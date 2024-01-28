@@ -143,7 +143,7 @@ public class OnActionFhirExamples {
         claim.setUse(org.hl7.fhir.r4.model.Claim.Use.CLAIM);
         claim.setPatient(new Reference("Patient/RVH1003"));
         claim.addIdentifier(new Identifier().setSystem("http://identifiersystem.com").setValue("IdentifierValue"));
-        claim.setCreated(new Date());
+//        claim.setCreated(new Date());
         claim.setInsurer(new Reference("Organization/GICOFINDIA"));
         claim.setProvider(new Reference("Organization/WeMeanWell01"));
         claim.setPriority(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/processpriority").setCode("normal")));

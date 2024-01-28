@@ -38,7 +38,8 @@ public class NotificationService {
     /**
      * validates and process the notify request
      */
-    public void notify(Request request , String entity, String status) throws Exception {
+
+  public void notify(Request request , String entity, String status) throws Exception {
         HashMap<String, Object> notification_header = new HashMap<>();
         //getting the sendor code from the registry
         String osid = onActionCall.searchRegistry(env.getProperty("mock_payer.username"));

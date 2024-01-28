@@ -86,10 +86,6 @@ public class Request {
         return getHeader(TIMESTAMP);
     }
 
-    public String getDebugFlag() {
-        return getHeader(DEBUG_FLAG);
-    }
-
     public String getStatus() {
         return getHeader(STATUS);
     }
@@ -104,14 +100,6 @@ public class Request {
 
     protected Map<String, Object> getHeaderMap(String key) {
         return (Map<String, Object>) hcxHeaders.getOrDefault(key, null);
-    }
-
-    private Map<String, Object> getErrorDetails() {
-        return getHeaderMap(ERROR_DETAILS);
-    }
-
-    private Map<String, Object> getDebugDetails() {
-        return getHeaderMap(DEBUG_DETAILS);
     }
 
     public String getSubscriptionId() { return (String) payload.get(SUBSCRIPTION_ID); }
