@@ -93,13 +93,13 @@ phone:
 otp:
   expiry: ${verification_otp_expiry:300000}
   send-per-minute: ${otp_sent_per_minute:5}
-#
-#beneficiary:
-#    protocol-base-path: ${beneficiary_protocol_base_path:https://dev-hcx.swasth.app/api/v0.8}
-#    participant-code: ${beneficiary_sender_code:testprovider1.apollo@swasth-hcx-dev}
-#    username: ${beneficiary_username:testprovider1@apollo.com}
-#    password: ${beneficiary_password:Opensaber@123}
-#    recipient-code: ${beneficiary-config_recipient_code:wemeanhospital+mock_payor.yopmail@swasth-hcx-dev}
+
+beneficiary:
+    protocol-base-path: ${beneficiary_protocol_base_path:https://dev-hcx.swasth.app/api/v0.8}
+    participant-code: ${beneficiary_sender_code:testprovider1.apollo@swasth-hcx-dev}
+    username: ${beneficiary_username:testprovider1@apollo.com}
+    password: ${beneficiary_password:Opensaber@123}
+    recipient-code: ${beneficiary-config_recipient_code:wemeanhospital+mock_payor.yopmail@swasth-hcx-dev}
 
 payor:
   username: ${payor_username:wemeanhospital+mock_payor@yopmail.com}

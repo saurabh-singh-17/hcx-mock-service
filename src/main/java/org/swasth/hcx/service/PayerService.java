@@ -17,7 +17,6 @@ import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.utils.JSONUtils;
 
 import javax.annotation.PostConstruct;
-import java.sql.SQLException;
 import java.util.*;
 
 import static org.swasth.hcx.utils.Constants.PENDING;
@@ -30,23 +29,9 @@ public class PayerService {
 
     @Autowired
     private PostgresService postgres;
-
-    @Value("${postgres.url}")
-    private String postgresUrl;
-
-    @Value("${postgres.user}")
-    private String postgresUser;
-
-    @Value("${postgres.password}")
-    private String postgresPassword;
-
-    @PostConstruct
-    public void init() throws ClientException {
-        postgres = new PostgresService(postgresUrl, postgresUser, postgresPassword);
-    }
     private final IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
 
-    public void process(Request request, String reqFhirObj, String respFhirObj) throws ClientException, JsonProcessingException, SQLException {
+    public void process(Request request, String reqFhirObj, String respFhirObj) throws ClientException, JsonProcessingException {
         Map<String, Object> info = new HashMap<>();
         String app = getApp(request.getAction(), reqFhirObj);
         if (!StringUtils.isEmpty(app)) {

@@ -37,9 +37,8 @@ public class NotificationService {
 
     /**
      * validates and process the notify request
-     */
+    public void notify(Request request , String entity, String status) throws Exception {
 
-  public void notify(Request request , String entity, String status) throws Exception {
         HashMap<String, Object> notification_header = new HashMap<>();
         //getting the sendor code from the registry
         String osid = onActionCall.searchRegistry(env.getProperty("mock_payer.username"));
@@ -63,7 +62,7 @@ public class NotificationService {
         Map<String,String> result = onActionCall.jwsEncryptPayload(privateKeyPath,resBody);
         //onActionCall.sendOnAction("/" + env.getProperty("hcx_application.api_version") + Constants.NOTIFICATION_NOTIFY,result);
     }
-
+    
     public String notificationResponse(Map<String, Object> notification) throws JsonProcessingException {
         Map<String, Object> notificationHeaders = (Map<String, Object>) ((Map<String, Object>) notification.get(Constants.HEADERS)).get("x-hcx-notification_headers");
         Map<String, Object> payload = (Map<String, Object>) notification.get(Constants.PAYLOAD);
@@ -74,6 +73,5 @@ public class NotificationService {
         notificationMap.put(Constants.MESSAGE, payload.get(Constants.MESSAGE));
         return JSONUtils.serialize(notificationMap);
     }
-
 
 }

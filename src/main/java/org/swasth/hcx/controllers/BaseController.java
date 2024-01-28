@@ -29,8 +29,6 @@ import org.swasth.hcx.helpers.EventGenerator;
 import org.swasth.hcx.service.*;
 import org.swasth.hcx.utils.JSONUtils;
 import org.swasth.hcx.utils.OnActionCall;
-
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -57,6 +55,9 @@ public class BaseController {
     protected Environment env;
 
     @Autowired
+    protected HeaderAuditService auditService;
+
+    @Autowired
     protected NotificationService notificationService;
 
     @Autowired
@@ -64,6 +65,8 @@ public class BaseController {
 
     private String baseURL;
 
+    @Autowired
+    private PostgresService postgres;
     @Value("${autoresponse}")
     private Boolean autoResponse;
 
@@ -81,7 +84,6 @@ public class BaseController {
     private String mockRecipientCode;
     @Autowired
     private PayerService payerService;
-
     @Autowired
     private RedisService redisService;
     @Value("${redis.expires}")
@@ -130,7 +132,6 @@ public class BaseController {
     }
 
     protected void processAndValidate(String onApiAction, Request request, Map<String, Object> requestBody, String apiAction) throws Exception {
-        System.out.println(onApiAction);
         String mid = UUID.randomUUID().toString();
         String serviceMode = env.getProperty(SERVICE_MODE);
         System.out.println("\n" + "Mode: " + serviceMode + " :: mid: " + mid + " :: Event: " + onApiAction);
@@ -237,7 +238,7 @@ public class BaseController {
                 onActionCall.sendOnAction(request.getRecipientCode(), respfhir, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
                 String updateQuery = String.format("UPDATE %s SET status='%s',updated_on=%d WHERE request_id='%s' RETURNING %s,%s",
                         table, "Approved", System.currentTimeMillis(), request.getApiCallId(), "raw_payload", "response_fhir");
-                postgresService.execute(updateQuery);
+                postgres.execute(updateQuery);
             }
         }
     }
@@ -252,8 +253,7 @@ public class BaseController {
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("error   " + e.getMessage());
-            System.out.println("error   " + e.getCause());
+            System.out.println("error   " + e);
             return exceptionHandler(response, e);
         }
     }
@@ -336,41 +336,41 @@ public class BaseController {
             throw new ClientException("Missing required field " + field);
     }
 
-//    protected void validateMap(String field, Map<String, Object> value) throws ClientException {
-//        if (MapUtils.isEmpty(value))
-//            throw new ClientException("Missing required field " + field);
-//    }
-//
-//    public void updateMobileNumber(String requestID, String apiAction) throws SQLException, ClientException {
-//        Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestID);
-//        Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
-//        String mobile = getPatientMobile((String) payloadMap.get("request_fhir"));
-//        String app = getAppFromApiAction(apiAction, parsed);
-//        String query = String.format("UPDATE %s SET app = '%s', mobile = '%s' WHERE request_id ='%s'", table, app, mobile, requestID);
-//        postgresService.execute(query);
-//    }
+    protected void validateMap(String field, Map<String, Object> value) throws ClientException {
+        if (MapUtils.isEmpty(value))
+            throw new ClientException("Missing required field " + field);
+    }
 
-//    private String getAppFromApiAction(String apiAction, Bundle parsed) {
-//        if (apiAction.equalsIgnoreCase("/v0.7/coverageeligibility/check")) {
-//            CoverageEligibilityRequest ce = parser.parseResource(CoverageEligibilityRequest.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-//            if (ce.getText() != null && ce.getText().getDiv().allText() != null)
-//                return ce.getText().getDiv().allText();
-//        } else if (apiAction.equalsIgnoreCase("/v0.7/claim/submit") || apiAction.equalsIgnoreCase("/v0.7/preauth/submit")) {
-//            Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-//            if (claim.getText() != null && claim.getText().getDiv().allText() != null)
-//                return claim.getText().getDiv().allText();
-//        }
-//        return "";
-//    }
-//
-//    public String getPatientMobile(String fhirPayload) {
-//        String patientMobile = "";
-//        Patient patient = payerService.getResourceByType("Patient", Patient.class, fhirPayload);
-//        if (patient != null && patient.getTelecom() != null && !CollectionUtils.isEmpty(patient.getTelecom())) {
-//            patientMobile = patient.getTelecom().get(0).getValue();
-//        }
-//        return patientMobile;
-//    }
+    public void updateMobileNumber(String requestID, String apiAction) throws SQLException, ClientException {
+        Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestID);
+        Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
+        String mobile = getPatientMobile((String) payloadMap.get("request_fhir"));
+        String app = getAppFromApiAction(apiAction, parsed);
+        String query = String.format("UPDATE %s SET app = '%s', mobile = '%s' WHERE request_id ='%s'", table, app, mobile, requestID);
+        postgresService.execute(query);
+    }
+
+    private String getAppFromApiAction(String apiAction, Bundle parsed) {
+        if (apiAction.equalsIgnoreCase("/v0.7/coverageeligibility/check")) {
+            CoverageEligibilityRequest ce = parser.parseResource(CoverageEligibilityRequest.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+            if (ce.getText() != null && ce.getText().getDiv().allText() != null)
+                return ce.getText().getDiv().allText();
+        } else if (apiAction.equalsIgnoreCase("/v0.7/claim/submit") || apiAction.equalsIgnoreCase("/v0.7/preauth/submit")) {
+            Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
+            if (claim.getText() != null && claim.getText().getDiv().allText() != null)
+                return claim.getText().getDiv().allText();
+        }
+        return "";
+    }
+
+    public String getPatientMobile(String fhirPayload) {
+        String patientMobile = "";
+        Patient patient = payerService.getResourceByType("Patient", Patient.class, fhirPayload);
+        if (patient != null && patient.getTelecom() != null && !CollectionUtils.isEmpty(patient.getTelecom())) {
+            patientMobile = patient.getTelecom().get(0).getValue();
+        }
+        return patientMobile;
+    }
 
     public Map<String, Object> initializingConfigMap() throws IOException {
         Map<String, Object> configMap = new HashMap<>();
