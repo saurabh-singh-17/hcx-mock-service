@@ -2,6 +2,7 @@ package org.swasth.hcx.controllers;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import com.amazonaws.services.dynamodbv2.xspec.S;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
 import org.apache.commons.collections.CollectionUtils;
@@ -81,6 +82,10 @@ public class BaseController {
     @Autowired
     private PayerService payerService;
 
+    @Autowired
+    private RedisService redisService;
+    @Value("${redis.expires}")
+    private int redisExpires;
     @Value("${postgres.url}")
     private String postgresUrl;
 
@@ -204,6 +209,19 @@ public class BaseController {
                     postgresService.execute(query);
                 }
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
+            } else if (NOTIFICATION_NOTIFY.equalsIgnoreCase(apiAction)) {
+                System.out.println("---------Notification API request came ---------");
+                hcxIntegrator.receiveNotification(request.getNotificationRequest(), output);
+                String topicCode = request.getTopicCode();
+                Map<String, Object> notificationHeaders = request.getNotificationHeaders();
+                String recipientType = (String) notificationHeaders.get("recipient_type");
+                List<String> recipients = (List<String>) notificationHeaders.getOrDefault("recipients", "");
+                for (String recipient : recipients) {
+                    String key = recipient + ":" + topicCode;
+                    if (StringUtils.equalsIgnoreCase(recipientType, "participant_role") || StringUtils.equalsIgnoreCase(recipientType, "participant_code")) {
+                        redisService.set(key, notificationService.notificationResponse(output), redisExpires);
+                    }
+                }
             }
         }
     }

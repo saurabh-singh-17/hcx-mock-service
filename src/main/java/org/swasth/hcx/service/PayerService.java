@@ -48,40 +48,58 @@ public class PayerService {
 
     public void process(Request request, String reqFhirObj, String respFhirObj) throws ClientException, JsonProcessingException, SQLException {
         Map<String, Object> info = new HashMap<>();
-        if (request.getAction().contains("coverageeligibility")) {
+        String app = getApp(request.getAction(), reqFhirObj);
+        if (!StringUtils.isEmpty(app)) {
+            processWithApp(request, info, reqFhirObj, respFhirObj, app);
+        } else if (request.getAction().contains(Constants.COMMUNICATION)) {
             String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), getPatientMobile(reqFhirObj), PENDING, request.getWorkflowId(), "1234", "1234", PENDING, getApp(request.getAction(),reqFhirObj), "{}", "", getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
-            postgres.execute(query);
-        } else if (request.getAction().contains("communication")) {
-            String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", "{}", "", "", "");
+                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault(Constants.PAYLOAD, ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", "{}", "", "", "");
             postgres.execute(query);
         } else {
-            info.put("medical", Collections.singletonMap("status", PENDING));
-            info.put("financial", Collections.singletonMap("status", PENDING));
-            Map<String, List<String>> getDocuments = getSupportingDocuments(reqFhirObj);
-            String amount = "";
-            String serializeDocuments = "";
-            serializeDocuments = JSONUtils.serialize(getDocuments);
-            amount = getAmount(reqFhirObj);
-            String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), getPatientMobile(reqFhirObj), PENDING, request.getWorkflowId(), "1234", "1234", PENDING, getApp(request.getAction(),reqFhirObj) , serializeDocuments, amount, getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
-            postgres.execute(query);
+            processWithOutApp(request, info, reqFhirObj, respFhirObj);
         }
     }
 
-    private String getEntity(String action){
-        Map<String,String> actionMap = new HashMap<>();
-        actionMap.put("/v0.7/coverageeligibility/check", "coverageeligibility");
-        actionMap.put("/v0.7/preauth/submit", "preauth");
-        actionMap.put("/v0.7/claim/submit", "claim");
-        actionMap.put("/communication/request", "communication");
+    public void processWithOutApp(Request request, Map<String, Object> info, String reqFhirObj, String respFhirObj) throws ClientException, JsonProcessingException {
+        if (!request.getAction().contains(Constants.COVERAGE_ELIGIBILITY)) {
+            info.put("medical", Collections.singletonMap("status", PENDING));
+            info.put("financial", Collections.singletonMap("status", PENDING));
+        }
+        String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
+                table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", "{}", "", "", "");
+        postgres.execute(query);
+    }
+
+    public void processWithApp(Request request, Map<String, Object> info, String reqFhirObj, String respFhirObj, String app) throws ClientException, JsonProcessingException {
+        String action = request.getAction();
+        String query;
+        if (action.contains(Constants.COVERAGE_ELIGIBILITY)) {
+            query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
+                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault(Constants.PAYLOAD, ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), getPatientMobile(reqFhirObj), PENDING, request.getWorkflowId(), "1234", "1234", PENDING, app, "{}", "", getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
+        } else {
+            info.put("medical", Collections.singletonMap("status", PENDING));
+            info.put("financial", Collections.singletonMap("status", PENDING));
+            Map<String, List<String>> documents = getSupportingDocuments(reqFhirObj);
+            String amount = getAmount(reqFhirObj);
+            String serializedDocuments = JSONUtils.serialize(documents);
+            query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
+                    table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault(Constants.PAYLOAD, ""), reqFhirObj, respFhirObj, PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, app, serializedDocuments, amount, getInsuranceId(reqFhirObj), getPatientName(reqFhirObj));
+        }
+        postgres.execute(query);
+    }
+
+    private String getEntity(String action) {
+        Map<String, String> actionMap = new HashMap<>();
+        actionMap.put(Constants.COVERAGE_ELIGIBILITY_CHECK, Constants.COVERAGE_ELIGIBILITY);
+        actionMap.put(Constants.PRE_AUTH_SUBMIT, Constants.PRE_AUTH);
+        actionMap.put(Constants.CLAIM_SUBMIT, Constants.CLAIM);
+        actionMap.put(Constants.COMMUNICATION_REQUEST, Constants.COMMUNICATION);
         return actionMap.get(action);
     }
 
     public Map<String, List<String>> getSupportingDocuments(String fhirPayload) {
         Map<String, List<String>> documentMap = new HashMap<>();
-        Claim claim = getResourceByType("Claim", Claim.class, fhirPayload);
+        Claim claim = getResourceByType(Constants.CLAIM, Claim.class, fhirPayload);
         if (claim != null) {
             for (Claim.SupportingInformationComponent supportingInfo : claim.getSupportingInfo()) {
                 if (supportingInfo.hasValueAttachment() && supportingInfo.getValueAttachment().hasUrl()) {
@@ -100,7 +118,7 @@ public class PayerService {
 
     public String getAmount(String fhirPayload) {
         String amount = "0";
-        Claim claim = getResourceByType("Claim", Claim.class, fhirPayload);
+        Claim claim = getResourceByType(Constants.CLAIM, Claim.class, fhirPayload);
         if (claim != null && claim.getTotal() != null && claim.getTotal().getValue() != null) {
             amount = String.valueOf(claim.getTotal().getValue());
         }
@@ -126,12 +144,13 @@ public class PayerService {
     }
 
     private String getApp(String apiAction, String fhirPayload) {
-        Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
-        if (apiAction.equalsIgnoreCase("/v0.7/coverageeligibility/check")) {
+        if (apiAction.equalsIgnoreCase(Constants.COVERAGE_ELIGIBILITY_CHECK)) {
+            Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
             CoverageEligibilityRequest ce = parser.parseResource(CoverageEligibilityRequest.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
             if (ce.getText() != null && ce.getText().getDiv().allText() != null)
                 return ce.getText().getDiv().allText();
-        } else if (apiAction.equalsIgnoreCase("/v0.7/claim/submit") || apiAction.equalsIgnoreCase("/v0.7/preauth/submit")) {
+        } else if (apiAction.equalsIgnoreCase(Constants.CLAIM_SUBMIT) || apiAction.equalsIgnoreCase(Constants.PREDETERMINATION_SUBMIT)) {
+            Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
             Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
             if (claim.getText() != null && claim.getText().getDiv().allText() != null)
                 return claim.getText().getDiv().allText();
