@@ -26,54 +26,54 @@ import java.util.Map;
 
 public class EnDeController extends BaseController {
 
-    public ResponseEntity<Object> encrypt(@RequestBody Map<String, Object> request) {
-        try {
-            Map<String,Object> payload = (Map<String, Object>) request.getOrDefault("payload", new HashMap<>());
-            String publicKeyPath = (String) request.getOrDefault("publicKeyPath", "");
-            Map<String,Object> headers = (Map<String, Object>) request.getOrDefault("headers", new HashMap<>());
-            validateMap("payload", payload);
-            validateStr("publicKeyPath", publicKeyPath);
-            JweRequest jweRequest = new JweRequest(headers, payload);
-            jweRequest.encryptRequest(getPublicKey(publicKeyPath));
-            return new ResponseEntity<>(Collections.singletonMap("encryptedPayload", jweRequest.getEncryptedObject().get("payload")), HttpStatus.OK);
-        } catch (Exception e) {
-            return exceptionHandler(new Response(), e);
-        }
-    }
-
-    public ResponseEntity<Object> decrypt(@RequestBody Map<String, Object> request) {
-        try {
-            String payload = (String) request.getOrDefault("payload", "");
-            String privateKeyPath = (String) request.getOrDefault("privateKeyPath", "");
-            validateStr("payload", payload);
-            validateStr("privateKeyPath", privateKeyPath);
-            JweRequest jweRequest = new JweRequest(new HashMap<>() {{
-                put("payload", payload);
-            }});
-            jweRequest.decryptRequest(privateKeyPath);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("headers", jweRequest.getHeaders());
-            response.put("decryptedPayload", jweRequest.getPayload());
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            return exceptionHandler(new Response(), e);
-        }
-    }
-
-    private RSAPublicKey getPublicKey(String keyPath) throws Exception {
-        CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-        X509Certificate x509Certificate = (X509Certificate) certificateFactory.generateCertificate(new URL(keyPath).openStream());
-        return (RSAPublicKey) x509Certificate.getPublicKey();
-    }
-
-    private RSAPrivateKey getPrivateKey(String keyPath) throws Exception {
-        PemReader pemReader = new PemReader(new InputStreamReader(new URL(keyPath).openStream()));
-        PemObject pemObject = pemReader.readPemObject();
-        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(pemObject.getContent());
-        KeyFactory factory = KeyFactory.getInstance("RSA");
-        return (RSAPrivateKey) factory.generatePrivate(privateKeySpec);
-    }
+//    public ResponseEntity<Object> encrypt(@RequestBody Map<String, Object> request) {
+//        try {
+//            Map<String,Object> payload = (Map<String, Object>) request.getOrDefault("payload", new HashMap<>());
+//            String publicKeyPath = (String) request.getOrDefault("publicKeyPath", "");
+//            Map<String,Object> headers = (Map<String, Object>) request.getOrDefault("headers", new HashMap<>());
+//            validateMap("payload", payload);
+//            validateStr("publicKeyPath", publicKeyPath);
+//            JweRequest jweRequest = new JweRequest(headers, payload);
+//            jweRequest.encryptRequest(getPublicKey(publicKeyPath));
+//            return new ResponseEntity<>(Collections.singletonMap("encryptedPayload", jweRequest.getEncryptedObject().get("payload")), HttpStatus.OK);
+//        } catch (Exception e) {
+//            return exceptionHandler(new Response(), e);
+//        }
+//    }
+//
+//    public ResponseEntity<Object> decrypt(@RequestBody Map<String, Object> request) {
+//        try {
+//            String payload = (String) request.getOrDefault("payload", "");
+//            String privateKeyPath = (String) request.getOrDefault("privateKeyPath", "");
+//            validateStr("payload", payload);
+//            validateStr("privateKeyPath", privateKeyPath);
+//            JweRequest jweRequest = new JweRequest(new HashMap<>() {{
+//                put("payload", payload);
+//            }});
+//            jweRequest.decryptRequest(privateKeyPath);
+//
+//            Map<String, Object> response = new HashMap<>();
+//            response.put("headers", jweRequest.getHeaders());
+//            response.put("decryptedPayload", jweRequest.getPayload());
+//            return new ResponseEntity<>(response, HttpStatus.OK);
+//        } catch (Exception e) {
+//            return exceptionHandler(new Response(), e);
+//        }
+//    }
+//
+//    private RSAPublicKey getPublicKey(String keyPath) throws Exception {
+//        CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+//        X509Certificate x509Certificate = (X509Certificate) certificateFactory.generateCertificate(new URL(keyPath).openStream());
+//        return (RSAPublicKey) x509Certificate.getPublicKey();
+//    }
+//
+//    private RSAPrivateKey getPrivateKey(String keyPath) throws Exception {
+//        PemReader pemReader = new PemReader(new InputStreamReader(new URL(keyPath).openStream()));
+//        PemObject pemObject = pemReader.readPemObject();
+//        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(pemObject.getContent());
+//        KeyFactory factory = KeyFactory.getInstance("RSA");
+//        return (RSAPrivateKey) factory.generatePrivate(privateKeySpec);
+//    }
 
 
 }

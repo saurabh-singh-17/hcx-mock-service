@@ -45,35 +45,35 @@ public class OnActionCall {
     @Autowired
     protected HcxIntegratorService hcxIntegratorService;
 
-    public static String getRandomChestItem(List<String> items) {
-        return items.get(new Random().nextInt(items.size()));
-    }
+//    public static String getRandomChestItem(List<String> items) {
+//        return items.get(new Random().nextInt(items.size()));
+//    }
 
-    public InputStream getFileAsIOStream(final String fileName)
-    {
-        InputStream ioStream = this.getClass()
-                .getClassLoader()
-                .getResourceAsStream(fileName);
+//    public InputStream getFileAsIOStream(final String fileName)
+//    {
+//        InputStream ioStream = this.getClass()
+//                .getClassLoader()
+//                .getResourceAsStream(fileName);
+//
+//        if (ioStream == null) {
+//            throw new IllegalArgumentException(fileName + " is not found");
+//        }
+//        return ioStream;
+//    }
 
-        if (ioStream == null) {
-            throw new IllegalArgumentException(fileName + " is not found");
-        }
-        return ioStream;
-    }
-
-    public Map<String, String> jwsEncryptPayload(String filePath, Map<String, Object> payload) throws Exception{
-        RSAPrivateKey rsaPrivateKey;
-        Map<String, String> encryptedObject = new HashMap<>();
-        InputStream io = getFileAsIOStream(filePath);
-        Reader fileReader = new InputStreamReader(io);
-        PemReader pemReader = new PemReader(fileReader);
-        PemObject pemObject = pemReader.readPemObject();
-        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(pemObject.getContent());
-        KeyFactory factory = KeyFactory.getInstance("RSA");
-        rsaPrivateKey = (RSAPrivateKey) factory.generatePrivate(privateKeySpec);
-        String jwsEncrypted = Jwts.builder().setClaims(payload).signWith(SignatureAlgorithm.RS256, rsaPrivateKey).compact();
-        return encryptedObject;
-    }
+//    public Map<String, String> jwsEncryptPayload(String filePath, Map<String, Object> payload) throws Exception{
+//        RSAPrivateKey rsaPrivateKey;
+//        Map<String, String> encryptedObject = new HashMap<>();
+//        InputStream io = getFileAsIOStream(filePath);
+//        Reader fileReader = new InputStreamReader(io);
+//        PemReader pemReader = new PemReader(fileReader);
+//        PemObject pemObject = pemReader.readPemObject();
+//        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(pemObject.getContent());
+//        KeyFactory factory = KeyFactory.getInstance("RSA");
+//        rsaPrivateKey = (RSAPrivateKey) factory.generatePrivate(privateKeySpec);
+//        String jwsEncrypted = Jwts.builder().setClaims(payload).signWith(SignatureAlgorithm.RS256, rsaPrivateKey).compact();
+//        return encryptedObject;
+//    }
     @Async("asyncExecutor")
     public void sendOnAction(String recipientCode, String fhirPayload, Operations operation, String actionJwe, String onActionStatus, Map<String,Object> output) throws Exception{
         HCXIntegrator hcxIntegrator = hcxIntegratorService.getHCXIntegrator(recipientCode);
@@ -81,29 +81,29 @@ public class OnActionCall {
         System.out.println("output of onaction" + output);
     }
 
-    public String searchRegistry(String email) throws Exception {
-        System.out.println("Timestamp before registry call: "+ new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()));
-        HttpResponse<String> response = Unirest.post(env.getProperty("hcx_application.token_url"))
-                .header("content-type", "application/x-www-form-urlencoded")
-                .field("client_id", "registry-frontend")
-                .field("username", env.getProperty("mock_payer.username"))
-                .field("password", env.getProperty("mock_payer.password"))
-                .field("grant_type", "password")
-                .asString();
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> responseBody = mapper.readValue(response.getBody(), Map.class);
-        //creating filter for search query on email
-        HashMap<String, HashMap<String, Object>> filter = new HashMap<>();
-        filter.put("filters",new HashMap<String, Object>(Map.of("primary_email", new HashMap<>(Map.of("eq", email)))));
-        HttpResponse<String> onActionResponse = Unirest.post(env.getProperty("hcx_application.registry_url"))
-                    .header("Authorization", "Bearer " + responseBody.get("access_token").toString())
-                .header("Content-Type", "application/json")
-                .body(filter)
-                .asString();
-        Map<String, ArrayList> resArray = mapper.readValue(onActionResponse.getBody(), Map.class);
-        ArrayList participant =resArray.get("participants");
-        Map<String, Object> res = (Map<String, Object>) participant.get(0);
-        System.out.println("res for filter " + res.get("participant_code"));
-        return (String) res.get("osid");
-    }
+//    public String searchRegistry(String email) throws Exception {
+//        System.out.println("Timestamp before registry call: "+ new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()));
+//        HttpResponse<String> response = Unirest.post(env.getProperty("hcx_application.token_url"))
+//                .header("content-type", "application/x-www-form-urlencoded")
+//                .field("client_id", "registry-frontend")
+//                .field("username", env.getProperty("mock_payer.username"))
+//                .field("password", env.getProperty("mock_payer.password"))
+//                .field("grant_type", "password")
+//                .asString();
+//        ObjectMapper mapper = new ObjectMapper();
+//        Map<String, String> responseBody = mapper.readValue(response.getBody(), Map.class);
+//        //creating filter for search query on email
+//        HashMap<String, HashMap<String, Object>> filter = new HashMap<>();
+//        filter.put("filters",new HashMap<String, Object>(Map.of("primary_email", new HashMap<>(Map.of("eq", email)))));
+//        HttpResponse<String> onActionResponse = Unirest.post(env.getProperty("hcx_application.registry_url"))
+//                    .header("Authorization", "Bearer " + responseBody.get("access_token").toString())
+//                .header("Content-Type", "application/json")
+//                .body(filter)
+//                .asString();
+//        Map<String, ArrayList> resArray = mapper.readValue(onActionResponse.getBody(), Map.class);
+//        ArrayList participant =resArray.get("participants");
+//        Map<String, Object> res = (Map<String, Object>) participant.get(0);
+//        System.out.println("res for filter " + res.get("participant_code"));
+//        return (String) res.get("osid");
+//    }
 }

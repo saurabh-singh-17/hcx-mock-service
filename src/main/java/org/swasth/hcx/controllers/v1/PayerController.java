@@ -19,7 +19,9 @@ import org.swasth.hcx.service.PostgresService;
 import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.utils.JSONUtils;
 
+import javax.annotation.PostConstruct;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 import static org.swasth.hcx.utils.Constants.*;
@@ -32,6 +34,20 @@ public class PayerController extends BaseController {
 
     @Autowired
     private PostgresService postgres;
+
+    @Value("${postgres.url}")
+    private String postgresUrl;
+
+    @Value("${postgres.user}")
+    private String postgresUser;
+
+    @Value("${postgres.password}")
+    private String postgresPassword;
+
+    @PostConstruct
+    public void init() throws ClientException {
+        postgres = new PostgresService(postgresUrl, postgresUser, postgresPassword);
+    }
 
     @Value("${request_list.default_limit}")
     private int listLimit;
@@ -119,12 +135,12 @@ public class PayerController extends BaseController {
     }
 
     @PostMapping(value = "/payer/response/update")
-    public ResponseEntity<Object> updateResponse(@RequestBody Map<String, Object> requestBody) throws ClientException {
+    public ResponseEntity<Object> updateResponse(@RequestBody Map<String, Object> requestBody) throws ClientException, SQLException {
         updateDB((String) requestBody.get("request_id"), (String) requestBody.get("response_fhir"), "response.complete");
         return new ResponseEntity<>(new Response(), HttpStatus.OK);
     }
 
-    public void updateDB(String requestId, String respfhir, String onActionStatus) throws ClientException {
+    public void updateDB(String requestId, String respfhir, String onActionStatus) throws ClientException, SQLException {
         String query = String.format("UPDATE %s SET response_fhir = '%s', on_action_status= '%s' WHERE request_id ='%s'", table, respfhir, onActionStatus, requestId);
         postgres.execute(query);
     }
@@ -228,7 +244,6 @@ public class PayerController extends BaseController {
         }
         return p.encodeResourceToString(newBundle);
     }
-
     private static String getApprovedClaimBundle(Map<String, Object> requestBody, String entity, String respfhir) {
         IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         Bundle newBundle = p.parseResource(Bundle.class, respfhir);
