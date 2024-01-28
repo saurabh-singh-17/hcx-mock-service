@@ -81,47 +81,47 @@ public class HCXFHIRUtils {
     }
 
 
-//    public static DomainResource getPrimaryResource(Bundle resource, String resourceURL) throws Exception {
-//        Bundle newBundle = resource.copy();
-//        for (int i = 0; i < newBundle.getEntry().size(); i++) {
-//            Bundle.BundleEntryComponent par = newBundle.getEntry().get(i);
-//            DomainResource dm = (DomainResource) par.getResource();
-//            if (dm.getMeta().getProfile().get(0).getValue() == resourceURL) {
-//                return dm;
-//            }
-//        }
-//        throw new Exception("No resource with the given URL found");
-//    }
+    public static DomainResource getPrimaryResource(Bundle resource, String resourceURL) throws Exception {
+        Bundle newBundle = resource.copy();
+        for (int i = 0; i < newBundle.getEntry().size(); i++) {
+            Bundle.BundleEntryComponent par = newBundle.getEntry().get(i);
+            DomainResource dm = (DomainResource) par.getResource();
+            if (dm.getMeta().getProfile().get(0).getValue() == resourceURL) {
+                return dm;
+            }
+        }
+        throw new Exception("No resource with the given URL found");
+    }
 
-//    public static DomainResource getPrimaryResource(Bundle resource) {
-//        Bundle newBundle = resource.copy();
-//        Bundle.BundleEntryComponent par = newBundle.getEntry().get(0);
-//        DomainResource dm = (DomainResource) par.getResource();
-//        return dm;
-//    }
-//
-//
-//    public static List<DomainResource> getReferencedResource(Bundle resource, String resourceURL) {
-//        Bundle newBundle = resource.copy();
-//        List<DomainResource> dmList = new ArrayList<>();
-//        for (int i = 0; i < newBundle.getEntry().size(); i++) {
-//            Bundle.BundleEntryComponent par = newBundle.getEntry().get(i);
-//            DomainResource dm = (DomainResource) par.getResource();
-//            if (dm.getMeta().getProfile().get(0).getValue() != resourceURL) {
-//                dmList.add(dm);
-//            }
-//        }
-//        return dmList;
-//    }
-//
-//    public static List<DomainResource> getReferencedResource(Bundle resource) {
-//        Bundle newBundle = resource.copy();
-//        List<DomainResource> dmList = new ArrayList<>();
-//        for (int i = 1; i < newBundle.getEntry().size(); i++) {
-//            Bundle.BundleEntryComponent par = newBundle.getEntry().get(i);
-//            DomainResource dm = (DomainResource) par.getResource();
-//            dmList.add(dm);
-//        }
-//        return dmList;
-//    }
+    public static DomainResource getPrimaryResource(Bundle resource) {
+        Bundle newBundle = resource.copy();
+        Bundle.BundleEntryComponent par = newBundle.getEntry().get(0);
+        DomainResource dm = (DomainResource) par.getResource();
+        return dm;
+    }
+
+
+    public static List<DomainResource> getReferencedResource(Bundle resource, String resourceURL) {
+        Bundle newBundle = resource.copy();
+        List<DomainResource> dmList = new ArrayList<>();
+        for (int i = 0; i < newBundle.getEntry().size(); i++) {
+            Bundle.BundleEntryComponent par = newBundle.getEntry().get(i);
+            DomainResource dm = (DomainResource) par.getResource();
+            if (dm.getMeta().getProfile().get(0).getValue() != resourceURL) {
+                dmList.add(dm);
+            }
+        }
+        return dmList;
+    }
+
+    public static List<DomainResource> getReferencedResource(Bundle resource) {
+        Bundle newBundle = resource.copy();
+        List<DomainResource> dmList = new ArrayList<>();
+        for (int i = 1; i < newBundle.getEntry().size(); i++) {
+            Bundle.BundleEntryComponent par = newBundle.getEntry().get(i);
+            DomainResource dm = (DomainResource) par.getResource();
+            dmList.add(dm);
+        }
+        return dmList;
+    }
 }

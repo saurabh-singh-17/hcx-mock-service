@@ -14,7 +14,6 @@ import org.swasth.hcx.exception.ErrorCodes;
 import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.utils.JSONUtils;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -38,19 +37,6 @@ public class BeneficiaryService {
     private CloudStorageClient cloudStorageClient;
     @Autowired
     private SMSService smsService;
-    @Value("${postgres.url}")
-    private String postgresUrl;
-
-    @Value("${postgres.user}")
-    private String postgresUser;
-
-    @Value("${postgres.password}")
-    private String postgresPassword;
-
-    @PostConstruct
-    public void init() throws ClientException {
-        postgresService = new PostgresService(postgresUrl, postgresUser, postgresPassword);
-    }
 
     private final IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
     long lastOTPSendTime = 0;
@@ -93,7 +79,7 @@ public class BeneficiaryService {
         return false;
     }
 
-    public ResponseEntity<Object> verifyOTP(Map<String, Object> requestBody) throws ClientException {
+    public ResponseEntity<Object> verifyOTP(Map<String, Object> requestBody) {
         try {
             String mobile = (String) requestBody.get(Constants.MOBILE);
             int userEnteredOTP = Integer.parseInt((String) requestBody.get("otp_code"));
@@ -117,7 +103,7 @@ public class BeneficiaryService {
                 return ResponseEntity.badRequest().body(response("Record does not exist in the database", mobile, "failed"));
             }
         } catch (Exception e) {
-            throw new ClientException(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -195,7 +181,7 @@ public class BeneficiaryService {
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace(); // Log the exception for debugging
-            return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(Map.of("error", "Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -251,7 +237,7 @@ public class BeneficiaryService {
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace(); // Log the exception for debugging
-            return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(Map.of("error", "Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -287,8 +273,8 @@ public class BeneficiaryService {
             resp.put("entries", entries);
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();// Log the exception for debugging
-            return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+            e.printStackTrace(); // Log the exception for debugging
+            return new ResponseEntity<>(Map.of("error", "Resultset is closed"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

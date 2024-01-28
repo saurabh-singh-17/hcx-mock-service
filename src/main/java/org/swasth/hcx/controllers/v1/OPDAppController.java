@@ -10,7 +10,6 @@ import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.service.PostgresService;
 import org.swasth.hcx.utils.Constants;
 
-import javax.annotation.PostConstruct;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -28,26 +27,11 @@ public class OPDAppController {
     @Autowired
     private PostgresService postgres;
 
-    @Value("${postgres.url}")
-    private String postgresUrl;
-
-    @Value("${postgres.user}")
-    private String postgresUser;
-
-    @Value("${postgres.password}")
-    private String postgresPassword;
-
-    @PostConstruct
-    public void init() throws ClientException {
-        postgres = new PostgresService(postgresUrl, postgresUser, postgresPassword);
-    }
-
     @PostMapping(CONSULTATION_ADD)
     public ResponseEntity<Object> addConsultationInfo(@RequestBody Map<String, Object> requestBody) throws ClientException {
         String workflowId = (String) requestBody.getOrDefault("workflow_id", "");
         if (!requestBody.containsKey("workflow_id") && workflowId.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Work flow id cannot be empty");
-//            throw new ClientException("Work flow id cannot be empty");
+            throw new ClientException("Work flow id cannot be empty");
         }
         List<String> supportingDocumentsUrls = (List<String>) requestBody.getOrDefault("supporting_documents_url", new ArrayList<>());
         String supportingDocuments = supportingDocumentsUrls.stream()
@@ -75,7 +59,11 @@ public class OPDAppController {
     public ResponseEntity<Object> getConsultationInfo(@PathVariable("workflow_id")  String workflowId) {
         try {
             Map<String, Object> consultationInfo = getConsultationInfoByWorkflowId(workflowId);
+            if (consultationInfo != null) {
                 return ResponseEntity.ok(consultationInfo);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", "Consultation info not found"));
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", "Unable to fetch the details" + e.getMessage()));

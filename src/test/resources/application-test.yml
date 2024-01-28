@@ -22,20 +22,7 @@ postgres:
   url: ${postgres_url:jdbc:postgresql://localhost:5432/postgres}
   user: ${postgres_user:postgres}
   password: ${postgres_password:postgres}
-  table:
-    mockParticipant: ${mock_participant_table:mock_participant}
-
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
-    password: postgres
-
-hcx_application:
-  url: ${hcx_gateway_url:http://dev-hcx.swasth.app}
-  api_version: ${version:v0.7}
-  token_url: ${auth_url:${hcx_application.url}/auth/realms/swasth-hcx-participants/protocol/openid-connect/token}
-  registry_url: ${registry:${hcx_application.url}/api/v0.7/participant/search}
+  tablename: ${postgres_tablename:payload}
 
 #hcx headers
 protocol:
@@ -48,10 +35,3 @@ headers:
 #elasticsearch config
 elasticsearch:
   url: ${elasticsearch_url:localhost:9200}
-
-beneficiary:
-  protocol-base-path: ${beneficiary_protocol_base_path:https://dev-hcx.swasth.app/api/v0.8}
-  participant-code: ${beneficiary_sender_code:bsp_bsprol_846730@swasth-hcx-dev}
-  username: ${beneficiary_username:bsp_bsprol_846730@swasth-hcx-dev}
-  password: ${beneficiary_password:Opensaber@123}
-  recipient-code: ${beneficiary-config_recipient_code:payr_hcxmoc_903588@swasth-hcx-dev}

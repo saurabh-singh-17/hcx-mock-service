@@ -23,4 +23,20 @@ public class ResponseError {
         this.code = code;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public Throwable getTrace() {
+        return trace;
+    }
+
+    public void setTrace(Throwable trace) {
+        this.trace = trace;
+    }
+
 }
