@@ -1,30 +1,60 @@
 package org.swasth.hcx.dto;
 
+import org.apache.commons.lang3.StringUtils;
 import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.exception.ErrorCodes;
 import org.swasth.hcx.utils.JSONUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 import static org.swasth.hcx.utils.Constants.*;
 
 public class Request {
 
-    private final Map<String, Object> payload;
+    private  Map<String, Object> payload;
     protected Map<String, Object> hcxHeaders = null;
-
+    private Map<String,Object> requestBody;
+    private String notificationRequest;
     private String action;
 
     public Request(Map<String, Object> body, String action) throws Exception {
         this.payload = body;
         this.action = action;
-        try {
-            if (body.containsKey(PAYLOAD)) {
-                hcxHeaders = JSONUtils.decodeBase64String(((String) body.get(PAYLOAD)).split("\\.")[0], Map.class);
-            } else if (body.containsKey(STATUS))
-                hcxHeaders = body;
-        } catch (Exception e) {
-            throw new ClientException(ErrorCodes.ERR_INVALID_PAYLOAD, "Invalid Payload");
+        if (NOTIFICATION_NOTIFY.equals(action)) {
+            notificationRequest = (String) ((Map<String, Object>) body.get(PAYLOAD)).get(PAYLOAD);
+            System.out.println("Encoded payload ----------" + JSONUtils.serialize(notificationRequest));
+            hcxHeaders = JSONUtils.decodeBase64String(notificationRequest.split("\\.")[0], Map.class);
+            payload = JSONUtils.decodeBase64String(notificationRequest.split("\\.")[1], Map.class);
+        } else {
+            try {
+                if (body.containsKey(PAYLOAD)) {
+                    hcxHeaders = JSONUtils.decodeBase64String(((String) body.get(PAYLOAD)).split("\\.")[0], Map.class);
+                } else if (body.containsKey(STATUS))
+                    hcxHeaders = body;
+            } catch (Exception e) {
+                throw new ClientException(ErrorCodes.ERR_INVALID_PAYLOAD, "Invalid Payload");
+            }
         }
+    }
+
+    public String getNotificationRequest() {
+        return notificationRequest;
+    }
+
+
+    public Request(Map<String, Object> requestBody) throws Exception {
+        this.requestBody = requestBody;
+        if (requestBody.containsKey(PAYLOAD)) {
+            hcxHeaders = JSONUtils.decodeBase64String(((String) requestBody.get(PAYLOAD)).split("\\.")[0], Map.class);
+            payload = JSONUtils.decodeBase64String(((String) requestBody.get(PAYLOAD)).split("\\.")[1], Map.class);
+        }
+    }
+
+    public Map<String, Object> getNotificationHeaders() {
+        return (Map<String, Object>) hcxHeaders.getOrDefault("x-hcx-notification_headers",new HashMap<>());
+    }
+    public String getTopicCode(){
+        return (String) payload.get("topic_code");
     }
 
     // TODO remove this method. We should restrict accessing it to have a clean code.
