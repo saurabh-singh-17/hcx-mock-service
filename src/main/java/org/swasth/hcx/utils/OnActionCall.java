@@ -45,21 +45,21 @@ public class OnActionCall {
     @Autowired
     protected HcxIntegratorService hcxIntegratorService;
 
-    public static String getRandomChestItem(List<String> items) {
-        return items.get(new Random().nextInt(items.size()));
-    }
+//    public static String getRandomChestItem(List<String> items) {
+//        return items.get(new Random().nextInt(items.size()));
+//    }
 
-    public InputStream getFileAsIOStream(final String fileName)
-    {
-        InputStream ioStream = this.getClass()
-                .getClassLoader()
-                .getResourceAsStream(fileName);
-
-        if (ioStream == null) {
-            throw new IllegalArgumentException(fileName + " is not found");
-        }
-        return ioStream;
-    }
+//    public InputStream getFileAsIOStream(final String fileName)
+//    {
+//        InputStream ioStream = this.getClass()
+//                .getClassLoader()
+//                .getResourceAsStream(fileName);
+//
+//        if (ioStream == null) {
+//            throw new IllegalArgumentException(fileName + " is not found");
+//        }
+//        return ioStream;
+//    }
 
 //    public Map<String, String> jwsEncryptPayload(String filePath, Map<String, Object> payload) throws Exception{
 //        RSAPrivateKey rsaPrivateKey;

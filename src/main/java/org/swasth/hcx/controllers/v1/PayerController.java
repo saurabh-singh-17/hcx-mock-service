@@ -193,7 +193,6 @@ public class PayerController extends BaseController {
                 String respfhir = "";
                 String actionJwe = "";
                 String action = "";
-                System.out.println(resultSet.next()+"--------------------------------------------");
                 while (resultSet.next()) {
                     addInfo.putAll(JSONUtils.deserialize(resultSet.getString("additional_info"), Map.class));
                     existingStatus = resultSet.getString("status");
@@ -245,7 +244,6 @@ public class PayerController extends BaseController {
         }
         return p.encodeResourceToString(newBundle);
     }
-
     private static String getApprovedClaimBundle(Map<String, Object> requestBody, String entity, String respfhir) {
         IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
         Bundle newBundle = p.parseResource(Bundle.class, respfhir);

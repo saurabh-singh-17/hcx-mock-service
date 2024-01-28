@@ -56,7 +56,6 @@ public class HcxIntegratorService {
     }
 
     public Map<String,Object> getParticipantConfig(String participantCode) throws ClientException, SQLException, IOException {
-        System.out.println(participantCode+"---------------------PARTICIPANTCODE_________");
         String query = String.format("SELECT * FROM %s WHERE child_participant_code='%s'", env.getProperty("postgres.table.mockParticipant"), participantCode);
         ResultSet resultSet = postgresService.executeQuery(query);
         if(resultSet.next()){

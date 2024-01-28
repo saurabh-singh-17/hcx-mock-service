@@ -15,6 +15,7 @@ public class HealthController extends BaseController {
     @RequestMapping(value = "/service/health", method = RequestMethod.GET)
     public ResponseEntity<Object> serviceHealth() {
         Response response = new Response(Constants.HEALTHY, true);
+        System.out.println("-----------------------------------");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

@@ -24,11 +24,11 @@ import org.swasth.hcx.fhirexamples.OnActionFhirExamples;
 import org.swasth.hcx.utils.HCXFHIRUtils;
 import org.swasth.hcx.utils.JSONUtils;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -57,6 +57,19 @@ public class GenerateOutgoingRequest {
     private String payorUsername;
     @Value("${payor.password}")
     private String payorPassword;
+    @Value("${postgres.url}")
+    private String postgresUrl;
+
+    @Value("${postgres.user}")
+    private String postgresUser;
+
+    @Value("${postgres.password}")
+    private String postgresPassword;
+
+    @PostConstruct
+    public void init() throws ClientException {
+        postgresService = new PostgresService(postgresUrl, postgresUser, postgresPassword);
+    }
     IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
     public ResponseEntity<Object> createCoverageEligibilityRequest(Map<String, Object> requestBody, Operations operations) {
         Response response = new Response();
@@ -118,7 +131,7 @@ public class GenerateOutgoingRequest {
             Claim claim = OnActionFhirExamples.claimExample();
             Date date = new Date();
             if (requestBody.containsKey("date")) {
-                long timeStamp = (Long) requestBody.getOrDefault("date", "");
+                long timeStamp = (long) requestBody.getOrDefault("date", "");
                 date = new Date(timeStamp);
             }
             claim.setCreated(date);
@@ -235,7 +248,8 @@ public class GenerateOutgoingRequest {
                 postgresService.execute(query);
                 processOutgoingCallbackCommunication("otp", requestId, (String) requestBody.get("otp_code"), "", "", participantCode, password);
             } else {
-                throw new ClientException(Objects.requireNonNull(responseEntity.getBody()).toString());
+//                throw new ClientException(Objects.requireNonNull(responseEntity.getBody()).toString());
+                return ResponseEntity.badRequest().body(responseEntity.getBody().toString());
             }
             return responseEntity;
         } else if(StringUtils.equalsIgnoreCase((String) requestBody.get("type"), "bank_details")){
