@@ -84,14 +84,6 @@ public class PreAuthTests extends BaseSpec {
         assertEquals(400, status);
     }
 
-//    @Test
-//    public void check_preauth_submit_exception_scenario() throws Exception {
-//        String requestBody = getExceptionRequestBody();
-//        MvcResult mvcResult = mockMvc.perform(post("/"+api_version+"/preauth/submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
-//        MockHttpServletResponse response = mvcResult.getResponse();
-//        int status = response.getStatus();
-//        assertEquals(500, status);
-//    }
 
     @Test
     public void check_preauth_on_submit_success_scenario() throws Exception {
@@ -111,13 +103,5 @@ public class PreAuthTests extends BaseSpec {
         assertEquals(202, status);
     }
 
-//    @Test
-//    public void check_preauth_on_submit_exception_scenario() throws Exception {
-//        String requestBody = getExceptionRequestBody();
-//        MvcResult mvcResult = mockMvc.perform(post("/"+api_version+"/preauth/on_submit").content(requestBody).contentType(MediaType.APPLICATION_JSON)).andReturn();
-//        MockHttpServletResponse response = mvcResult.getResponse();
-//        int status = response.getStatus();
-//        assertEquals(500, status);
-//    }
 
 }

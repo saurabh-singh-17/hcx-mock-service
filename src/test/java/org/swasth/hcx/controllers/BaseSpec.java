@@ -28,8 +28,6 @@ import org.swasth.hcx.utils.OnActionCall;
 import java.io.IOException;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 
 @WebMvcTest({BeneficiaryController.class, ClaimsController.class, CommunicationController.class, CoverageEligibilityController.class, DocumentController.class, NotificationController.class, OPDAppController.class, PayerController.class, PreAuthController.class, BeneficiaryService.class, CloudStorageClient.class, GenerateOutgoingRequest.class, HcxIntegratorService.class, NotificationService.class, PayerService.class, PostgresService.class, SMSService.class, OnActionCall.class})
@@ -473,18 +471,10 @@ public class BaseSpec {
         return JSONUtils.serialize(obj);
     }
 
-//    protected String getUploadDocumentsRequestBody() throws JsonProcessingException {
-//        List<MultipartFile> files = new ArrayList<>();
-//        MockMultipartFile file1 = new MockMultipartFile("file", "document1.txt", MediaType.TEXT_PLAIN_VALUE, "Hello, World!".getBytes());
-//        files.add(file1);
-//        return JSONUtils.serialize(files);
-//    }
-
     public static List<MultipartFile> getUploadDocumentsRequestBody() throws IOException {
         List<MultipartFile> files = new ArrayList<>();
         MockMultipartFile file1 = new MockMultipartFile(
-                "file", "document1.txt", MediaType.TEXT_PLAIN_VALUE, "Hello, World!".getBytes());
-        // Add more files if needed
+                "file", "document1.txt", MediaType.TEXT_PLAIN_VALUE, "".getBytes());
         files.add(file1);
         return files;
     }

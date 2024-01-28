@@ -8,7 +8,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.swasth.hcx.controllers.BaseSpec;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 public class CoverageEligibilityTests extends BaseSpec {
