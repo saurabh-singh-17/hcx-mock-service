@@ -2,10 +2,8 @@ package org.swasth.hcx.controllers;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
-import com.amazonaws.services.dynamodbv2.xspec.S;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,11 +27,12 @@ import org.swasth.hcx.helpers.EventGenerator;
 import org.swasth.hcx.service.*;
 import org.swasth.hcx.utils.JSONUtils;
 import org.swasth.hcx.utils.OnActionCall;
+
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 import static org.swasth.hcx.utils.Constants.*;
@@ -341,14 +340,14 @@ public class BaseController {
             throw new ClientException("Missing required field " + field);
     }
 
-    public void updateMobileNumber(String requestID, String apiAction) throws SQLException, ClientException {
-        Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestID);
-        Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
-        String mobile = getPatientMobile((String) payloadMap.get("request_fhir"));
-        String app = getAppFromApiAction(apiAction, parsed);
-        String query = String.format("UPDATE %s SET app = '%s', mobile = '%s' WHERE request_id ='%s'", table, app, mobile, requestID);
-        postgresService.execute(query);
-    }
+//    public void updateMobileNumber(String requestID, String apiAction) throws SQLException, ClientException {
+//        Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestID);
+//        Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
+//        String mobile = getPatientMobile((String) payloadMap.get("request_fhir"));
+//        String app = getAppFromApiAction(apiAction, parsed);
+//        String query = String.format("UPDATE %s SET app = '%s', mobile = '%s' WHERE request_id ='%s'", table, app, mobile, requestID);
+//        postgresService.execute(query);
+//    }
 
     private String getAppFromApiAction(String apiAction, Bundle parsed) {
         if (apiAction.equalsIgnoreCase("/v0.7/coverageeligibility/check")) {

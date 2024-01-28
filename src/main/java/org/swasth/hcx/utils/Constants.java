@@ -148,4 +148,5 @@ public class Constants {
     public static final String SUCCESSFUL = "successful";
     public static final String FAILED = "failed";
     public static final List<String> PAYOR_APPROVAL_TYPES = Arrays.asList("medical", "financial");
+    public static final String  MESSAGE =  "message";
 }

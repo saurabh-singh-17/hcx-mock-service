@@ -1,6 +1,5 @@
 package org.swasth.hcx.service;
 
-import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.exception.ErrorCodes;
 import org.swasth.hcx.exception.ServerException;
 import org.swasth.hcx.utils.JSONUtils;
