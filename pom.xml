@@ -95,6 +95,18 @@
             <version>4.12.0</version>
             <scope>test</scope>
         </dependency>
+		<dependency>
+			<groupId>it.ozimov</groupId>
+			<artifactId>embedded-redis</artifactId>
+			<version>0.7.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.fppt</groupId>
+			<artifactId>jedis-mock</artifactId>
+			<version>1.0.2</version>
+			<scope>test</scope>
+		</dependency>
     </dependencies>
 
 	<build>

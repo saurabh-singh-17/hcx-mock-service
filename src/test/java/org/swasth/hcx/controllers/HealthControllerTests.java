@@ -15,7 +15,6 @@ public class HealthControllerTests extends BaseSpec{
 
     @InjectMocks
     HealthController healthController;
-    protected MockMvc mockMvc;
     @BeforeEach
     void setup()  {
         this.mockMvc = MockMvcBuilders.standaloneSetup(healthController).build();

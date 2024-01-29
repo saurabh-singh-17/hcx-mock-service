@@ -54,6 +54,7 @@ public class Constants {
     public static final String JOSE="jose";
     public static final String PROTOCOL = "protocol";
 
+    public static final String MESSAGE = "message";
     //Request props
     public static final String PROTOCOL_HEADERS_MANDATORY = "protocol.headers.mandatory";
     public static final String ERROR_HEADERS_MANDATORY = "plainrequest.headers.mandatory";

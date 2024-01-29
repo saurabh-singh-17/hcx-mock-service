@@ -37,6 +37,12 @@ hcx_application:
   token_url: ${auth_url:${hcx_application.url}/auth/realms/swasth-hcx-participants/protocol/openid-connect/token}
   registry_url: ${registry:${hcx_application.url}/api/v0.7/participant/search}
 
+mock_payer:
+  private_key: ${mock_payer_private_key:https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/test-keys/private-key.pem}
+  username: ${mock_payer_username:testpayor1@icici.com}
+  password: ${mock_payer_password:Opensaber@123}
+  participant_code: ${mock_payer_participant_code:testpayor1.icici@swasth-hcx-dev}
+
 #hcx headers
 protocol:
   headers:
@@ -55,3 +61,8 @@ beneficiary:
   username: ${beneficiary_username:bsp_bsprol_846730@swasth-hcx-dev}
   password: ${beneficiary_password:Opensaber@123}
   recipient-code: ${beneficiary-config_recipient_code:payr_hcxmoc_903588@swasth-hcx-dev}
+
+redis:
+  host: ${redis_host:localhost}
+  port: ${redis_port:6379}
+  expires: ${redis_expires:432000}

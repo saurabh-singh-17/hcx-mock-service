@@ -21,7 +21,7 @@ public class Request {
         this.payload = body;
         this.action = action;
         if (NOTIFICATION_NOTIFY.equals(action)) {
-            notificationRequest = (String) ((Map<String, Object>) body.get(PAYLOAD)).get(PAYLOAD);
+            notificationRequest = (String) body.get(PAYLOAD);
             System.out.println("Encoded payload ----------" + JSONUtils.serialize(notificationRequest));
             hcxHeaders = JSONUtils.decodeBase64String(notificationRequest.split("\\.")[0], Map.class);
             payload = JSONUtils.decodeBase64String(notificationRequest.split("\\.")[1], Map.class);
@@ -42,13 +42,13 @@ public class Request {
     }
 
 
-    public Request(Map<String, Object> requestBody) throws Exception {
-        this.requestBody = requestBody;
-        if (requestBody.containsKey(PAYLOAD)) {
-            hcxHeaders = JSONUtils.decodeBase64String(((String) requestBody.get(PAYLOAD)).split("\\.")[0], Map.class);
-            payload = JSONUtils.decodeBase64String(((String) requestBody.get(PAYLOAD)).split("\\.")[1], Map.class);
-        }
-    }
+//    public Request(Map<String, Object> requestBody) throws Exception {
+//        this.requestBody = requestBody;
+//        if (requestBody.containsKey(PAYLOAD)) {
+//            hcxHeaders = JSONUtils.decodeBase64String(((String) requestBody.get(PAYLOAD)).split("\\.")[0], Map.class);
+//            payload = JSONUtils.decodeBase64String(((String) requestBody.get(PAYLOAD)).split("\\.")[1], Map.class);
+//        }
+//    }
 
     public Map<String, Object> getNotificationHeaders() {
         return (Map<String, Object>) hcxHeaders.getOrDefault("x-hcx-notification_headers",new HashMap<>());
@@ -82,9 +82,9 @@ public class Request {
         return getHeader(RECIPIENT_CODE);
     }
 
-    public String getTimestamp() {
-        return getHeader(TIMESTAMP);
-    }
+//    public String getTimestamp() {
+//        return getHeader(TIMESTAMP);
+//    }
 
     public String getStatus() {
         return getHeader(STATUS);

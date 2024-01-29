@@ -60,7 +60,7 @@ public class PayerService {
         }
     }
 
-    public void processWithOutApp(Request request, Map<String, Object> info, String reqFhirObj, String respFhirObj) throws ClientException, JsonProcessingException {
+    public void processWithOutApp(Request request, Map<String, Object> info, String reqFhirObj, String respFhirObj) throws ClientException, JsonProcessingException, SQLException {
         if (!request.getAction().contains(Constants.COVERAGE_ELIGIBILITY)) {
             info.put("medical", Collections.singletonMap("status", PENDING));
             info.put("financial", Collections.singletonMap("status", PENDING));
@@ -70,7 +70,7 @@ public class PayerService {
         postgres.execute(query);
     }
 
-    public void processWithApp(Request request, Map<String, Object> info, String reqFhirObj, String respFhirObj, String app) throws ClientException, JsonProcessingException {
+    public void processWithApp(Request request, Map<String, Object> info, String reqFhirObj, String respFhirObj, String app) throws ClientException, JsonProcessingException, SQLException {
         String action = request.getAction();
         String query;
         if (action.contains(Constants.COVERAGE_ELIGIBILITY)) {
