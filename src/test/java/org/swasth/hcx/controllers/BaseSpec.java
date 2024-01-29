@@ -32,7 +32,7 @@ import java.util.*;
 
 
 
-@WebMvcTest({BeneficiaryController.class, ClaimsController.class, CommunicationController.class, CoverageEligibilityController.class, DocumentController.class, NotificationController.class, OPDAppController.class, PayerController.class, PreAuthController.class, BeneficiaryService.class, CloudStorageClient.class, GenerateOutgoingRequest.class, HcxIntegratorService.class, NotificationService.class, PayerService.class, PostgresService.class, SMSService.class, OnActionCall.class})
+@WebMvcTest({BeneficiaryController.class, ClaimsController.class, CommunicationController.class, CoverageEligibilityController.class, DocumentController.class, NotificationController.class, OPDAppController.class, PayerController.class, PreAuthController.class, BeneficiaryService.class, CloudStorageClient.class, GenerateOutgoingRequest.class, HcxIntegratorService.class, NotificationService.class, PayerService.class, PostgresService.class, SMSService.class, OnActionCall.class, RedisService.class})
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
 public class BaseSpec {
@@ -42,7 +42,7 @@ public class BaseSpec {
 
     protected MockMvc mockMvc;
 
-    @MockBean
+    @Autowired
     private OnActionCall onActionCall;
 
     @MockBean
@@ -54,7 +54,7 @@ public class BaseSpec {
     @Autowired
     protected NotificationService notificationService;
 
-   @MockBean
+   @Autowired
    protected BeneficiaryService beneficiaryService;
    @MockBean
    protected PostgresService postgresService;
@@ -68,7 +68,7 @@ public class BaseSpec {
    @Autowired
    protected GenerateOutgoingRequest outgoingRequest;
 
-   @MockBean
+   @Autowired
    protected SMSService smsService;
 
    @Autowired

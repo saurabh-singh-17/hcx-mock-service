@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @SpringBootApplication
 @EnableAsync
-@ComponentScan(basePackages = "org/swasth/hcx")
+@ComponentScan("org/swasth/hcx")
 public class HCXApplication {
 	
 	public static void main(String[] args) {

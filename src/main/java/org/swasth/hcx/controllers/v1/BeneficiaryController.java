@@ -16,7 +16,6 @@ import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.service.BeneficiaryService;
 import org.swasth.hcx.service.CloudStorageClient;
 import org.swasth.hcx.service.GenerateOutgoingRequest;
-import org.swasth.hcx.service.RedisService;
 import org.swasth.hcx.utils.Constants;
 
 import java.sql.SQLException;
@@ -37,9 +36,6 @@ public class BeneficiaryController extends BaseController {
     private CloudStorageClient cloudStorageClient;
     @Autowired
     private BeneficiaryService beneficiaryService;
-
-    @Autowired
-    private RedisService redisService;
     @Value("${phone.beneficiary-register}")
     private String beneficiaryRegisterContent;
 
