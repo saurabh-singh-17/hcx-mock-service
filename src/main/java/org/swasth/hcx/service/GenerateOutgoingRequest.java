@@ -346,7 +346,9 @@ public class GenerateOutgoingRequest {
         if (requestBody.containsKey(Constants.ITEMS)) {
             ArrayList<Map<String, Object>> itemsList = JSONUtils.convert(requestBody.get(Constants.ITEMS), ArrayList.class);
             for (Map<String, Object> itemMap : itemsList) {
-                claim.getItem().add(new org.hl7.fhir.r4.model.Claim.ItemComponent().setSequence(1).setQuantity(new Quantity().setValue((BigDecimal) itemMap.getOrDefault(ITEM_QUANTITY, ""))).setProductOrService(new CodeableConcept(new Coding().setCode("E101021").setSystem("https://irdai.gov.in/package-code").setDisplay((String) itemMap.getOrDefault(ITEM_NAME, "")))).setUnitPrice(new Money().setValue((BigDecimal) itemMap.getOrDefault(ITEM_PRICING, "")).setCurrency("INR")));
+                BigDecimal itemQuantity = (BigDecimal) requestBody.getOrDefault(ITEM_QUANTITY, 0);
+                BigDecimal itemPrice = (BigDecimal) requestBody.getOrDefault(ITEM_PRICING, 0);
+                claim.getItem().add(new org.hl7.fhir.r4.model.Claim.ItemComponent().setSequence(1).setQuantity(new Quantity().setValue(itemQuantity)).setProductOrService(new CodeableConcept(new Coding().setCode("E101021").setSystem("https://irdai.gov.in/package-code").setDisplay((String) itemMap.getOrDefault(ITEM_NAME, "")))).setUnitPrice(new Money().setValue(itemPrice).setCurrency("INR")));
             }
         }
         claim.addIdentifier(new Identifier().setSystem(TREATMENT_CATEGORY).setValue((String) requestBody.getOrDefault(TREATMENT_CATEGORY, "")));
