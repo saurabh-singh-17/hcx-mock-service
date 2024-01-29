@@ -2,6 +2,7 @@ package org.swasth.hcx.service;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import com.amazonaws.services.dynamodbv2.xspec.S;
 import io.hcxprotocol.init.HCXIntegrator;
 import io.hcxprotocol.utils.Operations;
 import org.apache.commons.collections.MapUtils;
@@ -21,14 +22,18 @@ import org.swasth.hcx.exception.ErrorCodes;
 import org.swasth.hcx.exception.ServerException;
 import org.swasth.hcx.exception.ServiceUnavailbleException;
 import org.swasth.hcx.fhirexamples.OnActionFhirExamples;
+import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.utils.HCXFHIRUtils;
 import org.swasth.hcx.utils.JSONUtils;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.util.*;
+
+import static org.swasth.hcx.utils.Constants.*;
 
 @Service
 public class GenerateOutgoingRequest {
@@ -122,24 +127,18 @@ public class GenerateOutgoingRequest {
             // adding supporting documents (Bill/invoice or prescription)
             String app = (String) requestBody.getOrDefault("app", "");
             claim.setText(new Narrative().setDiv(new XhtmlDocument().setValue(app)).setStatus(Narrative.NarrativeStatus.GENERATED));
-            if (requestBody.containsKey("supportingDocuments")) {
-                ArrayList<Map<String, Object>> supportingDocuments = JSONUtils.convert(requestBody.get("supportingDocuments"), ArrayList.class);
-                for (Map<String, Object> document : supportingDocuments) {
-                    String documentType = (String) document.getOrDefault("documentType","");
-                    List<String> urls = (List<String>) document.get("urls");
-                    if (urls != null && !urls.isEmpty()) {
-                        for (String url : urls) {
-                            claim.addSupportingInfo(new Claim.SupportingInformationComponent().setSequence(1).setCategory(new CodeableConcept(new Coding().setCode(documentType).setSystem("http://hcxprotocol.io/codes/claim-supporting-info-categories").setDisplay(documentType))).setValue(new Attachment().setUrl(url)));
-                        }
-                    }
-                }
+            // Add items
+            if (StringUtils.equalsIgnoreCase(app, Constants.ABSP)) {
+                addInputsBasedOnApp(requestBody, claim);
             }
+            // Adding supporting Documents
+            addSupportingDocuments(requestBody, claim);
             Practitioner practitioner = OnActionFhirExamples.practitionerExample();
             Organization hospital = OnActionFhirExamples.providerOrganizationExample();
             hospital.setName((String) requestBody.getOrDefault("providerName", ""));
             Patient patient = OnActionFhirExamples.patientExample();
-            patient.getTelecom().add(new ContactPoint().setValue((String) requestBody.getOrDefault("mobile", "")).setSystem(ContactPoint.ContactPointSystem.PHONE));
-            patient.getName().add(new HumanName().setText((String) requestBody.getOrDefault("patientName", "")));
+            patient.getTelecom().add(new ContactPoint().setValue((String) requestBody.getOrDefault(Constants.MOBILE, "")).setSystem(ContactPoint.ContactPointSystem.PHONE));
+            patient.getName().add(new HumanName().setText((String) requestBody.getOrDefault(PATIENT_NAME, "")));
             Organization insurerOrganization = OnActionFhirExamples.insurerOrganizationExample();
             insurerOrganization.setName((String) requestBody.getOrDefault("payor", ""));
             Coverage coverage = OnActionFhirExamples.coverageExample();
@@ -343,4 +342,33 @@ public class GenerateOutgoingRequest {
         return responseMap;
     }
 
+    private void addInputsBasedOnApp(Map<String, Object> requestBody, Claim claim) {
+        if (requestBody.containsKey(Constants.ITEMS)) {
+            ArrayList<Map<String, Object>> itemsList = JSONUtils.convert(requestBody.get(Constants.ITEMS), ArrayList.class);
+            for (Map<String, Object> itemMap : itemsList) {
+                claim.getItem().add(new org.hl7.fhir.r4.model.Claim.ItemComponent().setSequence(1).setQuantity(new Quantity().setValue((BigDecimal) itemMap.getOrDefault(ITEM_QUANTITY, ""))).setProductOrService(new CodeableConcept(new Coding().setCode("E101021").setSystem("https://irdai.gov.in/package-code").setDisplay((String) itemMap.getOrDefault(ITEM_NAME, "")))).setUnitPrice(new Money().setValue((BigDecimal) itemMap.getOrDefault(ITEM_PRICING, "")).setCurrency("INR")));
+            }
+        }
+        claim.addIdentifier(new Identifier().setSystem(TREATMENT_CATEGORY).setValue((String) requestBody.getOrDefault(TREATMENT_CATEGORY, "")));
+        claim.addIdentifier(new Identifier().setSystem(TREATMENT_SUB_CATEGORY).setValue((String) requestBody.getOrDefault(TREATMENT_SUB_CATEGORY, "")));
+        claim.addIdentifier(new Identifier().setSystem(SERVICE_LOCATION).setValue((String) requestBody.getOrDefault(SERVICE_LOCATION, "")));
+        if (requestBody.containsKey(SPECIALITY_TYPE)) {
+            claim.addIdentifier(new Identifier().setSystem(SPECIALITY_TYPE).setValue((String) requestBody.getOrDefault(SPECIALITY_TYPE, "")));
+        }
+    }
+
+    private void addSupportingDocuments(Map<String, Object> requestBody, Claim claim) {
+        if (requestBody.containsKey("supportingDocuments")) {
+            ArrayList<Map<String, Object>> supportingDocuments = JSONUtils.convert(requestBody.get("supportingDocuments"), ArrayList.class);
+            for (Map<String, Object> document : supportingDocuments) {
+                String documentType = (String) document.getOrDefault("documentType", "");
+                List<String> urls = (List<String>) document.get("urls");
+                if (urls != null && !urls.isEmpty()) {
+                    for (String url : urls) {
+                        claim.addSupportingInfo(new Claim.SupportingInformationComponent().setSequence(1).setCategory(new CodeableConcept(new Coding().setCode(documentType).setSystem("http://hcxprotocol.io/codes/claim-supporting-info-categories").setDisplay(documentType))).setValue(new Attachment().setUrl(url)));
+                    }
+                }
+            }
+        }
+    }
 }

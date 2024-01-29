@@ -140,6 +140,16 @@ public class Constants {
     public static final String MOBILE = "mobile";
     public static final String SUB = "sub";
     public static final String ISS = "iss";
+    public static final  String ABSP = "ABSP";
+    public static final String PATIENT_NAME = "patientName";
+    public static final String ITEMS = "items";
+    public static final String ITEM_QUANTITY = "quantity";
+    public static final String ITEM_NAME = "name";
+    public static final String ITEM_PRICING = "pricing";
+    public static final String SPECIALITY_TYPE = "specialityType";
+    public static final String SERVICE_LOCATION = "serviceLocation";
+    public static final String TREATMENT_SUB_CATEGORY = "treatmentSubCategory";
+    public static final String TREATMENT_CATEGORY = "treatmentCategory";
     public static final String APPLICANT_NAME = "applicant_name";
     public static final String ADDITIONAL_VERIFICATION = "additionalVerification";
     public static final String PENDING = "Pending";

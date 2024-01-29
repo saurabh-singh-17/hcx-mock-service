@@ -199,7 +199,6 @@ public class BaseController {
                 }
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
             } else if (NOTIFICATION_NOTIFY.equalsIgnoreCase(apiAction)) {
-                System.out.println("---------Notification API request came ---------");
                 hcxIntegrator.receiveNotification(request.getNotificationRequest(), output);
                 String topicCode = request.getTopicCode();
                 Map<String, Object> notificationHeaders = request.getNotificationHeaders();
