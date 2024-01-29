@@ -351,11 +351,11 @@ public class GenerateOutgoingRequest {
                 claim.getItem().add(new org.hl7.fhir.r4.model.Claim.ItemComponent().setSequence(1).setQuantity(new Quantity().setValue(itemQuantity)).setProductOrService(new CodeableConcept(new Coding().setCode("E101021").setSystem("https://irdai.gov.in/package-code").setDisplay((String) itemMap.getOrDefault(ITEM_NAME, "")))).setUnitPrice(new Money().setValue(itemPrice).setCurrency("INR")));
             }
         }
-        claim.addIdentifier(new Identifier().setSystem(TREATMENT_CATEGORY).setValue((String) requestBody.getOrDefault(TREATMENT_CATEGORY, "")));
-        claim.addIdentifier(new Identifier().setSystem(TREATMENT_SUB_CATEGORY).setValue((String) requestBody.getOrDefault(TREATMENT_SUB_CATEGORY, "")));
-        claim.addIdentifier(new Identifier().setSystem(SERVICE_LOCATION).setValue((String) requestBody.getOrDefault(SERVICE_LOCATION, "")));
+        claim.addIdentifier(new Identifier().setSystem("http://identifiersystem.com/treatmentCategory").setValue((String) requestBody.getOrDefault(TREATMENT_CATEGORY, "")));
+        claim.addIdentifier(new Identifier().setSystem("http://identifiersystem.com/treatmentSubcategory").setValue((String) requestBody.getOrDefault(TREATMENT_SUB_CATEGORY, "")));
+        claim.addIdentifier(new Identifier().setSystem("http://identifiersystem.com/serviceLocation").setValue((String) requestBody.getOrDefault(SERVICE_LOCATION, "")));
         if (requestBody.containsKey(SPECIALITY_TYPE)) {
-            claim.addIdentifier(new Identifier().setSystem(SPECIALITY_TYPE).setValue((String) requestBody.getOrDefault(SPECIALITY_TYPE, "")));
+            claim.addIdentifier(new Identifier().setSystem("http://identifiersystem.com/specialityType").setValue((String) requestBody.getOrDefault(SPECIALITY_TYPE, "")));
         }
     }
 
