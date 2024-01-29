@@ -34,7 +34,6 @@ public class RedisService {
         try (Jedis jedis = getConnection()) {
             jedis.setex(key, ttl, value);
         } catch (Exception e) {
-            System.out.println("-------------------error-----------------------");
             throw new ServerException(ErrorCodes.INTERNAL_SERVER_ERROR, "Exception Occurred While Saving Data to Redis Cache for Key : " + key + "| Exception is:" + e);
         }
     }
@@ -58,7 +57,6 @@ public class RedisService {
             System.out.println("Notification list for the participant code :" + key + " will be :" + notificationList);
             return notificationList;
         } catch (Exception e) {
-            System.out.println("===============GET EXCEPTION ==================");
             throw new ServerException(ErrorCodes.INTERNAL_SERVER_ERROR, "Exception Occurred While Fetching Data from Redis Cache for Key : " + key + "| Exception is:" + e.getMessage());
         }
     }
