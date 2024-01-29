@@ -134,7 +134,7 @@ public class PayerService {
             CoverageEligibilityRequest ce = parser.parseResource(CoverageEligibilityRequest.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
             if (ce.getText() != null && ce.getText().getDiv().allText() != null)
                 return ce.getText().getDiv().allText();
-        } else if (apiAction.equalsIgnoreCase(Constants.CLAIM_SUBMIT) || apiAction.equalsIgnoreCase(Constants.PREDETERMINATION_SUBMIT)) {
+        } else if (apiAction.equalsIgnoreCase(Constants.CLAIM_SUBMIT) || apiAction.equalsIgnoreCase(Constants.PRE_AUTH_SUBMIT)) {
             Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
             Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
             if (claim.getText() != null && claim.getText().getDiv().allText() != null)

@@ -328,37 +328,6 @@ public class BaseController {
             throw new ClientException("Missing required field " + field);
     }
 
-    public void updateMobileNumber(String requestID, String apiAction) throws SQLException, ClientException {
-        Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestID);
-        Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
-        String mobile = getPatientMobile((String) payloadMap.get("request_fhir"));
-        String app = getAppFromApiAction(apiAction, parsed);
-        String query = String.format("UPDATE %s SET app = '%s', mobile = '%s' WHERE request_id ='%s'", table, app, mobile, requestID);
-        postgresService.execute(query);
-    }
-
-    private String getAppFromApiAction(String apiAction, Bundle parsed) {
-        if (apiAction.equalsIgnoreCase("/v0.7/coverageeligibility/check")) {
-            CoverageEligibilityRequest ce = parser.parseResource(CoverageEligibilityRequest.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-            if (ce.getText() != null && ce.getText().getDiv().allText() != null)
-                return ce.getText().getDiv().allText();
-        } else if (apiAction.equalsIgnoreCase("/v0.7/claim/submit") || apiAction.equalsIgnoreCase("/v0.7/preauth/submit")) {
-            Claim claim = parser.parseResource(Claim.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
-            if (claim.getText() != null && claim.getText().getDiv().allText() != null)
-                return claim.getText().getDiv().allText();
-        }
-        return "";
-    }
-
-    public String getPatientMobile(String fhirPayload) {
-        String patientMobile = "";
-        Patient patient = payerService.getResourceByType("Patient", Patient.class, fhirPayload);
-        if (patient != null && patient.getTelecom() != null && !CollectionUtils.isEmpty(patient.getTelecom())) {
-            patientMobile = patient.getTelecom().get(0).getValue();
-        }
-        return patientMobile;
-    }
-
     public Map<String, Object> initializingConfigMap() throws IOException {
         Map<String, Object> configMap = new HashMap<>();
         configMap.put("protocolBasePath", "https://dev-hcx.swasth.app/api/v0.8");
