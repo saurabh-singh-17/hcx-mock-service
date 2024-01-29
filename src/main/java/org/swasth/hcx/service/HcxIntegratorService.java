@@ -23,7 +23,7 @@ public class HcxIntegratorService {
 
     @Autowired
     Environment env;
-
+    @Autowired
     protected PostgresService postgresService;
     @Value("${postgres.url}")
     private String postgresUrl;
