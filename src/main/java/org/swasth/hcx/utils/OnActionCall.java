@@ -42,7 +42,7 @@ public class OnActionCall {
 
     private String onCheckPayloadType;
 
-    @Autowired
+
     protected HcxIntegratorService hcxIntegratorService;
 
 //    public static String getRandomChestItem(List<String> items) {
