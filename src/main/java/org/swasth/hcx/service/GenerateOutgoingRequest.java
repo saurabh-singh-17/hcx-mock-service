@@ -346,8 +346,8 @@ public class GenerateOutgoingRequest {
         if (requestBody.containsKey(Constants.ITEMS)) {
             ArrayList<Map<String, Object>> itemsList = JSONUtils.convert(requestBody.get(Constants.ITEMS), ArrayList.class);
             for (Map<String, Object> itemMap : itemsList) {
-                BigDecimal itemQuantity = (BigDecimal) requestBody.getOrDefault(ITEM_QUANTITY, 0);
-                BigDecimal itemPrice = (BigDecimal) requestBody.getOrDefault(ITEM_PRICING, 0);
+                BigDecimal itemQuantity = new BigDecimal(requestBody.getOrDefault(ITEM_QUANTITY, 0).toString());
+                BigDecimal itemPrice = new BigDecimal(requestBody.getOrDefault(ITEM_PRICING, 0).toString());
                 claim.getItem().add(new org.hl7.fhir.r4.model.Claim.ItemComponent().setSequence(1).setQuantity(new Quantity().setValue(itemQuantity)).setProductOrService(new CodeableConcept(new Coding().setCode("E101021").setSystem("https://irdai.gov.in/package-code").setDisplay((String) itemMap.getOrDefault(ITEM_NAME, "")))).setUnitPrice(new Money().setValue(itemPrice).setCurrency("INR")));
             }
         }
