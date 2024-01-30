@@ -62,7 +62,6 @@ public class NotificationController extends BaseController {
     @PostMapping(value = "/notification/list")
     public ResponseEntity<Object> getNotification(@RequestBody Map<String, Object> requestBody) throws Exception {
         try {
-            System.out.println("Getting the values for participant code :" + requestBody);
             List<Map<String, Object>> detailsParticipantRole = new ArrayList<>();
             List<Map<String, Object>> detailsParticipantCode = new ArrayList<>();
             if (requestBody.containsKey("participant_role") && !StringUtils.isEmpty((String) requestBody.get("participant_role"))) {

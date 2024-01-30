@@ -267,7 +267,7 @@ public class GenerateOutgoingRequest {
     public void processOutgoingCallbackCommunication(String type, String requestId, String otpCode, String accountNumber, String ifscCode, String participantCode, String password) throws Exception {
         Communication communication;
         List<DomainResource> domList = new ArrayList<>();
-        System.out.println("Configmap ------------" + initializingConfigMap(participantCode, password));
+        System.out.println("Process Outgoing Call Back Communication");
         HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap(participantCode, password));
         if (type.equalsIgnoreCase("otp")) {
             communication = OnActionFhirExamples.communication();

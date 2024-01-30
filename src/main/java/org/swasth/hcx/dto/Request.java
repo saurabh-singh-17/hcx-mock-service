@@ -22,7 +22,6 @@ public class Request {
         this.action = action;
         if (NOTIFICATION_NOTIFY.equals(action)) {
             notificationRequest = (String) body.get(PAYLOAD);
-            System.out.println("Encoded payload ----------" + JSONUtils.serialize(notificationRequest));
             hcxHeaders = JSONUtils.decodeBase64String(notificationRequest.split("\\.")[0], Map.class);
             payload = JSONUtils.decodeBase64String(notificationRequest.split("\\.")[1], Map.class);
         } else {

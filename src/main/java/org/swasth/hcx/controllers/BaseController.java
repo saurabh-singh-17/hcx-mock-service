@@ -130,13 +130,12 @@ public class BaseController {
     }
 
     protected void processAndValidate(String onApiAction, Request request, Map<String, Object> requestBody, String apiAction) throws Exception {
-        System.out.println(onApiAction);
         String mid = UUID.randomUUID().toString();
         String serviceMode = env.getProperty(SERVICE_MODE);
         System.out.println("\n" + "Mode: " + serviceMode + " :: mid: " + mid + " :: Event: " + onApiAction);
         if (StringUtils.equalsIgnoreCase(serviceMode, GATEWAY)) {
             Map<String, String> pay = new HashMap<>();
-            System.out.println("payload received " + requestBody);
+            System.out.println("payload received ");
             pay.put("payload", String.valueOf(requestBody.get("payload")));
             Map<String, Object> output = new HashMap<>();
             Map<String, Object> outputOfOnAction = new HashMap<>();
@@ -210,7 +209,6 @@ public class BaseController {
                 }
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
             } else if (NOTIFICATION_NOTIFY.equalsIgnoreCase(apiAction)) {
-                System.out.println("---------Notification API request came ---------");
                 hcxIntegrator.receiveNotification(request.getNotificationRequest(), output);
                 String topicCode = request.getTopicCode();
                 Map<String, Object> notificationHeaders = request.getNotificationHeaders();

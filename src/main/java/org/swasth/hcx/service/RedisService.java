@@ -34,19 +34,16 @@ public class RedisService {
         try (Jedis jedis = getConnection()) {
             jedis.setex(key, ttl, value);
         } catch (Exception e) {
-            System.out.println("-------------------error-----------------------");
             throw new ServerException(ErrorCodes.INTERNAL_SERVER_ERROR, "Exception Occurred While Saving Data to Redis Cache for Key : " + key + "| Exception is:" + e);
         }
     }
 
     public List<Map<String, Object>> get(String key) throws Exception {
-        System.out.println("------key-----" + key);
+        System.out.println("key" + key);
         List<Map<String, Object>> notificationList = new ArrayList<>();
         try (Jedis jedis = getConnection()) {
             Set<String> matchingKeys = jedis.keys("*" + key + "*");
-            System.out.println("matching keys ------" + matchingKeys);
             if (matchingKeys.isEmpty()) {
-                System.out.println("Matching key are empty --------");
                 return notificationList;
             }
             List<String> sortedKeys = new ArrayList<>(matchingKeys);
@@ -58,7 +55,6 @@ public class RedisService {
             System.out.println("Notification list for the participant code :" + key + " will be :" + notificationList);
             return notificationList;
         } catch (Exception e) {
-            System.out.println("===============GET EXCEPTION ==================");
             throw new ServerException(ErrorCodes.INTERNAL_SERVER_ERROR, "Exception Occurred While Fetching Data from Redis Cache for Key : " + key + "| Exception is:" + e.getMessage());
         }
     }
