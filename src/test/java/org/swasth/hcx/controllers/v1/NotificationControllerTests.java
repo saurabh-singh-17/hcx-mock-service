@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.swasth.hcx.controllers.BaseSpec;
+import org.swasth.hcx.exception.ClientException;
 import org.swasth.hcx.service.PostgresService;
 import org.swasth.hcx.service.RedisService;
 import org.swasth.hcx.utils.JSONUtils;
@@ -44,7 +46,7 @@ public class NotificationControllerTests extends BaseSpec {
 
     private static EmbeddedPostgres embeddedPostgres;
     @BeforeEach
-    void setup() throws Exception {
+    public void setup() throws ClientException, IOException {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
         embeddedPostgres = EmbeddedPostgres.builder().setPort(5432).start();
         String jdbcUrl = embeddedPostgres.getJdbcUrl("postgres", "postgres");
@@ -57,7 +59,7 @@ public class NotificationControllerTests extends BaseSpec {
     }
 
     @AfterEach
-    void tearDown() throws IOException {
+    public void tearDown() throws IOException {
         redisServer.stop();
         jedisMock.close();
     }

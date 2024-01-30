@@ -2,9 +2,7 @@ package org.swasth.hcx.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import com.github.fppt.jedismock.RedisServer;
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -32,7 +30,7 @@ import java.util.*;
 
 
 
-@WebMvcTest({BeneficiaryController.class, ClaimsController.class, CommunicationController.class, CoverageEligibilityController.class, DocumentController.class, NotificationController.class, OPDAppController.class, PayerController.class, PreAuthController.class, BeneficiaryService.class, CloudStorageClient.class, GenerateOutgoingRequest.class, HcxIntegratorService.class, NotificationService.class, PayerService.class, PostgresService.class, SMSService.class, OnActionCall.class, RedisService.class})
+@WebMvcTest({BeneficiaryController.class, ClaimsController.class, CommunicationController.class, CoverageEligibilityController.class, DocumentController.class, NotificationController.class, OPDAppController.class, PayerController.class, PreAuthController.class, BeneficiaryService.class,GenerateOutgoingRequest.class, HcxIntegratorService.class, NotificationService.class, PayerService.class, PostgresService.class, SMSService.class, OnActionCall.class})
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
 public class BaseSpec {
@@ -76,7 +74,7 @@ public class BaseSpec {
 
     private static EmbeddedPostgres embeddedPostgres;
     @BeforeEach
-    void setup() throws IOException, ClientException {
+    public void setup() throws IOException, ClientException {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
         embeddedPostgres = EmbeddedPostgres.builder().setPort(5432).start();
         String jdbcUrl = embeddedPostgres.getJdbcUrl("postgres", "postgres");

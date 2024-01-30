@@ -7,7 +7,7 @@ import org.swasth.hcx.exception.ClientException;
 
 import java.sql.*;
 
-@Service
+//@Service
 public class PostgresService {
 
     @Value("${postgres.url}")
