@@ -33,6 +33,7 @@ public class PayerService {
 
     public void process(Request request, String reqFhirObj, String respFhirObj) throws ClientException, JsonProcessingException {
         Map<String, Object> info = new HashMap<>();
+        System.out.println("API-Action ------" + request.getAction());
         String app = getApp(request.getAction(), reqFhirObj);
         if (!StringUtils.isEmpty(app)) {
             processWithApp(request, info, reqFhirObj, respFhirObj, app);
@@ -129,6 +130,7 @@ public class PayerService {
     }
 
     private String getApp(String apiAction, String fhirPayload) {
+        System.out.println("Check the Action ---"  + apiAction.equalsIgnoreCase(Constants.COVERAGE_ELIGIBILITY_CHECK));
         if (apiAction.equalsIgnoreCase(Constants.COVERAGE_ELIGIBILITY_CHECK)) {
             Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
             CoverageEligibilityRequest ce = parser.parseResource(CoverageEligibilityRequest.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
