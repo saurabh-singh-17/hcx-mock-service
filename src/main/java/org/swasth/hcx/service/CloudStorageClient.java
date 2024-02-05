@@ -39,6 +39,9 @@ public class CloudStorageClient {
     }
 
     public void putObject(String bucketName, String folderName, MultipartFile content) throws IOException {
+        ObjectMetadata md = new ObjectMetadata();
+        System.out.println("Content type ------" + content.getContentType());
+        md.setContentType(content.getContentType());
         getClient().putObject(bucketName, folderName, content.getInputStream(), new ObjectMetadata());
     }
 
