@@ -220,7 +220,6 @@ public class BaseController {
             onActionCall.sendOnAction(request.getRecipientCode(), respfhir, operation, actionJwe, onActionStatus, output);
         } else {
             payerService.process(request, reqFhir, respfhir);
-            System.out.println("mock recepient code ----" + mockRecipientCode);
             if (request.getAction().equalsIgnoreCase("/v0.7/coverageeligibility/check") && request.getRecipientCode().equalsIgnoreCase(mockRecipientCode)) {
                 Thread.sleep(1000);
                 onActionCall.sendOnAction(request.getRecipientCode(), respfhir, Operations.COVERAGE_ELIGIBILITY_ON_CHECK, actionJwe, "response.complete", output);
