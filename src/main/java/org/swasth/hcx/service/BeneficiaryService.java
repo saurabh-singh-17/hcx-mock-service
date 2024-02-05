@@ -279,10 +279,10 @@ public class BeneficiaryService {
     }
 
     private String getType(String action) {
-        if ("claim".equalsIgnoreCase(action)) {
-            return "claim";
+        if (Constants.CLAIM.equalsIgnoreCase(action)) {
+            return Constants.CLAIM;
         } else {
-            return "preauth"; // You can add more handling as needed
+            return Constants.PRE_AUTH;
         }
     }
 
