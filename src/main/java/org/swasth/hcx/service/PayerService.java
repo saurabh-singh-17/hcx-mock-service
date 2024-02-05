@@ -129,7 +129,6 @@ public class PayerService {
     }
 
     private String getApp(String apiAction, String fhirPayload) {
-        System.out.println("Check the Action ---"  + apiAction.equalsIgnoreCase(Constants.COVERAGE_ELIGIBILITY_CHECK));
         if (apiAction.equalsIgnoreCase(Constants.COVERAGE_ELIGIBILITY_CHECK)) {
             Bundle parsed = parser.parseResource(Bundle.class, fhirPayload);
             CoverageEligibilityRequest ce = parser.parseResource(CoverageEligibilityRequest.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
