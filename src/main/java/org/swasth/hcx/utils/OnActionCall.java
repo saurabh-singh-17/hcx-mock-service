@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.swasth.hcx.dto.ResponseError;
 import org.swasth.hcx.service.HcxIntegratorService;
 
 import javax.annotation.PostConstruct;
@@ -105,5 +106,44 @@ public class OnActionCall {
         Map<String, Object> res = (Map<String, Object>) participant.get(0);
         System.out.println("res for filter " + res.get("participant_code"));
         return (String) res.get("osid");
+    }
+
+    public void sendRequest(Map<String,Object> responseObj, String url) throws Exception {
+        System.out.println("Timestamp before registry call: "+ new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()));
+        System.out.println("responseObj " + responseObj);
+        //Getting username and password for token generation
+        Map<String,Object> config = hcxIntegratorService.getParticipantConfig((String) responseObj.get(Constants.SENDER_CODE));
+        HttpResponse<String> response = Unirest.post(env.getProperty("hcx_application.token_url"))
+                .header("content-type", "application/x-www-form-urlencoded")
+                .field("client_id", "registry-frontend")
+                .field("username", (String) config.get("participantCode"))
+                .field("password", (String) config.get("password"))
+                .field("grant_type", "password")
+                .asString();
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> responseBody = mapper.readValue(response.getBody(), Map.class);
+        HttpResponse<String> onActionResponse = Unirest.post((String) config.get("protocolBasePath") + url)
+                .header("Authorization", "Bearer " + responseBody.get("access_token").toString())
+                .header("Content-Type", "application/json")
+                .body(responseObj)
+                .asString();
+        Map<String, ArrayList> resArray = mapper.readValue(onActionResponse.getBody(), Map.class);
+        System.out.println("protocol http response: " + resArray);
+    }
+
+    public void sendOnActionErrorProtocolResponse(Map<String, Object> actionJwe, ResponseError error, String url) throws Exception{
+        System.out.println("We have come here: " +  error);
+        Map<String, Object> responseObj = new HashMap<>();
+        Map<String, Object> headers = (Map<String, Object>) actionJwe.get(Constants.HEADERS);
+        responseObj.put(Constants.API_CALL_ID, UUID.randomUUID().toString());
+        responseObj.put(Constants.CORRELATION_ID, headers.get(Constants.CORRELATION_ID));
+        responseObj.put(Constants.TIMESTAMP, new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new Date()));
+        responseObj.put(Constants.ERROR_DETAILS, error);
+        responseObj.put(Constants.STATUS, "response.error");
+        responseObj.put(Constants.RECIPIENT_CODE, headers.get(Constants.SENDER_CODE));
+        responseObj.put(Constants.SENDER_CODE, headers.get(Constants.RECIPIENT_CODE));
+        responseObj.put(Constants.ENC, headers.get(Constants.ENC));
+        responseObj.put(Constants.ALG, headers.get(Constants.ALG));
+        sendRequest(responseObj, url);
     }
 }
