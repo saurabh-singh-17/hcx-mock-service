@@ -157,5 +157,9 @@ public class Constants {
     public static final String REJECTED = "Rejected";
     public static final String SUCCESSFUL = "successful";
     public static final String FAILED = "failed";
+
+    public static final String ENC = "enc";
+
+    public static final String ALG = "alg";
     public static final List<String> PAYOR_APPROVAL_TYPES = Arrays.asList("medical", "financial");
 }
