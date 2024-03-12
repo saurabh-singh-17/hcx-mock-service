@@ -146,7 +146,7 @@ public class GenerateOutgoingRequest {
             List<DomainResource> domList = List.of(hospital, insurerOrganization, patient, coverage, practitioner);
             Bundle bundleTest = new Bundle();
             try {
-                bundleTest = HCXFHIRUtils.resourceToBundle(claim, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-Claim.html", hcxIntegrator);
+                bundleTest = HCXFHIRUtils.resourceToBundle(claim, domList, Bundle.BundleType.COLLECTION, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimRequestBundle.html", hcxIntegrator);
                 System.out.println("resource To Bundle claim Request\n" + parser.encodeResourceToString(bundleTest));
             } catch (Exception e) {
                 System.out.println("Error message " + e.getMessage());
