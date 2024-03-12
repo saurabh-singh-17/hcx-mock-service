@@ -132,7 +132,7 @@ public class OnActionCall {
     }
 
     public void sendOnActionErrorProtocolResponse(Map<String, Object> actionJwe, ResponseError error, String url) throws Exception{
-        System.out.println("We have come here: " +  error);
+        System.out.println("We have come here: " +  error.getCode());
         Map<String, Object> responseObj = new HashMap<>();
         Map<String, Object> headers = (Map<String, Object>) actionJwe.get(Constants.HEADERS);
         responseObj.put(Constants.API_CALL_ID, UUID.randomUUID().toString());

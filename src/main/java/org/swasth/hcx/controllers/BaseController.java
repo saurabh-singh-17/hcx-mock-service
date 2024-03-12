@@ -153,7 +153,7 @@ public class BaseController {
                     System.out.println("output map after decryption  coverageEligibility" + output.get("fhirPayload"));
                     //processing the decrypted incoming bundle
                     bundle = parser.parseResource(Bundle.class, (String) output.get("fhirPayload"));
-                    if("https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityResponseBundle.html" == bundle.getMeta().getProfile().get(0).getValue()) {
+                    if("https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityRequestBundle.html".equals(bundle.getMeta().getProfile().get(0).getValue())) {
                         CoverageEligibilityResponse covRes = OnActionFhirExamples.coverageEligibilityResponseExample();
                         covRes.setPatient(new Reference("Patient/RVH1003"));
                         replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityResponseBundle.html", CoverageEligibilityRequest.class, new Bundle.BundleEntryComponent().setFullUrl(covRes.getResourceType() + "/" + covRes.getId().toString().replace("#", "")).setResource(covRes));
@@ -171,7 +171,9 @@ public class BaseController {
                 }else{
                     //processing the decrypted incoming bundle
                     bundle = parser.parseResource(Bundle.class, (String) output.get("fhirPayload"));
-                    if("https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html" == bundle.getMeta().getProfile().get(0).getValue()) {
+                    System.out.println("Received URL " + bundle.getMeta().getProfile().get(0).getValue().toString());
+                    System.out.println("Received URL " + "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimRequestBundle.html".equals(bundle.getMeta().getProfile().get(0).getValue().toString()));
+                    if("https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimRequestBundle.html".equals(bundle.getMeta().getProfile().get(0).getValue().toString())) {
                         ClaimResponse claimRes = OnActionFhirExamples.claimResponseExample();
                         claimRes.setPatient(new Reference("Patient/RVH1003"));
                         replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#", "")).setResource(claimRes));
@@ -189,7 +191,7 @@ public class BaseController {
                     System.out.println("output map after decryption preauth " + output);
                     //processing the decrypted incoming bundle
                     bundle = parser.parseResource(Bundle.class, (String) output.get("fhirPayload"));
-                    if("https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html" == bundle.getMeta().getProfile().get(0).getValue()) {
+                    if("https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimRequestBundle.html".equals(bundle.getMeta().getProfile().get(0).getValue())) {
                         ClaimResponse preAuthRes = OnActionFhirExamples.claimResponseExample();
                         preAuthRes.setPatient(new Reference("Patient/RVH1003"));
                         preAuthRes.setUse(ClaimResponse.Use.PREAUTHORIZATION);
