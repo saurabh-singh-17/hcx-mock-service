@@ -177,8 +177,7 @@ public class BaseController {
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(preAuthRes.getResourceType() + "/" + preAuthRes.getId().toString().replace("#", "")).setResource(preAuthRes));
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
             } else if (COMMUNICATION_REQUEST.equalsIgnoreCase(apiAction)) {
-                HCXIntegrator hcxIntegrator1 = HCXIntegrator.getInstance(initializingConfigMap());
-                boolean result = hcxIntegrator1.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_REQUEST, output);
+                boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_REQUEST, output);
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
                 }
