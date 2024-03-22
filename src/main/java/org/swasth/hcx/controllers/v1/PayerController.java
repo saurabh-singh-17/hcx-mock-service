@@ -202,8 +202,8 @@ public class PayerController extends BaseController {
                         for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
                             if(Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "ClaimResponse")) {
                                 ClaimResponse claimRes = p.parseResource(ClaimResponse.class, p.encodeResourceToString(bundleEntryComponent.getResource()));
-                                System.out.println("The Approved amount will be --------" + requestBody.get("approved_amount"));
-                                claimRes.getTotal().add(new ClaimResponse.TotalComponent().setCategory(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication").setCode("benefit"))).setAmount(new Money().setValue((Long) requestBody.getOrDefault("approved_amount",0)).setCurrency("INR")));
+                                Long approvedAmount = Long.valueOf((Integer) requestBody.getOrDefault("approved_amount",0));
+                                claimRes.getTotal().add(new ClaimResponse.TotalComponent().setCategory(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication").setCode("benefit"))).setAmount(new Money().setValue(approvedAmount).setCurrency("INR")));
                             }
                         }
                         bundleString = p.encodeResourceToString(parsed);
