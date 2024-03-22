@@ -19,6 +19,7 @@ import org.swasth.hcx.service.PostgresService;
 import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.utils.JSONUtils;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.*;
 
@@ -38,6 +39,8 @@ public class PayerController extends BaseController {
 
     @Value("${request_list.default_latest_data_by_day}")
     private int dayLimit;
+
+    IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
 
     @PostMapping(value = "/payer/request/list")
     public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody) {
@@ -195,6 +198,14 @@ public class PayerController extends BaseController {
                     if (overallStatus.equals(APPROVED)) {
                         String bundleString = getApprovedClaimBundle(requestBody, entity, respfhir);
                         System.out.println("Approved Response bundle: " + bundleString);
+                        Bundle parsed = p.parseResource(Bundle.class, bundleString);
+                        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
+                            if(bundleEntryComponent.getResource().getResourceType().toString() == "ClaimResponse") {
+                                Claim claimRes = p.parseResource(Claim.class, p.encodeResourceToString(bundleEntryComponent.getResource()));
+                                claimRes.getUse().toString();
+                                claimRes.setTotal(new Money().setCurrency("INR").setValue((BigDecimal) requestBody.get("approved_amount")));
+                            }
+                        }
                         onActionCall.sendOnAction((String) requestBody.get("recipient_code"), bundleString, action.contains("preauth") ? Operations.PRE_AUTH_ON_SUBMIT : Operations.CLAIM_ON_SUBMIT, actionJwe, "response.complete", output);
                     } else if (overallStatus.equals(REJECTED)){
                         String bundleString = getRejectedClaimBundle(entity, type, respfhir);

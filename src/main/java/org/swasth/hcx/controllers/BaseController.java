@@ -166,6 +166,7 @@ public class BaseController {
                 }
             } else if (CLAIM_SUBMIT.equalsIgnoreCase(apiAction)) {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.CLAIM_SUBMIT, output);
+                System.out.println("Result of the SDK : " + result + "\n" + output);
                 if (!result) {
                     validateErrorsAndSendResponse(output, "/claim/on_submit");
                 }else{
