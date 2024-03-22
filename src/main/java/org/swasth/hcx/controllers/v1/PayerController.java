@@ -201,11 +201,11 @@ public class PayerController extends BaseController {
                         Bundle parsed = p.parseResource(Bundle.class, bundleString);
                         for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
                             if(bundleEntryComponent.getResource().getResourceType().toString() == "ClaimResponse") {
-                                Claim claimRes = p.parseResource(Claim.class, p.encodeResourceToString(bundleEntryComponent.getResource()));
-                                claimRes.getUse().toString();
-                                claimRes.setTotal(new Money().setCurrency("INR").setValue((BigDecimal) requestBody.get("approved_amount")));
+                                ClaimResponse claimRes = p.parseResource(ClaimResponse.class, p.encodeResourceToString(bundleEntryComponent.getResource()));
+                                claimRes.getTotal().add(new ClaimResponse.TotalComponent().setCategory(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication").setCode("benefit"))).setAmount(new Money().setValue((Long) requestBody.getOrDefault("approved_amount",0)).setCurrency("INR")));
                             }
                         }
+                        bundleString = p.encodeResourceToString(parsed);
                         onActionCall.sendOnAction((String) requestBody.get("recipient_code"), bundleString, action.contains("preauth") ? Operations.PRE_AUTH_ON_SUBMIT : Operations.CLAIM_ON_SUBMIT, actionJwe, "response.complete", output);
                     } else if (overallStatus.equals(REJECTED)){
                         String bundleString = getRejectedClaimBundle(entity, type, respfhir);
