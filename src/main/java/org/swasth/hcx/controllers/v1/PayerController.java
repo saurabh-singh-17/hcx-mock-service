@@ -200,8 +200,9 @@ public class PayerController extends BaseController {
                         System.out.println("Approved Response bundle: " + bundleString);
                         Bundle parsed = p.parseResource(Bundle.class, bundleString);
                         for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
-                            if(bundleEntryComponent.getResource().getResourceType().toString() == "ClaimResponse") {
+                            if(Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "ClaimResponse")) {
                                 ClaimResponse claimRes = p.parseResource(ClaimResponse.class, p.encodeResourceToString(bundleEntryComponent.getResource()));
+                                System.out.println("The Approved amount will be --------" + requestBody.get("approved_amount"));
                                 claimRes.getTotal().add(new ClaimResponse.TotalComponent().setCategory(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication").setCode("benefit"))).setAmount(new Money().setValue((Long) requestBody.getOrDefault("approved_amount",0)).setCurrency("INR")));
                             }
                         }
