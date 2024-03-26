@@ -132,8 +132,9 @@ public class BeneficiaryService {
     }
 
 
-    public ResponseEntity<Object> getRequestByMobileAndSender(String filterType, String filterValue, String app) {
-        logger.info("Searching the request list for {} type and value {} " , filterType , filterValue);
+    public ResponseEntity<Object> getRequestByMobileAndSender(String filterType, String filterValue, String app) throws InterruptedException {
+        Thread.sleep(2000);
+        logger.info("Searching the request list for type  {}  and value {} " , filterType , filterValue);
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
         String searchQuery = String.format("SELECT * FROM %s WHERE %s = '%s' AND app = '%s' ORDER BY created_on DESC LIMIT 20", payorDataTable, filterType, filterValue, app);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
@@ -146,8 +147,10 @@ public class BeneficiaryService {
                 groupedEntries.get(workflowId).add(databaseResults);
             }
             Map<String, Object> resp = getEntries(groupedEntries);
+            logger.info("search completed for {} : {} ", filterType, filterValue);
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -166,6 +169,7 @@ public class BeneficiaryService {
                 entries.add(databaseResults);
             }
             resp.put("entries", entries);
+            logger.info("search completed for workflow id {} ", workflowId);
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace(); // Log the exception for debugging
