@@ -3,6 +3,8 @@ package org.swasth.hcx.service;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import org.hl7.fhir.r4.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -38,7 +40,8 @@ public class BeneficiaryService {
     @Autowired
     private SMSService smsService;
 
-    private final IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
+    private static final Logger logger = LoggerFactory.getLogger(BeneficiaryService.class);
+
     long lastOTPSendTime = 0;
     int otpSentThisMinute = 0;
 
@@ -130,6 +133,7 @@ public class BeneficiaryService {
 
 
     public ResponseEntity<Object> getRequestByMobileAndSender(String filterType, String filterValue, String app) {
+        logger.info("Searching the request list for {} type and value {} " , filterType , filterValue);
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
         String searchQuery = String.format("SELECT * FROM %s WHERE %s = '%s' AND app = '%s' ORDER BY created_on DESC LIMIT 20", payorDataTable, filterType, filterValue, app);
         try (ResultSet searchResultSet = postgresService.executeQuery(searchQuery)) {
@@ -151,6 +155,7 @@ public class BeneficiaryService {
 
     public ResponseEntity<Object> getRequestByWorkflowId(Map<String, Object> requestBody) {
         String workflowId = (String) requestBody.getOrDefault("workflow_id", "");
+        logger.info("Searching the request list for workflow id {}  ", workflowId);
         String app = (String) requestBody.getOrDefault("app", "");
         List<Map<String, Object>> entries = new ArrayList<>();
         Map<String, Object> resp = new HashMap<>();
