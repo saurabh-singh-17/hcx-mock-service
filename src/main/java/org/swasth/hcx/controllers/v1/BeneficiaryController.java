@@ -67,12 +67,15 @@ public class BeneficiaryController extends BaseController {
     @PostMapping(BSP_REQUEST_LIST)
     public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody) {
         try {
+            String app = (String) requestBody.getOrDefault("app", "");
             if (requestBody.containsKey("mobile")) {
-                return beneficiaryService.getRequestByMobile(requestBody);
+                String mobile = (String) requestBody.getOrDefault("mobile", "");
+                return beneficiaryService.getRequestByMobileAndSender("mobile", mobile, app);
+            } else if (requestBody.containsKey("sender_code")) {
+                String senderCode = (String) requestBody.getOrDefault("sender_code", "");
+                return beneficiaryService.getRequestByMobileAndSender("sender_code", senderCode, app);
             } else if (requestBody.containsKey("workflow_id")) {
                 return beneficiaryService.getRequestByWorkflowId(requestBody);
-            } else if (requestBody.containsKey("sender_code")) {
-                return beneficiaryService.getRequestBySenderCode(requestBody);
             } else {
                 throw new ClientException("Please provide valid request body");
             }
