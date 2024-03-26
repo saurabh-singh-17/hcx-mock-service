@@ -181,23 +181,28 @@ public class BeneficiaryService {
         return resp;
     }
 
-    private Map<String, Object> getDatabaseResults(ResultSet searchResultSet, String workflowId) throws SQLException {
+    private Map<String, Object> getDatabaseResults(ResultSet searchResultSet, String workflowId) throws Exception {
         Map<String, Object> responseMap = new HashMap<>();
         String actionType = searchResultSet.getString("action");
         if (actionType.equalsIgnoreCase("claim") || actionType.equalsIgnoreCase("preauth")) {
-            responseMap.put("supportingDocuments", searchResultSet.getString("supporting_documents"));
+            String supportingDocuments = searchResultSet.getString("supporting_documents");
+            responseMap.put("supportingDocuments", JSONUtils.deserialize(supportingDocuments, Map.class));
             responseMap.put("billAmount", searchResultSet.getString("bill_amount"));
-            responseMap.put("approvedAmount", searchResultSet.getString("approved_amount"));
+            responseMap.put("otpStatus", searchResultSet.getString("otp_verification"));
+            responseMap.put("bankStatus", searchResultSet.getString("bank_details"));
+            responseMap.put("additionalInfo", searchResultSet.getString("additional_info"));
+            responseMap.put("accountNumber", searchResultSet.getString("account_number"));
+            responseMap.put("ifscCode", searchResultSet.getString("ifsc_code"));
         }
         responseMap.put("type", actionType);
         responseMap.put("status", searchResultSet.getString("status"));
         responseMap.put("apiCallId", searchResultSet.getString("request_id"));
         responseMap.put("claimType", "OPD");
         responseMap.put("date", searchResultSet.getString("created_on"));
+        responseMap.put("insurance_id", searchResultSet.getString("insurance_id"));
         responseMap.put("correlationId", searchResultSet.getString("correlation_id"));
         responseMap.put("sender_code", searchResultSet.getString("sender_code"));
         responseMap.put("recipient_code", searchResultSet.getString("recipient_code"));
-        responseMap.put("insurance_id", searchResultSet.getString("insurance_id"));
         responseMap.put("workflow_id", workflowId);
         responseMap.put("mobile", searchResultSet.getString("mobile"));
         responseMap.put("patientName", searchResultSet.getString("patient_name"));
