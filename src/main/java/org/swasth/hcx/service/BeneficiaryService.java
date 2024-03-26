@@ -133,7 +133,6 @@ public class BeneficiaryService {
 
 
     public ResponseEntity<Object> getRequestByMobileAndSender(String filterType, String filterValue, String app) throws InterruptedException {
-        Thread.sleep(2000);
         logger.info("Searching the request list for type  {}  and value {} " , filterType , filterValue);
         Map<String, List<Map<String, Object>>> groupedEntries = new HashMap<>();
         String searchQuery = String.format("SELECT * FROM %s WHERE %s = '%s' AND app = '%s' ORDER BY created_on DESC LIMIT 20", payorDataTable, filterType, filterValue, app);
