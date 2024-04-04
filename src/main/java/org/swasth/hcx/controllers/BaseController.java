@@ -31,6 +31,7 @@ import org.swasth.hcx.helpers.EventGenerator;
 import org.swasth.hcx.service.*;
 import org.swasth.hcx.utils.JSONUtils;
 import org.swasth.hcx.utils.OnActionCall;
+
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -121,8 +122,8 @@ public class BaseController {
         }
     }
 
-    protected void validateErrorsAndSendResponse(Map<String,Object> output, String url) throws Exception{
-        Map<String,Object> errorObj = (Map<String, Object>) output.get("responseObj");
+    protected void validateErrorsAndSendResponse(Map<String, Object> output, String url) throws Exception {
+        Map<String, Object> errorObj = (Map<String, Object>) output.get("responseObj");
         System.out.println("Error occured during decryption : " + errorObj.get("error"));
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> map = mapper.readValue((String) errorObj.get("error"), Map.class);
@@ -148,19 +149,19 @@ public class BaseController {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.COVERAGE_ELIGIBILITY_CHECK, output);
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
-                    validateErrorsAndSendResponse(output,"/coverageeligibility/on_check");
-                }else {
+                    validateErrorsAndSendResponse(output, "/coverageeligibility/on_check");
+                } else {
                     System.out.println("output map after decryption  coverageEligibility" + output.get("fhirPayload"));
                     //processing the decrypted incoming bundle
                     bundle = parser.parseResource(Bundle.class, (String) output.get("fhirPayload"));
-                    if("https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityRequestBundle.html".equals(bundle.getMeta().getProfile().get(0).getValue())) {
+                    if ("https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityRequestBundle.html".equals(bundle.getMeta().getProfile().get(0).getValue())) {
                         CoverageEligibilityResponse covRes = OnActionFhirExamples.coverageEligibilityResponseExample();
                         covRes.setPatient(new Reference("Patient/RVH1003"));
                         replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityResponseBundle.html", CoverageEligibilityRequest.class, new Bundle.BundleEntryComponent().setFullUrl(covRes.getResourceType() + "/" + covRes.getId().toString().replace("#", "")).setResource(covRes));
                         System.out.println("bundle reply " + parser.encodeResourceToString(bundle));
                         //sending the onaction call
                         sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
-                    }else{
+                    } else {
                         onActionCall.sendOnActionErrorProtocolResponse(output, new ResponseError(ErrorCodes.ERR_INVALID_DOMAIN_PAYLOAD, "Payload does not contain a claim bundle", null), "/coverageeligibility/on_check");
                     }
                 }
@@ -169,18 +170,18 @@ public class BaseController {
                 System.out.println("Result of the SDK : " + result + "\n" + output);
                 if (!result) {
                     validateErrorsAndSendResponse(output, "/claim/on_submit");
-                }else{
+                } else {
                     //processing the decrypted incoming bundle
                     bundle = parser.parseResource(Bundle.class, (String) output.get("fhirPayload"));
                     System.out.println("Received URL " + bundle.getMeta().getProfile().get(0).getValue().toString());
                     System.out.println("Received URL " + "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimRequestBundle.html".equals(bundle.getMeta().getProfile().get(0).getValue().toString()));
-                    if("https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimRequestBundle.html".equals(bundle.getMeta().getProfile().get(0).getValue().toString())) {
+                    if ("https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimRequestBundle.html".equals(bundle.getMeta().getProfile().get(0).getValue().toString())) {
                         ClaimResponse claimRes = OnActionFhirExamples.claimResponseExample();
                         claimRes.setPatient(new Reference("Patient/RVH1003"));
                         replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(claimRes.getResourceType() + "/" + claimRes.getId().toString().replace("#", "")).setResource(claimRes));
                         System.out.println("bundle reply " + parser.encodeResourceToString(bundle));
                         sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.CLAIM_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
-                    }else{
+                    } else {
                         onActionCall.sendOnActionErrorProtocolResponse(output, new ResponseError(ErrorCodes.ERR_INVALID_DOMAIN_PAYLOAD, "Payload does not contain a claim bundle", null), "/claim/on_submit");
                     }
                 }
@@ -188,17 +189,17 @@ public class BaseController {
                 boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.PRE_AUTH_SUBMIT, output);
                 if (!result) {
                     validateErrorsAndSendResponse(output, "/preauth/on_submit");
-                }else {
+                } else {
                     System.out.println("output map after decryption preauth " + output);
                     //processing the decrypted incoming bundle
                     bundle = parser.parseResource(Bundle.class, (String) output.get("fhirPayload"));
-                    if("https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimRequestBundle.html".equals(bundle.getMeta().getProfile().get(0).getValue())) {
+                    if ("https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimRequestBundle.html".equals(bundle.getMeta().getProfile().get(0).getValue())) {
                         ClaimResponse preAuthRes = OnActionFhirExamples.claimResponseExample();
                         preAuthRes.setPatient(new Reference("Patient/RVH1003"));
                         preAuthRes.setUse(ClaimResponse.Use.PREAUTHORIZATION);
                         replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-ClaimResponseBundle.html", Claim.class, new Bundle.BundleEntryComponent().setFullUrl(preAuthRes.getResourceType() + "/" + preAuthRes.getId().toString().replace("#", "")).setResource(preAuthRes));
                         sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.PRE_AUTH_ON_SUBMIT, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
-                    }else{
+                    } else {
                         onActionCall.sendOnActionErrorProtocolResponse(output, new ResponseError(ErrorCodes.ERR_INVALID_DOMAIN_PAYLOAD, "Payload does not contain a claim bundle", null), "/preauth/on_submit");
                     }
                 }
@@ -207,7 +208,7 @@ public class BaseController {
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
                 }
-                System.out.println("output map after decryption communication" + output.getOrDefault("fhir_payload",""));
+                System.out.println("output map after decryption communication" + output);
                 System.out.println("Decryption successful");
                 String selectQuery = String.format("SELECT otp_verification from %s WHERE action = 'claim' AND correlation_id = '%s'", table, request.getCorrelationId());
                 ResultSet resultSet = postgresService.executeQuery(selectQuery);
@@ -360,7 +361,7 @@ public class BaseController {
         String keyUrl = "https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/test-keys/private-key.pem";
         String certificate = IOUtils.toString(new URL(keyUrl), StandardCharsets.UTF_8);
         configMap.put("encryptionPrivateKey", certificate);
-        configMap.put("signingPrivateKey",  certificate);
+        configMap.put("signingPrivateKey", certificate);
         return configMap;
     }
 
