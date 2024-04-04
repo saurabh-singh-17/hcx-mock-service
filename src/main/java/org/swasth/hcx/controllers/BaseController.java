@@ -209,7 +209,8 @@ public class BaseController {
                     System.out.println("Error while processing incoming request: " + output);
                 }
                 System.out.println("output map after decryption communication" + output);
-                CommunicationRequest cr = payerService.getResourceByType("CommunicationRequest", CommunicationRequest.class, (String) output.get("fhirPayload"));
+                String fhirPayload = (String) output.get("fhirPayload");
+                CommunicationRequest cr = parser.parseResource(CommunicationRequest.class, fhirPayload);
                 String type =  cr.getPayload().get(0).getId();
                 System.out.println("the type of communication " + type);
                 if (type.equalsIgnoreCase("otp_verification")) {
@@ -313,7 +314,8 @@ public class BaseController {
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
                 }
-                CommunicationRequest cr = payerService.getResourceByType("CommunicationRequest", CommunicationRequest.class, (String) output.get("fhirPayload"));
+                String fhirPayload = (String) output.get("fhirPayload");
+                CommunicationRequest cr = parser.parseResource(CommunicationRequest.class, fhirPayload);
                 String type = cr.getPayload().get(0).getId();
                 String otpCode = cr.getPayload().get(0).getContentStringType().getValue();
                 System.out.println("The OTP code -----" + otpCode);
