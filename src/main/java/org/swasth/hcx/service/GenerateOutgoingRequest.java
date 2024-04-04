@@ -191,17 +191,17 @@ public class GenerateOutgoingRequest {
             CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
             Patient patient = OnActionFhirExamples.patientExample();
             patient.getTelecom().add(new ContactPoint().setValue(mobile).setSystem(ContactPoint.ContactPointSystem.PHONE));
-            if(requestBody.getOrDefault("type", "").equals("bank_details")){
-                communicationRequest.getPayload().add(new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please provide the bank details for claim to be complete.")));
+            if (requestBody.getOrDefault("type", "").equals("bank_details")) {
+                communicationRequest.getPayload().add((CommunicationRequest.CommunicationRequestPayloadComponent) new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please provide the bank details for claim to be complete.")).setId("bank_details"));
                 System.out.println("The Communication request has been sent successfully bank details.");
-            } else if (requestBody.getOrDefault("type","").equals("otp")){
-                communicationRequest.getPayload().add(new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please verify the OTP sent to your mobile number to proceed.")));
+            } else if (requestBody.getOrDefault("type", "").equals("otp")) {
+                communicationRequest.getPayload().add((CommunicationRequest.CommunicationRequestPayloadComponent) new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please verify the OTP sent to your mobile number to proceed.")).setId("otp_verification"));
                 beneficiaryService.sendOTP(mobile, communicationContent);
-                System.out.println("The otp has been sent for the beneficiary mobile to verify cliam.");
+                System.out.println("The otp has been sent for the beneficiary mobile to verify claim.");
             }
             Map<String, Object> output = new HashMap<>();
-            String workflowId = (String) payloadMap.getOrDefault("workflow_id","");
-            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, recipientCode, "", correlationId, workflowId , new HashMap<>(), output);
+            String workflowId = (String) payloadMap.getOrDefault("workflow_id", "");
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, recipientCode, "", correlationId, workflowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated." + output);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {

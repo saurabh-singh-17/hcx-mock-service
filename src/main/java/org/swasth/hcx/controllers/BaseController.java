@@ -207,8 +207,8 @@ public class BaseController {
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
                 }
-                System.out.println("output map after decryption communication" + output);
-                System.out.println("decryption successful");
+                System.out.println("output map after decryption communication" + output.getOrDefault("fhir_payload",""));
+                System.out.println("Decryption successful");
                 String selectQuery = String.format("SELECT otp_verification from %s WHERE action = 'claim' AND correlation_id = '%s'", table, request.getCorrelationId());
                 ResultSet resultSet = postgresService.executeQuery(selectQuery);
                 String otpVerification = "";
@@ -296,8 +296,6 @@ public class BaseController {
                 covRes.setPatient(new Reference("Patient/RVH1003"));
                 replaceResourceInBundleEntry(bundle, "https://ig.hcxprotocol.io/v0.7.1/StructureDefinition-CoverageEligibilityResponseBundle.html", CoverageEligibilityRequest.class, new Bundle.BundleEntryComponent().setFullUrl(covRes.getResourceType() + "/" + covRes.getId().toString().replace("#", "")).setResource(covRes));
                 System.out.println("bundle reply " + parser.encodeResourceToString(bundle));
-                //sending the onaction call
-//                onActionCall.sendOnAction(request.getRecipientCode(),(String) output.get("fhirPayload") , Operations.COVERAGE_ELIGIBILITY_ON_CHECK, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
             } else if (COMMUNICATION_ONREQUEST.equalsIgnoreCase(onApiAction)) {
                 HCXIntegrator hcxIntegrator1 = hcxIntegratorService.getHCXIntegrator(request.getRecipientCode());
                 boolean result = hcxIntegrator1.processIncoming(JSONUtils.serialize(pay), Operations.COMMUNICATION_ON_REQUEST, output);
