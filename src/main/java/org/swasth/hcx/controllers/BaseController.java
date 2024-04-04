@@ -317,9 +317,13 @@ public class BaseController {
                 String fhirPayload = (String) output.get("fhirPayload");
                 CommunicationRequest cr = parser.parseResource(CommunicationRequest.class, fhirPayload);
                 String type = cr.getPayload().get(0).getId();
-                String otpCode = cr.getPayload().get(0).getContentStringType().getValue();
-                System.out.println("The OTP code -----" + otpCode);
-                System.out.println("Type ----" + type);
+                if (type.equalsIgnoreCase("otp_verification")) {
+                    String content = String.valueOf(cr.getPayload().get(0).getContent());
+                    System.out.println("content -----" + content);
+//                    beneficiaryService.verifyOTP();
+                } else if (type.equalsIgnoreCase("bank_verification")) {
+                    String accountNumber = String.valueOf(cr.getPayload().get(0).getContent());
+                }
                 System.out.println("output map after decryption communication" + output);
                 System.out.println("decryption successful");
             }
