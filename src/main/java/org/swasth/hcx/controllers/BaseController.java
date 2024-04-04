@@ -209,20 +209,30 @@ public class BaseController {
                     System.out.println("Error while processing incoming request: " + output);
                 }
                 System.out.println("output map after decryption communication" + output);
-                System.out.println("Decryption successful");
-                String selectQuery = String.format("SELECT otp_verification from %s WHERE action = 'claim' AND correlation_id = '%s'", table, request.getCorrelationId());
-                ResultSet resultSet = postgresService.executeQuery(selectQuery);
-                String otpVerification = "";
-                while (resultSet.next()) {
-                    otpVerification = resultSet.getString("otp_verification");
-                }
-                if (StringUtils.equalsIgnoreCase(otpVerification, "successful")) {
+                CommunicationRequest cr = payerService.getResourceByType("CommunicationRequest", CommunicationRequest.class, (String) output.get("fhirPayload"));
+                String type =  cr.getPayload().get(0).getId();
+                System.out.println("the type of communication " + type);
+                if (type.equalsIgnoreCase("otp_verification")) {
+                    String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE action = 'claim' AND correlation_id ='%s'", table, "initiated", request.getCorrelationId());
+                    postgresService.execute(query);
+                } else if (type.equalsIgnoreCase("bank_verification")) {
                     String query1 = String.format("UPDATE %s SET bank_details = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
                     postgresService.execute(query1);
-                } else if (StringUtils.equalsIgnoreCase(otpVerification, "Pending")) {
-                    String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE correlation_id ='%s'", table, "initiated", request.getCorrelationId());
-                    postgresService.execute(query);
                 }
+                System.out.println("De cryption successful");
+//                String selectQuery = String.format("SELECT otp_verification from %s WHERE action = 'claim' AND correlation_id = '%s'", table, request.getCorrelationId());
+//                ResultSet resultSet = postgresService.executeQuery(selectQuery);
+//                String otpVerification = "";
+//                while (resultSet.next()) {
+//                    otpVerification = resultSet.getString("otp_verification");
+//                }
+//                if (StringUtils.equalsIgnoreCase(otpVerification, "successful")) {
+//                    String query1 = String.format("UPDATE %s SET bank_details = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
+//                    postgresService.execute(query1);
+//                } else if (StringUtils.equalsIgnoreCase(otpVerification, "Pending")) {
+//                    String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE correlation_id ='%s'", table, "initiated", request.getCorrelationId());
+//                    postgresService.execute(query);
+//                }
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
             } else if (NOTIFICATION_NOTIFY.equalsIgnoreCase(apiAction)) {
                 hcxIntegrator.receiveNotification(request.getNotificationRequest(), output);
@@ -303,6 +313,11 @@ public class BaseController {
                 if (!result) {
                     System.out.println("Error while processing incoming request: " + output);
                 }
+                CommunicationRequest cr = payerService.getResourceByType("CommunicationRequest", CommunicationRequest.class, (String) output.get("fhirPayload"));
+                String type = cr.getPayload().get(0).getId();
+                String otpCode = cr.getPayload().get(0).getContentStringType().getValue();
+                System.out.println("The OTP code -----" + otpCode);
+                System.out.println("Type ----" + type);
                 System.out.println("output map after decryption communication" + output);
                 System.out.println("decryption successful");
             }

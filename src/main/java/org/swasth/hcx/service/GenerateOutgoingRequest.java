@@ -192,7 +192,7 @@ public class GenerateOutgoingRequest {
             Patient patient = OnActionFhirExamples.patientExample();
             patient.getTelecom().add(new ContactPoint().setValue(mobile).setSystem(ContactPoint.ContactPointSystem.PHONE));
             if (requestBody.getOrDefault("type", "").equals("bank_details")) {
-                communicationRequest.getPayload().add((CommunicationRequest.CommunicationRequestPayloadComponent) new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please provide the bank details for claim to be complete.")).setId("bank_details"));
+                communicationRequest.getPayload().add((CommunicationRequest.CommunicationRequestPayloadComponent) new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please provide the bank details for claim to be complete.")).setId("bank_verification"));
                 System.out.println("The Communication request has been sent successfully bank details.");
             } else if (requestBody.getOrDefault("type", "").equals("otp")) {
                 communicationRequest.getPayload().add((CommunicationRequest.CommunicationRequestPayloadComponent) new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please verify the OTP sent to your mobile number to proceed.")).setId("otp_verification"));
