@@ -211,7 +211,7 @@ public class BaseController {
                 System.out.println("output map after decryption communication" + output);
                 String fhirPayload = (String) output.get("fhirPayload");
                 CommunicationRequest cr = parser.parseResource(CommunicationRequest.class, fhirPayload);
-                String type =  cr.getPayload().get(0).getId();
+                String type = cr.getPayload().get(0).getId();
                 System.out.println("the type of communication " + type);
                 if (type.equalsIgnoreCase("otp_verification")) {
                     String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE action = 'claim' AND correlation_id ='%s'", table, "initiated", request.getCorrelationId());
@@ -220,7 +220,7 @@ public class BaseController {
                     String query1 = String.format("UPDATE %s SET bank_details = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
                     postgresService.execute(query1);
                 }
-                System.out.println("De cryption successful");
+                System.out.println("Decryption successful");
 //                String selectQuery = String.format("SELECT otp_verification from %s WHERE action = 'claim' AND correlation_id = '%s'", table, request.getCorrelationId());
 //                ResultSet resultSet = postgresService.executeQuery(selectQuery);
 //                String otpVerification = "";
@@ -315,14 +315,19 @@ public class BaseController {
                     System.out.println("Error while processing incoming request: " + output);
                 }
                 String fhirPayload = (String) output.get("fhirPayload");
-                CommunicationRequest cr = parser.parseResource(CommunicationRequest.class, fhirPayload);
+                CommunicationRequest cr = payerService.getResourceByType("CommunicationRequest", CommunicationRequest.class, fhirPayload);
                 String type = cr.getPayload().get(0).getId();
+                System.out.println("type ------"+ type);
                 if (type.equalsIgnoreCase("otp_verification")) {
                     String content = String.valueOf(cr.getPayload().get(0).getContent());
-                    System.out.println("content -----" + content);
+                    if(cr.getPayload() != null && cr.getPayload().get(1) != null){
+                        System.out.println("Payload load 1 content -----"  + cr.getPayload().get(1).getContent());
+                    }
+                    System.out.println("payload 0 content -----------" + content);
 //                    beneficiaryService.verifyOTP();
                 } else if (type.equalsIgnoreCase("bank_verification")) {
                     String accountNumber = String.valueOf(cr.getPayload().get(0).getContent());
+                    String ifscCode = String.valueOf(cr.getPayload().get(0).getContent());
                 }
                 System.out.println("output map after decryption communication" + output);
                 System.out.println("decryption successful");
