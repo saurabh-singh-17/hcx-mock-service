@@ -316,7 +316,7 @@ public class BaseController {
                 }
                 String fhirPayload = (String) output.get("fhirPayload");
                 CommunicationRequest cr = payerService.getResourceByType("CommunicationRequest", CommunicationRequest.class, fhirPayload);
-                String type = cr.getPayload().get(0).getId();
+                String type = cr.getIdentifier().get(0).getValue();
                 System.out.println("type ------"+ type);
                 if (type.equalsIgnoreCase("otp_verification")) {
                     String content = String.valueOf(cr.getPayload().get(0).getContent());
