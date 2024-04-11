@@ -379,21 +379,26 @@ public class BaseController {
     }
 
     public void consentVerification(String mobile, String otpCode, Request request, HCXIntegrator hcxIntegrator) throws InstantiationException, IllegalAccessException, ClientException {
-        Map<String, Object> otpVerify = new HashMap<>();
-        otpVerify.put("otp_code", otpCode);
-        otpVerify.put(MOBILE, mobile);
-        Map<String, Object> output = new HashMap<>();
-        CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
-        ResponseEntity<Object> response = beneficiaryService.verifyOTP(otpVerify);
-        if (response.getStatusCode().is2xxSuccessful()) {
-            updateOtpAndBankStatus("otp_verification", request.getCorrelationId());
-            communicationRequest.getPayload().add((CommunicationRequest.CommunicationRequestPayloadComponent) new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("successful")).setId("otp_response"));
-        } else {
-            communicationRequest.getPayload().add((CommunicationRequest.CommunicationRequestPayloadComponent) new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("failed")).setId("otp_response"));
-        }
-        boolean isValid = hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), Operations.COMMUNICATION_REQUEST, request.getRecipientCode(), "", request.getCorrelationId(), request.getWorkflowId(), new HashMap<>(), output);
-        if (!isValid) {
-            throw new ClientException("Unable to send otp response communication request");
+        try {
+            Map<String, Object> otpVerify = new HashMap<>();
+            otpVerify.put("otp_code", otpCode);
+            otpVerify.put(MOBILE, mobile);
+            Map<String, Object> output = new HashMap<>();
+            CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
+            ResponseEntity<Object> response = beneficiaryService.verifyOTP(otpVerify);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                updateOtpAndBankStatus("otp_verification", request.getCorrelationId());
+                communicationRequest.getPayload().add((CommunicationRequest.CommunicationRequestPayloadComponent) new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("successful")).setId("otp_response"));
+            } else {
+                communicationRequest.getPayload().add((CommunicationRequest.CommunicationRequestPayloadComponent) new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("failed")).setId("otp_response"));
+            }
+            boolean isValid = hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), Operations.COMMUNICATION_REQUEST, request.getRecipientCode(), "", request.getCorrelationId(), request.getWorkflowId(), new HashMap<>(), output);
+            if (!isValid) {
+                throw new ClientException("Unable to send otp response communication request");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ClientException(e.getMessage());
         }
     }
 
