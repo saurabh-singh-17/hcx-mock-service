@@ -392,7 +392,7 @@ public class BaseController {
             } else {
                 communicationRequest.getPayload().add((CommunicationRequest.CommunicationRequestPayloadComponent) new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("failed")).setId("otp_response"));
             }
-            boolean isValid = hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), Operations.COMMUNICATION_REQUEST, request.getRecipientCode(), "", request.getCorrelationId(), request.getWorkflowId(), new HashMap<>(), output);
+            boolean isValid = hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), Operations.COMMUNICATION_REQUEST, request.getSenderCode(), "", request.getCorrelationId(), request.getWorkflowId(), new HashMap<>(), output);
             if (!isValid) {
                 throw new ClientException("Unable to send otp response communication request");
             }
