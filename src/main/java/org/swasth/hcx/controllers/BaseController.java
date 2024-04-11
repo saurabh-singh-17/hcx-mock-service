@@ -217,23 +217,10 @@ public class BaseController {
                     String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE action = 'claim' AND correlation_id ='%s'", table, "initiated", request.getCorrelationId());
                     postgresService.execute(query);
                 } else if (type.equalsIgnoreCase("bank_verification")) {
-                    String query1 = String.format("UPDATE %s SET bank_details = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
+                    String query1 = String.format("UPDATE %s SET bank_details = '%s' WHERE  action = 'claim' AND correlation_id = '%s'", table, "initiated", request.getCorrelationId());
                     postgresService.execute(query1);
                 }
                 System.out.println("Decryption successful");
-//                String selectQuery = String.format("SELECT otp_verification from %s WHERE action = 'claim' AND correlation_id = '%s'", table, request.getCorrelationId());
-//                ResultSet resultSet = postgresService.executeQuery(selectQuery);
-//                String otpVerification = "";
-//                while (resultSet.next()) {
-//                    otpVerification = resultSet.getString("otp_verification");
-//                }
-//                if (StringUtils.equalsIgnoreCase(otpVerification, "successful")) {
-//                    String query1 = String.format("UPDATE %s SET bank_details = '%s' WHERE correlation_id = '%s'", table, "initiated", request.getCorrelationId());
-//                    postgresService.execute(query1);
-//                } else if (StringUtils.equalsIgnoreCase(otpVerification, "Pending")) {
-//                    String query = String.format("UPDATE %s SET otp_verification = '%s' WHERE correlation_id ='%s'", table, "initiated", request.getCorrelationId());
-//                    postgresService.execute(query);
-//                }
                 sendResponse(apiAction, parser.encodeResourceToString(bundle), (String) output.get("fhirPayload"), Operations.COMMUNICATION_ON_REQUEST, String.valueOf(requestBody.get("payload")), "response.complete", outputOfOnAction);
             } else if (NOTIFICATION_NOTIFY.equalsIgnoreCase(apiAction)) {
                 hcxIntegrator.receiveNotification(request.getNotificationRequest(), output);
@@ -291,7 +278,6 @@ public class BaseController {
             System.out.println("payload received " + requestBody);
             pay.put("payload", String.valueOf(requestBody.get("payload")));
             Map<String, Object> output = new HashMap<>();
-            Map<String, Object> outputOfOnAction = new HashMap<>();
             System.out.println("create the oncheck payload");
             Bundle bundle = new Bundle();
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMap());
@@ -319,17 +305,16 @@ public class BaseController {
                 String type = cr.getIdentifier().get(1).getValue();
                 System.out.println("Type of the communication Request ----" + type);
                 System.out.println("Payload will be ------" + cr.getPayload().get(0).getContent());
-                System.out.println("type ------"+ type);
+                System.out.println("type ------" + type);
                 if (type.equalsIgnoreCase("otp_verification")) {
-                    String content = String.valueOf(cr.getPayload().get(0).getContent());
-                    if(cr.getPayload() != null && cr.getPayload().get(1) != null){
-                        System.out.println("Payload load 1 content -----"  + cr.getPayload().get(1).getContent());
-                    }
-                    System.out.println("payload 0 content -----------" + content);
-//                    beneficiaryService.verifyOTP();
+                    String otp = String.valueOf(cr.getPayload().get(0).getContent());
+                    String mobile = String.valueOf(cr.getPayload().get(1).getContent());
+                    consentVerification(mobile, otp, request, hcxIntegrator1);
                 } else if (type.equalsIgnoreCase("bank_verification")) {
                     String accountNumber = String.valueOf(cr.getPayload().get(0).getContent());
-                    String ifscCode = String.valueOf(cr.getPayload().get(0).getContent());
+                    String ifscCode = String.valueOf(cr.getPayload().get(1).getContent());
+                    String updateBankDetails = String.format("UPDATE %s SET account_number = '%s', ifsc_code = '%s' WHERE action = 'claim' AND correlation_id = '%s'", table, accountNumber, ifscCode, request.getCorrelationId());
+                    postgres.execute(updateBankDetails);
                 }
                 System.out.println("output map after decryption communication" + output);
                 System.out.println("decryption successful");
@@ -393,4 +378,27 @@ public class BaseController {
         return configMap;
     }
 
+    public void consentVerification(String mobile, String otpCode, Request request, HCXIntegrator hcxIntegrator) throws InstantiationException, IllegalAccessException, ClientException {
+        Map<String, Object> otpVerify = new HashMap<>();
+        otpVerify.put("otp_code", otpCode);
+        otpVerify.put(MOBILE, mobile);
+        Map<String, Object> output = new HashMap<>();
+        CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
+        ResponseEntity<Object> response = beneficiaryService.verifyOTP(otpVerify);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            updateOtpAndBankStatus("otp_verification", request.getCorrelationId());
+            communicationRequest.getPayload().add((CommunicationRequest.CommunicationRequestPayloadComponent) new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("successful")).setId("otp_response"));
+        } else {
+            communicationRequest.getPayload().add((CommunicationRequest.CommunicationRequestPayloadComponent) new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("failed")).setId("otp_response"));
+        }
+        boolean isValid = hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), Operations.COMMUNICATION_REQUEST, request.getRecipientCode(), "", request.getCorrelationId(), request.getWorkflowId(), new HashMap<>(), output);
+        if (!isValid) {
+            throw new ClientException("Unable to send otp response communication request");
+        }
+    }
+
+    public void updateOtpAndBankStatus(String type, String correlationId) throws ClientException {
+        String updateStatus = String.format("UPDATE %s SET %s = 'successful' WHERE action = 'claim' AND correlation_id = '%s'", table, type, correlationId);
+        postgres.execute(updateStatus);
+    }
 }
