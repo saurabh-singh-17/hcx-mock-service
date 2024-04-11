@@ -315,11 +315,10 @@ public class BaseController {
                     System.out.println("Error while processing incoming request: " + output);
                 }
                 String fhirPayload = (String) output.get("fhirPayload");
-                CommunicationRequest cr = parser.parseResource(CommunicationRequest.class, fhirPayload);
-                String type = cr.getPayload().get(0).getId();
+                Communication cr = payerService.getResourceByType("Communication", Communication.class, fhirPayload);
+                String type = cr.getIdentifier().get(1).getValue();
                 System.out.println("Type of the communication Request ----" + type);
                 System.out.println("Payload will be ------" + cr.getPayload().get(0).getContent());
-//                CommunicationRequest cr = payerService.getResourceByType("CommunicationRequest", CommunicationRequest.class, parser.encodeResourceToString(parsed.getEntry().get(0).getResource()));
                 System.out.println("type ------"+ type);
                 if (type.equalsIgnoreCase("otp_verification")) {
                     String content = String.valueOf(cr.getPayload().get(0).getContent());
