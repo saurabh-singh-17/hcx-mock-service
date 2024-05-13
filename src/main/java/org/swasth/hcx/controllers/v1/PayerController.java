@@ -159,12 +159,13 @@ public class PayerController extends BaseController {
                 }
             } else {
                 String type = (String) requestBody.getOrDefault("type", "");
+                String remarks = (String) requestBody.getOrDefault("remarks", "");
                 validateStr("type", type);
                 if (!Constants.PAYOR_APPROVAL_TYPES.contains(type))
                     throw new ClientException("Invalid type, allowed types are: " + Constants.PAYOR_APPROVAL_TYPES);
                 Map<String, Object> info = new HashMap<>();
                 info.put("status", status);
-                info.put("remarks", requestBody.getOrDefault("remarks", ""));
+                info.put("remarks", remarks);
                 if(StringUtils.equals(APPROVED, status)) {
                     if(!requestBody.containsKey("approved_amount") || !(requestBody.get("approved_amount") instanceof Integer))
                         throw new ClientException("Approved amount is mandatory field and should be a number");
@@ -199,18 +200,31 @@ public class PayerController extends BaseController {
                         String bundleString = getApprovedClaimBundle(requestBody, entity, respfhir);
                         System.out.println("Approved Response bundle: " + bundleString);
                         Bundle parsed = p.parseResource(Bundle.class, bundleString);
+//                        for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
+//                            if (Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "ClaimResponse")) {
+//                                ClaimResponse claimRes = p.parseResource(ClaimResponse.class, p.encodeResourceToString(bundleEntryComponent.getResource()));
+//                                Long approvedAmount = Long.valueOf((Integer) requestBody.getOrDefault("approved_amount", 0));
+//                                claimRes.getTotal().add(new ClaimResponse.TotalComponent().setCategory(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication").setCode("benefit"))).setAmount(new Money().setValue(approvedAmount).setCurrency("INR")));
+//                            }
+//                        }
+                        bundleString = p.encodeResourceToString(parsed);
+                        System.out.println("Claim request after creating -----------" + bundleString);
+                        onActionCall.sendOnAction((String) requestBody.get("recipient_code"), bundleString, action.contains("preauth") ? Operations.PRE_AUTH_ON_SUBMIT : Operations.CLAIM_ON_SUBMIT, actionJwe, "response.complete", output);
+                    } else if (overallStatus.equals(REJECTED)){
+                        String bundleString = getRejectedClaimBundle(entity, type, respfhir);
+                        Bundle parsed = p.parseResource(Bundle.class, bundleString);
                         for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
                             if(Objects.equals(bundleEntryComponent.getResource().getResourceType().toString(), "ClaimResponse")) {
                                 ClaimResponse claimRes = p.parseResource(ClaimResponse.class, p.encodeResourceToString(bundleEntryComponent.getResource()));
+                                ClaimResponse.NoteComponent note = new ClaimResponse.NoteComponent();
+                                note.setText(remarks);
+                                claimRes.addProcessNote(note);
                                 Long approvedAmount = Long.valueOf((Integer) requestBody.getOrDefault("approved_amount",0));
                                 claimRes.getTotal().add(new ClaimResponse.TotalComponent().setCategory(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication").setCode("benefit"))).setAmount(new Money().setValue(approvedAmount).setCurrency("INR")));
                             }
                         }
-                        bundleString = p.encodeResourceToString(parsed);
-                        onActionCall.sendOnAction((String) requestBody.get("recipient_code"), bundleString, action.contains("preauth") ? Operations.PRE_AUTH_ON_SUBMIT : Operations.CLAIM_ON_SUBMIT, actionJwe, "response.complete", output);
-                    } else if (overallStatus.equals(REJECTED)){
-                        String bundleString = getRejectedClaimBundle(entity, type, respfhir);
                         System.out.println("Rejected Response bundle: " + bundleString);
+                        bundleString = p.encodeResourceToString(parsed);
                         onActionCall.sendOnAction((String) requestBody.get("recipient_code"), bundleString, action.contains("preauth") ? Operations.PRE_AUTH_ON_SUBMIT : Operations.CLAIM_ON_SUBMIT, actionJwe, "response.complete", output);
                     }
                 }
@@ -253,6 +267,9 @@ public class PayerController extends BaseController {
                 if(entity.equals("preauth")){
                     ((ClaimResponse) dm).setUse(ClaimResponse.Use.PREAUTHORIZATION);
                 }
+                ClaimResponse.NoteComponent note = new ClaimResponse.NoteComponent();
+                note.setText((String) requestBody.getOrDefault("remarks", ""));
+                ((ClaimResponse) dm).addProcessNote(note);
                 ((ClaimResponse) dm).getTotal().set(0,new ClaimResponse.TotalComponent().setCategory(new CodeableConcept(new Coding().setSystem("http://terminology.hl7.org/CodeSystem/adjudication").setCode("benefit"))).setAmount(new Money().setValue((int) requestBody.getOrDefault("approved_amount", 0)).setCurrency("INR")));
             }
         }
