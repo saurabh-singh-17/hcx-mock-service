@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.swasth.hcx.controllers.BaseController;
 import org.swasth.hcx.dto.Response;
 import org.swasth.hcx.exception.ClientException;
@@ -21,7 +19,9 @@ import org.swasth.hcx.utils.JSONUtils;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static org.swasth.hcx.utils.Constants.*;
 
@@ -42,11 +42,63 @@ public class PayerController extends BaseController {
 
     IParser p = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
 
+
+    @PostMapping(value = "/payer/request/stats")
+    public ResponseEntity<Object> requestListStats(@RequestBody Map<String, Object> requestBody){
+        try {
+            long currentDay = System.currentTimeMillis();
+            long tenDaysInMillis = TimeUnit.DAYS.toMillis(dayLimit);
+            long days = currentDay-tenDaysInMillis;
+            String recipientCode = (String) requestBody.getOrDefault("recipient_code", "");
+            StringBuilder countQuery = new StringBuilder("SELECT count(*),action FROM " + table + " WHERE created_on > " + days +  " AND recipient_code = '"  +  recipientCode + "' GROUP BY action");
+            System.out.println("countquery " + countQuery);
+            ResultSet resultSet1 = postgres.executeQuery(countQuery.toString());
+            Map<String, Object> resp = new HashMap<>();
+            List<Object> result = new ArrayList<>();
+            while (resultSet1.next()) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("count", resultSet1.getInt("count"));
+                map.put("action", resultSet1.getString("action"));
+                result.add(map);
+            }
+            resp.put("lastThreedays",result);
+            StringBuilder countQuery1 = new StringBuilder("SELECT count(*),action FROM " + table + " WHERE recipient_code  = '" + recipientCode + "' GROUP BY action");
+            System.out.println("countquery " + countQuery1);
+            ResultSet resultSet0 = postgres.executeQuery(countQuery1.toString());
+            //addToQuery(countQuery, recipientCode, "recipient_code");
+            List<Object> result0 = new ArrayList<>();
+            while (resultSet0.next()) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("count", resultSet0.getInt("count"));
+                map.put("action", resultSet0.getString("action"));
+                result0.add(map);
+            }
+            resp.put("total",result0);
+            StringBuilder countQuery2 = new StringBuilder("SELECT count(*),action,status FROM " + table + " GROUP BY action, status");
+            //addToQuery(countQuery2, recipientCode, "recipient_code");
+            ResultSet resultSet2 = postgres.executeQuery(countQuery2.toString());
+            List<Object> result1 = new ArrayList<>();
+            while (resultSet2.next()) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("count", resultSet2.getInt("count"));
+                map.put("action", resultSet2.getString("action"));
+                map.put("status", resultSet2.getString("status"));
+                result1.add(map);
+            }
+            resp.put("totalByStatus",result1);
+            return new ResponseEntity<>(resp, HttpStatus.OK);
+        }catch (Exception e) {
+            return exceptionHandler(new Response(), e);
+        }
+    }
+
     @PostMapping(value = "/payer/request/list")
-    public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody) {
+    public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody, @RequestParam(value = "request_id", required = false) String request_id) {
         try {
             String type = (String) requestBody.getOrDefault("type", "");
-            long days = System.currentTimeMillis()-(int) requestBody.getOrDefault("days", dayLimit)*24*60*60*1000;
+            long currentDay = System.currentTimeMillis();
+            long tenDaysInMillis = TimeUnit.DAYS.toMillis((int) requestBody.getOrDefault("days", listLimit));
+            long days = currentDay-tenDaysInMillis;
             int limit = (int) requestBody.getOrDefault("limit", listLimit);
             int offset = (int) requestBody.getOrDefault("offset", 0);
             String senderCode = (String) requestBody.getOrDefault("sender_code", "");
@@ -56,12 +108,17 @@ public class PayerController extends BaseController {
             StringBuilder countQuery = new StringBuilder("SELECT count(*) FROM " + table + " WHERE action = '" + type + "' AND created_on > " + days);
             addToQuery(countQuery, senderCode, "sender_code");
             addToQuery(countQuery, recipientCode, "recipient_code");
+            if (request_id != null) {
+                addToQuery(countQuery, request_id, "request_id");
+            }
             ResultSet resultSet1 = postgres.executeQuery(countQuery.toString());
             Map<String, Object> resp = new HashMap<>();
             while (resultSet1.next()) {
+                Map<String, Object> map = new HashMap<>();
                 resp.put("count", resultSet1.getInt("count"));
             }
             String query = countQuery.toString().replace("count(*)", "count(*) over(),*") + " ORDER BY created_on DESC LIMIT " + limit + " OFFSET " + offset;
+            System.out.println("Payer list query " + query);
             ResultSet resultSet = postgres.executeQuery(query);
             while (resultSet.next()) {
                 Map<String, Object> map = new HashMap<>();
@@ -84,6 +141,8 @@ public class PayerController extends BaseController {
             return exceptionHandler(new Response(), e);
         }
     }
+
+
 
     private void addToQuery(StringBuilder query, String code, String field){
         if(!StringUtils.isEmpty(code)) {

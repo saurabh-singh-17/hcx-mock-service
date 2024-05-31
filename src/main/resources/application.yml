@@ -27,6 +27,7 @@ postgres:
   password: ${postgres_password:postgres}
   table:
    payerData: ${payer_data_table:payersystem_data}
+   patientData: ${payer_data_table:patient_data}
    mockParticipant: ${mock_participant_table:mock_participant}
    beneficiary: ${beneficiary_table:beneficiary_verification}
    consultation-info : ${consultation_info_table:consultation_info}
@@ -68,7 +69,7 @@ autoresponse: ${auto_response:false}
 
 request_list:
   default_limit: ${request_list_default_limit:100}
-  default_latest_data_by_day: ${request_list_default_latest_data_by_day:2}
+  default_latest_data_by_day: ${request_list_default_latest_data_by_day:3}
 
 mock_payer:
   private_key: ${mock_payer_private_key:https://raw.githubusercontent.com/Swasth-Digital-Health-Foundation/hcx-platform/main/hcx-apis/src/test/resources/examples/test-keys/private-key.pem}
