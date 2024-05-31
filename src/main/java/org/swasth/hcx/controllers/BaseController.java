@@ -89,6 +89,9 @@ public class BaseController {
     private PayerService payerService;
 
     @Autowired
+    private PatientService patientService;
+
+    @Autowired
     private RedisService redisService;
     @Value("${redis.expires}")
     private int redisExpires;
@@ -240,7 +243,9 @@ public class BaseController {
 
     private void sendResponse(String apiAction, String respfhir, String reqFhir, Operations operation, String actionJwe, String onActionStatus, Map<String, Object> output) throws Exception {
         Request request = new Request(Collections.singletonMap("payload", actionJwe), apiAction);
-        if (autoResponse || StringUtils.equalsIgnoreCase(request.getRecipientCode(), env.getProperty("mock_payer.participant_code"))) {
+        //|| StringUtils.equalsIgnoreCase(request.getRecipientCode(), env.getProperty("mock_payer.participant_code"))
+        patientService.process(operation,request ,reqFhir);
+        if (autoResponse ) {
             onActionCall.sendOnAction(request.getRecipientCode(), respfhir, operation, actionJwe, onActionStatus, output);
         } else {
             payerService.process(request, reqFhir, respfhir);
