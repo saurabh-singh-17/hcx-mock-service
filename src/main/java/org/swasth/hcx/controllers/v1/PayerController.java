@@ -74,7 +74,7 @@ public class PayerController extends BaseController {
                 result0.add(map);
             }
             resp.put("total",result0);
-            StringBuilder countQuery2 = new StringBuilder("SELECT count(*),action,status FROM " + table + " GROUP BY action, status");
+            StringBuilder countQuery2 = new StringBuilder("SELECT count(*),action,status FROM " + table + " WHERE recipient_code  = '" + recipientCode + "' GROUP BY action, status");
             //addToQuery(countQuery2, recipientCode, "recipient_code");
             ResultSet resultSet2 = postgres.executeQuery(countQuery2.toString());
             List<Object> result1 = new ArrayList<>();
