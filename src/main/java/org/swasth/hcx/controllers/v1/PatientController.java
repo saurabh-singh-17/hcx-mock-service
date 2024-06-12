@@ -45,7 +45,6 @@ public class PatientController extends BaseController {
     }
 
     @PostMapping(value = "/payer/beneficiary/request/list")
-    @CrossOrigin(origins = "http://127.0.0.1:5173")
     public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody) {
         try {
             long days = System.currentTimeMillis()-(int) requestBody.getOrDefault("days", dayLimit)*24*60*60*1000;
