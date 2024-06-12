@@ -25,7 +25,6 @@ public class ForwardController extends BaseController {
     IParser parser = FhirContext.forR4().newJsonParser().setPrettyPrint(true);
 
     @PostMapping(value = "/payer/request/forward")
-    @CrossOrigin(origins = "http://127.0.0.1:5173")
     public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody) throws Exception {
         try{
         String senderCode = (String) requestBody.getOrDefault("sender_code", "");

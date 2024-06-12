@@ -44,7 +44,6 @@ public class PayerController extends BaseController {
 
 
     @PostMapping(value = "/payer/request/stats")
-    @CrossOrigin(origins = "http://127.0.0.1:5173")
     public ResponseEntity<Object> requestListStats(@RequestBody Map<String, Object> requestBody){
         try {
             long currentDay = System.currentTimeMillis();
@@ -94,7 +93,6 @@ public class PayerController extends BaseController {
     }
 
     @PostMapping(value = "/payer/request/list")
-    @CrossOrigin(origins = "http://127.0.0.1:5173")
     public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody, @RequestParam(value = "request_id", required = false) String request_id, @RequestParam(value = "correlation_id", required = false) String correlation_id) {
         try {
             String type = (String) requestBody.getOrDefault("type", "");
