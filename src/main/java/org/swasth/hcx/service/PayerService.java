@@ -79,6 +79,8 @@ public class PayerService {
         actionMap.put(Constants.PRE_AUTH_SUBMIT, Constants.PRE_AUTH);
         actionMap.put(Constants.CLAIM_SUBMIT, Constants.CLAIM);
         actionMap.put(Constants.COMMUNICATION_REQUEST, Constants.COMMUNICATION);
+        actionMap.put(Constants.PRE_AUTH_ONSUBMIT, Constants.PRE_AUTH + "onsubmit");
+        actionMap.put(Constants.CLAIM_ONSUBMIT, Constants.CLAIM + "onsubmit");
         return actionMap.get(action);
     }
 

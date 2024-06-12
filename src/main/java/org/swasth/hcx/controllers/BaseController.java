@@ -29,6 +29,7 @@ import org.swasth.hcx.exception.ServiceUnavailbleException;
 import org.swasth.hcx.fhirexamples.OnActionFhirExamples;
 import org.swasth.hcx.helpers.EventGenerator;
 import org.swasth.hcx.service.*;
+import org.swasth.hcx.utils.Constants;
 import org.swasth.hcx.utils.JSONUtils;
 import org.swasth.hcx.utils.OnActionCall;
 
@@ -237,6 +238,17 @@ public class BaseController {
                         redisService.set(key, notificationService.notificationResponse(output), redisExpires);
                     }
                 }
+            }else if(CLAIM_ONSUBMIT.equalsIgnoreCase(apiAction) || PRE_AUTH_ONSUBMIT.equalsIgnoreCase(apiAction)) {
+                if(CLAIM_ONSUBMIT.equalsIgnoreCase(apiAction)){
+                    boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.CLAIM_ON_SUBMIT, output);
+                }else{
+                    boolean result = hcxIntegrator.processIncoming(JSONUtils.serialize(pay), Operations.PRE_AUTH_ON_SUBMIT, output);
+                }
+                System.out.println("result of claim on submit decryption " + output.get("fhirPayload") + "     " + getEntity(request.getAction()));
+                Map<String, Object> info = new HashMap<>();
+                String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,action,raw_payload,request_fhir,response_fhir,status,additional_info,created_on,updated_on,correlation_id,mobile,otp_verification,workflow_id,account_number,ifsc_code,bank_details,app,supporting_documents,bill_amount,insurance_id,patient_name) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
+                        table, request.getApiCallId(), request.getSenderCode(), request.getRecipientCode(), getEntity(request.getAction()), request.getPayload().getOrDefault("payload", ""), (String) output.get("fhirPayload"), JSONUtils.serialize(info), PENDING, JSONUtils.serialize(info), System.currentTimeMillis(), System.currentTimeMillis(), request.getCorrelationId(), "", PENDING, request.getWorkflowId(), "1234", "1234", PENDING, "", "{}", "", "", "");
+                postgres.execute(query);
             }
         }
     }
@@ -322,6 +334,17 @@ public class BaseController {
                 System.out.println("decryption successful");
             }
         }
+    }
+
+    private String getEntity(String action) {
+        Map<String, String> actionMap = new HashMap<>();
+        actionMap.put(org.swasth.hcx.utils.Constants.COVERAGE_ELIGIBILITY_CHECK, org.swasth.hcx.utils.Constants.COVERAGE_ELIGIBILITY);
+        actionMap.put(org.swasth.hcx.utils.Constants.PRE_AUTH_SUBMIT, org.swasth.hcx.utils.Constants.PRE_AUTH);
+        actionMap.put(org.swasth.hcx.utils.Constants.CLAIM_SUBMIT, org.swasth.hcx.utils.Constants.CLAIM);
+        actionMap.put(org.swasth.hcx.utils.Constants.COMMUNICATION_REQUEST, org.swasth.hcx.utils.Constants.COMMUNICATION);
+        actionMap.put(org.swasth.hcx.utils.Constants.PRE_AUTH_ONSUBMIT, org.swasth.hcx.utils.Constants.PRE_AUTH + "onsubmit");
+        actionMap.put(org.swasth.hcx.utils.Constants.CLAIM_ONSUBMIT, Constants.CLAIM + "onsubmit");
+        return actionMap.get(action);
     }
 
     public ResponseEntity<Object> processAndValidateRequest(Map<String, Object> requestBody, String apiAction, String onApiAction, String kafkaTopic) {

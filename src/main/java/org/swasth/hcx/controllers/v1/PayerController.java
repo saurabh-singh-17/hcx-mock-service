@@ -44,6 +44,7 @@ public class PayerController extends BaseController {
 
 
     @PostMapping(value = "/payer/request/stats")
+    @CrossOrigin(origins = "http://127.0.0.1:5173")
     public ResponseEntity<Object> requestListStats(@RequestBody Map<String, Object> requestBody){
         try {
             long currentDay = System.currentTimeMillis();
@@ -93,7 +94,8 @@ public class PayerController extends BaseController {
     }
 
     @PostMapping(value = "/payer/request/list")
-    public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody, @RequestParam(value = "request_id", required = false) String request_id) {
+    @CrossOrigin(origins = "http://127.0.0.1:5173")
+    public ResponseEntity<Object> requestList(@RequestBody Map<String, Object> requestBody, @RequestParam(value = "request_id", required = false) String request_id, @RequestParam(value = "correlation_id", required = false) String correlation_id) {
         try {
             String type = (String) requestBody.getOrDefault("type", "");
             long currentDay = System.currentTimeMillis();
@@ -111,6 +113,9 @@ public class PayerController extends BaseController {
             if (request_id != null) {
                 addToQuery(countQuery, request_id, "request_id");
             }
+            if (correlation_id != null){
+                addToQuery(countQuery, correlation_id, "correlation_id");
+            }
             ResultSet resultSet1 = postgres.executeQuery(countQuery.toString());
             Map<String, Object> resp = new HashMap<>();
             while (resultSet1.next()) {
@@ -124,6 +129,7 @@ public class PayerController extends BaseController {
                 Map<String, Object> map = new HashMap<>();
                 map.put("sender_code", resultSet.getString("sender_code"));
                 map.put("recipient_code", resultSet.getString("recipient_code"));
+                map.put("correlation_id", resultSet.getString("correlation_id"));
                 map.put("request_id", resultSet.getString("request_id"));
                 map.put("response_fhir", JSONUtils.deserialize(resultSet.getString("response_fhir"), Map.class));
                 map.put("status", resultSet.getString("status"));
