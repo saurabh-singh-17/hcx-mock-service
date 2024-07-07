@@ -29,6 +29,7 @@ postgres:
    payerData: ${payer_data_table:payersystem_data}
    patientData: ${payer_data_table:patient_data}
    mockParticipant: ${mock_participant_table:mock_participant}
+   notificationData: ${notification_table:notification_data}
    beneficiary: ${beneficiary_table:beneficiary_verification}
    consultation-info : ${consultation_info_table:consultation_info}
    document-analysis-response : ${document_analysis_response:document_analysis_response}

@@ -57,6 +57,10 @@ public class Request {
         return (String) payload.get("topic_code");
     }
 
+    public String getTopicMessage(){
+        return (String) payload.get("message");
+    }
+
     // TODO remove this method. We should restrict accessing it to have a clean code.
     public Map<String, Object> getPayload() {
         return payload;
