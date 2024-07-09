@@ -45,6 +45,12 @@ public class GenerateOutgoingRequest {
     private PostgresService postgresService;
     @Value("${postgres.table.payerData}")
     private String payorDataTable;
+
+    @Value("${postgres.table.communicationData}")
+    private String communicationTable;
+
+    @Autowired
+    private PostgresService postgres;
     @Value("${phone.communication-content}")
     private String communicationContent;
     @Value("${beneficiary.protocol-base-path}")
@@ -181,24 +187,37 @@ public class GenerateOutgoingRequest {
             validateKeys("password", password);
             String recipientCode = (String) requestBody.getOrDefault("recipientCode", "");
             validateKeys("recipientCode", recipientCode);
+            String text = (String) requestBody.getOrDefault("text", "");
             Map<String, Object> payloadMap = beneficiaryService.getPayloadMap(requestId);
-            Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
             String correlationId = (String) payloadMap.getOrDefault("correlation_id", "");
-            Patient patient1 = parser.parseResource(Patient.class, parser.encodeResourceToString(parsed.getEntry().get(3).getResource()));
-            String mobile = patient1.getTelecom().get(0).getValue();
+            Bundle parsed = parser.parseResource(Bundle.class, (String) payloadMap.get("request_fhir"));
+            String mobile = "";
+            for (Bundle.BundleEntryComponent bundleEntryComponent : parsed.getEntry()) {
+                if(bundleEntryComponent.getResource().getResourceType().toString() == "Patient"){
+                    Patient patient1 = parser.parseResource(Patient.class, parser.encodeResourceToString(bundleEntryComponent.getResource()));
+                    mobile = patient1.getTelecom().get(0).getValue();
+                }
+            }
             System.out.println("mobile number of beneficiary: " + mobile);
             HCXIntegrator hcxIntegrator = HCXIntegrator.getInstance(initializingConfigMapForPayor(participantCode, password));
             CommunicationRequest communicationRequest = OnActionFhirExamples.communicationRequestExample();
             Patient patient = OnActionFhirExamples.patientExample();
             patient.getTelecom().add(new ContactPoint().setValue(mobile).setSystem(ContactPoint.ContactPointSystem.PHONE));
             if(requestBody.getOrDefault("type", "").equals("bank_details")){
-                communicationRequest.getPayload().add(new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please provide the bank details for claim to be complete.")));
+                text = "Please provide the bank details for claim to be complete.";
+                communicationRequest.getPayload().add(new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType(text)));
                 System.out.println("The Communication request has been sent successfully bank details.");
             } else if (requestBody.getOrDefault("type","").equals("otp")){
-                communicationRequest.getPayload().add(new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType("Please verify the OTP sent to your mobile number to proceed.")));
+                text = "Please verify the OTP sent to your mobile number to proceed.";
+                communicationRequest.getPayload().add(new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType(text)));
                 beneficiaryService.sendOTP(mobile, communicationContent);
                 System.out.println("The otp has been sent for the beneficiary mobile to verify cliam.");
+            }else{
+                communicationRequest.getPayload().add(new CommunicationRequest.CommunicationRequestPayloadComponent().setContent(new StringType(text)));
             }
+            String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,correlation_id,message,created_on) VALUES ('%s','%s','%s','%s','%s',%d);",
+                    communicationTable, UUID.randomUUID().toString(), participantCode, recipientCode, correlationId,text, System.currentTimeMillis());
+            postgres.execute(query);
             Map<String, Object> output = new HashMap<>();
             String workflowId = (String) payloadMap.getOrDefault("workflow_id","");
             hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, recipientCode, "", correlationId, workflowId , new HashMap<>(), output);
