@@ -219,8 +219,8 @@ public class GenerateOutgoingRequest {
                     communicationTable, UUID.randomUUID().toString(), participantCode, recipientCode, correlationId,text, System.currentTimeMillis());
             postgres.execute(query);
             Map<String, Object> output = new HashMap<>();
-            String workflowId = (String) payloadMap.getOrDefault("workflow_id","");
-            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, recipientCode, "", correlationId, workflowId , new HashMap<>(), output);
+            String workflowId = (String) payloadMap.getOrDefault("workflow_id", "");
+            hcxIntegrator.processOutgoingRequest(parser.encodeResourceToString(communicationRequest), operations, recipientCode, "", correlationId, workflowId, new HashMap<>(), output);
             System.out.println("The outgoing request has been successfully generated." + output);
             return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
         } catch (Exception e) {
