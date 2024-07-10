@@ -28,8 +28,6 @@ import org.swasth.hcx.utils.JSONUtils;
 @RestController()
 public class NotificationController extends BaseController {
 
-    @Autowired
-    private NotificationService notificationService;
     @Value("${postgres.table.notificationData}")
     private String table;
     @Autowired
@@ -71,7 +69,7 @@ public class NotificationController extends BaseController {
             System.out.println("Notification details " + topicCode +  " " +topicMessage);
             System.out.println("Notification is here" + output);
             String request_id = UUID.randomUUID().toString();
-            notificationService.sendNotification(request_id,senderCode,hcxIntegrator.getParticipantCode(),topicMessage,topicCode,"false", String.valueOf(System.currentTimeMillis()));
+            //notificationService.sendNotification(request_id,senderCode,hcxIntegrator.getParticipantCode(),topicMessage,topicCode,"false", String.valueOf(System.currentTimeMillis()));
             String query = String.format("INSERT INTO %s (request_id,sender_code,recipient_code,topic_code,message,read,created_on) VALUES ('%s','%s','%s','%s','%s','%s',%d);",
                     table, request_id, senderCode, hcxIntegrator.getParticipantCode(), topicCode, topicMessage, "false", System.currentTimeMillis());
             postgres.execute(query);

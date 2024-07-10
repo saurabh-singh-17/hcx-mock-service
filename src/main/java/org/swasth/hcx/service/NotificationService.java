@@ -27,20 +27,20 @@ public class NotificationService {
     @Autowired
     Environment env;
 
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
-
-    public void sendNotification(String request_id, String sender_code, String recipient_code, String message, String topic_code, String read, String created_on) {
-        Notification notification = new Notification();
-        notification.setMessage(message);
-        notification.setRead(read);
-        notification.setCreated_on(created_on);
-        notification.setRecipient_code(recipient_code);
-        notification.setRequest_id(request_id);
-        notification.setSender_code(sender_code);
-        notification.setTopic_code(topic_code);
-        messagingTemplate.convertAndSend("/topic/notifications", notification);
-    }
+//    @Autowired
+//    private SimpMessagingTemplate messagingTemplate;
+//
+//    public void sendNotification(String request_id, String sender_code, String recipient_code, String message, String topic_code, String read, String created_on) {
+//        Notification notification = new Notification();
+//        notification.setMessage(message);
+//        notification.setRead(read);
+//        notification.setCreated_on(created_on);
+//        notification.setRecipient_code(recipient_code);
+//        notification.setRequest_id(request_id);
+//        notification.setSender_code(sender_code);
+//        notification.setTopic_code(topic_code);
+//        messagingTemplate.convertAndSend("/topic/notifications", notification);
+//    }
 
     @Async(value = "asyncExecutor")
     public void processSubscription(Request request, Response response) throws Exception {
